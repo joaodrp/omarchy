@@ -22,10 +22,18 @@ if [ -z "$DEVICE" ]; then
     exit 1
 fi
 
-VALUE=$(asdcontrol --silent --brief "$DEVICE" "$DELTA" 2>&1)
-if ! [[ "$VALUE" =~ ^[0-9]+$ ]]; then
-    notify-send -u critical "Brightness" "asdcontrol failed: $VALUE"
+# Set the new brightness. `--` terminates flag parsing so negative deltas
+# like `-30%` aren't mistaken for options.
+if ! asdcontrol --silent --brief "$DEVICE" -- "$DELTA" >/dev/null 2>&1; then
+    notify-send -u critical "Brightness" "asdcontrol set failed: $DELTA"
     exit 1
+fi
+
+# Re-read current brightness for OSD percentage.
+VALUE=$(asdcontrol --silent --brief "$DEVICE" 2>/dev/null | tr -d '[:space:]')
+if ! [[ "$VALUE" =~ ^[0-9]+$ ]]; then
+    notify-send -t 1500 "Brightness" "$DELTA"
+    exit 0
 fi
 
 # 2022 Studio Display range: 400-60000. Compute percent for OSD.
