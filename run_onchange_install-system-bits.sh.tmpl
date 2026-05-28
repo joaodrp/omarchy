@@ -13,5 +13,8 @@ if ! cmp -s "$SRC" "$DEST" 2>/dev/null; then
     echo "Installing $DEST (requires sudo)..."
     sudo install -m 644 "$SRC" "$DEST"
     sudo udevadm control --reload-rules
-    sudo udevadm trigger --subsystem-match=hidraw
+    # --action=add is required for systemd-logind to (re-)apply the uaccess
+    # ACL on already-present devices. Plain `udevadm trigger` sends change
+    # events, which logind ignores for ACL purposes.
+    sudo udevadm trigger --action=add --subsystem-match=hidraw
 fi
