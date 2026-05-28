@@ -1,6 +1,8 @@
-# Grant the active local user access to Apple Studio Display hidraw nodes
+# Grant the active local user access to Apple Studio Display hiddev nodes
 # so asdcontrol can adjust brightness without root.
-KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="05ac", ATTRS{idProduct}=="1114", TAG+="uaccess"
-KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="05ac", ATTRS{idProduct}=="1116", TAG+="uaccess"
-KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="05ac", ATTRS{idProduct}=="1118", TAG+="uaccess"
-KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="05ac", ATTRS{idProduct}=="9243", TAG+="uaccess"
+# asdcontrol uses the hiddev ioctl interface (/dev/usb/hiddev*, subsystem
+# `usbmisc`) — not hidraw — so the match must target that subsystem.
+KERNEL=="hiddev*", SUBSYSTEM=="usbmisc", ATTRS{idVendor}=="05ac", ATTRS{idProduct}=="1114", TAG+="uaccess"
+KERNEL=="hiddev*", SUBSYSTEM=="usbmisc", ATTRS{idVendor}=="05ac", ATTRS{idProduct}=="1116", TAG+="uaccess"
+KERNEL=="hiddev*", SUBSYSTEM=="usbmisc", ATTRS{idVendor}=="05ac", ATTRS{idProduct}=="1118", TAG+="uaccess"
+KERNEL=="hiddev*", SUBSYSTEM=="usbmisc", ATTRS{idVendor}=="05ac", ATTRS{idProduct}=="9243", TAG+="uaccess"

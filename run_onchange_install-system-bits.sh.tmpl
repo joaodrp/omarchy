@@ -16,5 +16,5 @@ if ! cmp -s "$SRC" "$DEST" 2>/dev/null; then
     # --action=add is required for systemd-logind to (re-)apply the uaccess
     # ACL on already-present devices. Plain `udevadm trigger` sends change
     # events, which logind ignores for ACL purposes.
-    sudo udevadm trigger --action=add --subsystem-match=hidraw
+    sudo udevadm trigger --action=add --subsystem-match=usbmisc
 fi

@@ -6,19 +6,19 @@ set -u
 DELTA="${1:-+10%}"
 
 DEVICE=""
-for d in /dev/hidraw*; do
+for d in /dev/usb/hiddev*; do
     [ -w "$d" ] || continue
-    info=$(udevadm info --name="$d" 2>/dev/null) || continue
-    if printf '%s' "$info" | grep -q "ID_MODEL=Studio_Display"; then
-        if asdcontrol --silent --brief "$d" >/dev/null 2>&1; then
-            DEVICE="$d"
-            break
-        fi
+    # asdcontrol reads the USB vendor:product via ioctl; --brief prints just
+    # the current brightness on success, and an "Unsupported device:" line
+    # on any HID node that isn't the display.
+    if asdcontrol --silent --brief "$d" 2>/dev/null | grep -qE '^[0-9]+$'; then
+        DEVICE="$d"
+        break
     fi
 done
 
 if [ -z "$DEVICE" ]; then
-    notify-send -u critical "Brightness" "Apple Studio Display not found or no permission on /dev/hidraw*"
+    notify-send -u critical "Brightness" "Apple Studio Display not found or no permission on /dev/usb/hiddev*"
     exit 1
 fi
 
