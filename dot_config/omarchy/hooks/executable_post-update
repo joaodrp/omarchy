@@ -1,0 +1,7 @@
+#!/bin/bash
+# Re-apply chezmoi-managed dotfiles after `omarchy update`.
+# Migrations occasionally rewrite files in ~/.config/hypr/, and this hook
+# ensures personal overrides are restored without manual intervention.
+if command -v chezmoi >/dev/null 2>&1; then
+    chezmoi apply --force >/dev/null 2>&1 || true
+fi

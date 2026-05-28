@@ -1,0 +1,17 @@
+#!/bin/bash
+# Install system-level files that live outside $HOME.
+# Re-runs whenever the source content changes (the hash comment below is
+# rendered at apply time and tracked by chezmoi).
+#
+# rule sha256: {{ include "system/99-apple-studio-display.rules" | sha256sum }}
+set -e
+
+SRC="{{ .chezmoi.sourceDir }}/system/99-apple-studio-display.rules"
+DEST=/etc/udev/rules.d/99-apple-studio-display.rules
+
+if ! cmp -s "$SRC" "$DEST" 2>/dev/null; then
+    echo "Installing $DEST (requires sudo)..."
+    sudo install -m 644 "$SRC" "$DEST"
+    sudo udevadm control --reload-rules
+    sudo udevadm trigger --subsystem-match=hidraw
+fi

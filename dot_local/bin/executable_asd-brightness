@@ -1,0 +1,39 @@
+#!/bin/bash
+# Adjust Apple Studio Display brightness via asdcontrol.
+# Usage: asd-brightness <+10%|-10%|50%|raw-int>
+set -u
+
+DELTA="${1:-+10%}"
+
+DEVICE=""
+for d in /dev/hidraw*; do
+    [ -w "$d" ] || continue
+    info=$(udevadm info --name="$d" 2>/dev/null) || continue
+    if printf '%s' "$info" | grep -q "ID_MODEL=Studio_Display"; then
+        if asdcontrol --silent --brief "$d" >/dev/null 2>&1; then
+            DEVICE="$d"
+            break
+        fi
+    fi
+done
+
+if [ -z "$DEVICE" ]; then
+    notify-send -u critical "Brightness" "Apple Studio Display not found or no permission on /dev/hidraw*"
+    exit 1
+fi
+
+VALUE=$(asdcontrol --silent --brief "$DEVICE" "$DELTA" 2>&1)
+if ! [[ "$VALUE" =~ ^[0-9]+$ ]]; then
+    notify-send -u critical "Brightness" "asdcontrol failed: $VALUE"
+    exit 1
+fi
+
+# 2022 Studio Display range: 400-60000. Compute percent for OSD.
+PCT=$(awk -v v="$VALUE" 'BEGIN { p=(v-400)/(60000-400)*100; if (p<0) p=0; if (p>100) p=100; printf "%.0f", p }')
+
+if command -v swayosd-client >/dev/null 2>&1; then
+    swayosd-client --custom-progress "$(awk -v p="$PCT" 'BEGIN { printf "%.2f", p/100 }')" --custom-icon display-brightness-symbolic >/dev/null 2>&1 || \
+        notify-send -t 1500 -h string:x-canonical-private-synchronous:brightness "Brightness" "${PCT}%"
+else
+    notify-send -t 1500 -h string:x-canonical-private-synchronous:brightness "Brightness" "${PCT}%"
+fi
