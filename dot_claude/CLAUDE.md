@@ -11,12 +11,12 @@
 
 - **`ctx7` CLI** - Library/framework docs, API specs, usage samples, setup instructions
 - **Your own web search tools** - Find things on the web, current events, quick facts
-- **Firecrawl CLI** (and the corresponding Skill) - Read online pages, scrape JS-heavy pages, crawl sites, extract structured data. Use this whenever you need to fetch or read content from a URL
+- **Firecrawl CLI** - Read online pages, scrape JS-heavy pages, crawl sites, extract structured data. Use this whenever you need to fetch or read content from a URL
 - **Perplexity MCP** - Deep research on complex topics requiring synthesis from multiple sources
 
 ### Web Testing
 
-Prefer `agent-browser` CLI (and the corresponding Skill) to interacting directly with Playwright.
+Prefer `agent-browser` CLI to interacting directly with Playwright.
 
 ## Repository Paths
 
@@ -47,7 +47,6 @@ Write a failing test *before* fixing the bug. Use the lowest test level that cap
 - Never amend pushed commits. Verify push status before amending.
 - Keep descriptions concise and direct
 - Use markdown in commit bodies and PR descriptions; use backticks for inline code and identifiers
-- No Co-Authored-By footers
 - Never mention your plugins or skills
 - After merging a PR, switch to the default branch and pull
 - Before making changes on the default branch, create a new feature branch
