@@ -7,9 +7,16 @@ Personal config managed with [chezmoi](https://chezmoi.io), targeting
 
 ```bash
 omarchy pkg add chezmoi
-chezmoi init <git-remote-url>
+mkdir -p ~/Developer/github.com/joaodrp
+chezmoi init --source=~/Developer/github.com/joaodrp/omarchy \
+  https://github.com/joaodrp/omarchy.git
 chezmoi apply
 ```
+
+The source tree lives at `~/Developer/github.com/joaodrp/omarchy` (mirrors
+my standard repo layout). The `--source=` flag writes that location into
+`~/.config/chezmoi/chezmoi.toml` so subsequent `chezmoi` commands find it
+automatically — no environment variable or per-invocation flag needed.
 
 `chezmoi apply` is idempotent — re-run after any drift.
 
@@ -21,6 +28,11 @@ chezmoi apply
   block in this file propagates on the next `chezmoi apply`.
 - `dot_config/omarchy/hooks/post-update` — re-runs `chezmoi apply` after
   every `omarchy update`, so migrations can't quietly clobber overrides.
+- `run_after_*.sh` — always-run scripts (ensure `~/Developer/` exists, etc.)
+- `run_onchange_install-*.sh` — per-app installers that re-execute only
+  when their content changes. Each one wraps an `omarchy install` helper.
+- `run_remove-omarchy-apps.sh` — strips `.desktop` entries and packages
+  I don't use on every apply (idempotent via `rm -f` + `omarchy pkg drop`).
 
 ## What's managed
 
@@ -30,3 +42,8 @@ chezmoi apply
   `brightnessctl`). Variants: plain ±5%, `SHIFT` jumps to min/max,
   `ALT` ±2% fine. XF86MonBrightness keys remain wired by Omarchy's
   upstream defaults.
+- **Removed defaults**: 37signals webapps (HEY, Basecamp), Figma, Fizzy,
+  Google Photos, Google Messages, plus their keybinding overrides.
+- **Installs**: dev environments (Ruby/Go/Rust/Zig), Dropbox, Tailscale,
+  Gmail as a webapp with `mailto:` registered as default, and Chromium
+  Google OAuth flags so signing in works.
