@@ -20,16 +20,13 @@ if [ "$used" -gt 0 ]; then
     for ((i=0; i<filled; i++)); do bar+="█"; done
     for ((i=filled; i<10; i++)); do bar+="░"; done
 
-    # Color based on usage with blinking skull at 80%+
-    if [ "$used" -lt 50 ]; then
+    # Color thresholds — all named ANSI codes so they follow the terminal theme.
+    if [ "$used" -lt 40 ]; then
         ctx=$' \033[32m'"$bar $used%"$'\033[0m'
-    elif [ "$used" -lt 65 ]; then
-        ctx=$' \033[33m'"$bar $used%"$'\033[0m'
     elif [ "$used" -lt 80 ]; then
-        ctx=$' \033[38;5;208m'"$bar $used%"$'\033[0m'
+        ctx=$' \033[33m'"$bar $used%"$'\033[0m'
     else
-        # Blinking red with skull
-        ctx=$' \033[5;31m💀 '"$bar $used%"$'\033[0m'
+        ctx=$' \033[5;31m'"$bar $used%"$'\033[0m'
     fi
 fi
 
