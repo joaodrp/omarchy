@@ -7,16 +7,20 @@ Personal config managed with [chezmoi](https://chezmoi.io), targeting
 
 ```bash
 omarchy pkg add chezmoi
-mkdir -p ~/Developer/github.com/joaodrp
-chezmoi init --source=~/Developer/github.com/joaodrp/omarchy \
-  https://github.com/joaodrp/omarchy.git
+chezmoi init https://github.com/joaodrp/omarchy.git
 chezmoi apply
 ```
 
-The source tree lives at `~/Developer/github.com/joaodrp/omarchy` (mirrors
-my standard repo layout). The `--source=` flag writes that location into
-`~/.config/chezmoi/chezmoi.toml` so subsequent `chezmoi` commands find it
-automatically — no environment variable or per-invocation flag needed.
+The source tree lives at `~/.local/share/chezmoi/` — chezmoi's XDG default.
+Run `chezmoi cd` to drop into a subshell there.
+
+Optionally, for navigating the repo the same way as any other project under
+`~/Developer/<host>/<org>/<repo>`:
+
+```bash
+mkdir -p ~/Developer/github.com/joaodrp
+ln -s ~/.local/share/chezmoi ~/Developer/github.com/joaodrp/omarchy
+```
 
 `chezmoi apply` is idempotent — re-run after any drift.
 
