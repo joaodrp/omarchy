@@ -2,6 +2,13 @@
 ; (omarchy's defaults). Git reads ~/.gitconfig after the XDG config,
 ; so values here win on conflict.
 
+[user]
+	name = João Pereira
+	email = {{ .personal_email | quote }}
+
+[includeIf "gitdir/i:github.com/"]
+	path = ~/.config/git/config.github
+
 [apply]
 	whitespace = fix
 

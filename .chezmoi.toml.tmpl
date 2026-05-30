@@ -1,0 +1,7 @@
+{{- /* Onboarding template. chezmoi renders this once on `chezmoi init`
+       and writes the output to ~/.config/chezmoi/chezmoi.toml. Subsequent
+       runs reuse the local file; no re-prompting. */ -}}
+{{- $personal_email := promptStringOnce . "personal_email" "Personal email (used as the default git user.email; github.com paths override to the noreply via includeIf)" -}}
+
+[data]
+    personal_email = {{ $personal_email | quote }}

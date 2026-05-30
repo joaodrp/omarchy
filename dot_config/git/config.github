@@ -1,0 +1,7 @@
+; Loaded via includeIf in ~/.gitconfig only when the current repo's
+; gitdir contains "github.com/" (e.g. ~/Developer/github.com/<owner>/<repo>).
+; Overrides user.email to the GitHub noreply so personal email is never
+; leaked to public github commits.
+
+[user]
+	email = 484633+joaodrp@users.noreply.github.com
