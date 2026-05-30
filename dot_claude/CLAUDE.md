@@ -16,7 +16,7 @@
 
 ### Web Testing
 
-Prefer `agent-browser` CLI to interacting directly with Playwright.
+Use the `playwright` CLI directly. Don't go through MCP servers or wrappers.
 
 ## Repository Paths
 
