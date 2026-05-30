@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Pre-commit hook: scan staged content for secrets using gitleaks.
+# No-op if gitleaks isn't installed.
+
+if ! command -v gitleaks &> /dev/null; then
+    echo "gitleaks not installed, skipping secret scan"
+    exit 0
+fi
+
+gitleaks protect --staged --verbose

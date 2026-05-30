@@ -1,0 +1,69 @@
+; Personal git overrides layered on top of ~/.config/git/config
+; (omarchy's defaults). Git reads ~/.gitconfig after the XDG config,
+; so values here win on conflict. Commit-signing intentionally not set
+; here yet — port once 1Password SSH agent is wired up on omarchy.
+
+[alias]
+	l = log --pretty=oneline -n 20 --graph --abbrev-commit
+	s = status -s
+	d = !"git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat"
+	go = "!f() { git checkout -b \"$1\" 2> /dev/null || git checkout \"$1\"; }; f"
+	aliases = config --get-regexp alias
+	amend = commit --amend --reuse-message=HEAD
+	reb = "!r() { git rebase -i HEAD~$1; }; r"
+	dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
+	contributors = shortlog --summary --numbered
+	whoami = config user.email
+	permission-reset = !git diff -p -R --no-ext-diff --no-color | grep -E \"^(diff|(old|new) mode)\" --color=never | git apply
+	stash-keep = !git stash store $(git stash create)
+
+[apply]
+	whitespace = fix
+
+[core]
+	pager = delta
+	whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
+	editor = nvim
+	quotepath = false
+	hooksPath = ~/.config/git/hooks
+
+[diff]
+	renames = copies
+
+[diff "bin"]
+	textconv = hexdump -v -C
+
+[push]
+	default = current
+
+[merge]
+	log = true
+	conflictStyle = zdiff3
+
+[help]
+	autocorrect = prompt
+
+[fetch]
+	prune = true
+	pruneTags = true
+
+[submodule]
+	recurse = true
+	fetchJobs = 0
+
+[rebase]
+	autoSquash = true
+	autoStash = true
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true
+	line-numbers = true
+
+[filter "lfs"]
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
