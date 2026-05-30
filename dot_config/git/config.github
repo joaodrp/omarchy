@@ -1,6 +1,6 @@
-; Loaded via includeIf in ~/.gitconfig only when the current repo's
-; gitdir contains "github.com/" (e.g. ~/Developer/github.com/<owner>/<repo>).
-; Overrides user.email to the GitHub noreply so personal email is never
+; Loaded via includeIf in ~/.gitconfig when the current repo has a
+; remote pointing at github.com (https:// or git@). Overrides
+; user.email to the GitHub noreply so the personal email is never
 ; leaked to public github commits.
 
 [user]

@@ -6,7 +6,9 @@
 	name = João Pereira
 	email = {{ .personal_email | quote }}
 
-[includeIf "gitdir/i:github.com/"]
+[includeIf "hasconfig:remote.*.url:https://github.com/**"]
+	path = ~/.config/git/config.github
+[includeIf "hasconfig:remote.*.url:git@github.com:**"]
 	path = ~/.config/git/config.github
 
 [apply]
