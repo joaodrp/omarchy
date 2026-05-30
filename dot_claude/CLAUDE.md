@@ -16,7 +16,7 @@
 
 ### Web Testing
 
-Use the `playwright` CLI directly. Don't go through MCP servers or wrappers.
+Use the `playwright-cli` CLI directly. Don't go through MCP servers or wrappers.
 
 ## Repository Paths
 
