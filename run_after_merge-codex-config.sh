@@ -23,6 +23,8 @@ yq -i -p toml -o toml '
   .model = "gpt-5.5" |
   .model_reasoning_effort = "high" |
   .personality = "pragmatic" |
+  .features.default_mode_request_user_input = true |
+  del(.default_mode_request_user_input) |
   .mcp_servers.openaiDeveloperDocs = {"url": "https://developers.openai.com/mcp"} |
   .mcp_servers.perplexity = {
     "command": "op",
