@@ -9,7 +9,7 @@
 # ("idle", "recording", "transcribing") to this file whenever it changes.
 # Required for `voxtype record toggle` and `voxtype status` commands.
 state_file = "auto"
-engine = "parakeet"
+engine = "whisper"
 
 [hotkey]
 # Hotkey is configured in Hyprland. Default is Super + Ctrl + X
@@ -129,10 +129,6 @@ waveform_gain = 8.0
 
 [status]
 icon_theme = "emoji"
-
-[parakeet]
-model = "parakeet-tdt-0.6b-v3"
-on_demand_loading = false
 
 # [text]
 # Text processing options (word replacements, spoken punctuation)
