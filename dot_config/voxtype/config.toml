@@ -9,7 +9,7 @@
 # ("idle", "recording", "transcribing") to this file whenever it changes.
 # Required for `voxtype record toggle` and `voxtype status` commands.
 state_file = "auto"
-engine = "whisper"
+engine = "parakeet"
 
 [hotkey]
 # Hotkey is configured in Hyprland. Default is Super + Ctrl + X
@@ -47,7 +47,7 @@ pause_media = true
 # .en models are English-only but faster and more accurate for English
 # large-v3-turbo is faster than large-v3 with minimal accuracy loss (recommended for GPU)
 # Or provide absolute path to a custom .bin model file
-model = "small.en"
+model = "base.en"
 
 # Language for transcription
 # Use "en" for English, "auto" for auto-detection
@@ -129,6 +129,10 @@ waveform_gain = 8.0
 
 [status]
 icon_theme = "emoji"
+
+[parakeet]
+model = "parakeet-tdt-0.6b-v3"
+on_demand_loading = false
 
 # [text]
 # Text processing options (word replacements, spoken punctuation)
