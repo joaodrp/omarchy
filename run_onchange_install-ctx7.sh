@@ -21,14 +21,28 @@
 # run after a clean exit and will NOT re-run it on a plain re-apply, so if setup
 # was skipped, run `ctx7 setup --<agent> --cli` manually once signed in (the
 # shared credential makes every agent work thereafter).
+#
+# mise and `ctx7 setup` are chatty, so each step runs through `quiet`: output is
+# suppressed on success and surfaced (with the failing command) only on error,
+# keeping `chezmoi apply` clean without hiding failures.
 set -e
 
-mise use -g npm:ctx7@latest
+# Run a command silently, but print its combined output and fail if it errors.
+quiet() {
+    local out
+    if ! out="$("$@" 2>&1)"; then
+        printf 'ctx7: command failed: %s\n%s\n' "$*" "$out" >&2
+        return 1
+    fi
+}
+
+quiet mise use -g npm:ctx7@latest
 
 if api_key="$(op read 'op://Personal/Context7/api_key' 2>/dev/null)" && [ -n "$api_key" ]; then
     for agent in claude codex opencode; do
-        mise exec -- ctx7 setup --"$agent" --cli --api-key "$api_key" -y
+        quiet mise exec -- ctx7 setup --"$agent" --cli --api-key "$api_key" -y
     done
+    echo "ctx7: configured for claude, codex, opencode"
 else
     echo "ctx7: skipping setup (1Password key unavailable); run 'ctx7 setup --claude --cli' once signed in" >&2
 fi
