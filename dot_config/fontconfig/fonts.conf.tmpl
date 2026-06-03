@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <!-- Layer omarchy's fontconfig, then map the Apple/CSS system-font names to
+       the real Apple fonts (apple-fonts pkg) so the web renders like macOS.
+       INCLUDING omarchy's base (instead of copying it) means omarchy's own
+       fontconfig changes flow through automatically — no fork to keep in sync.
+       My strong rules are processed after the include, so SF wins over the
+       Liberation Sans fallback.
+
+       Survives omarchy upgrades: a migration may overwrite
+       ~/.config/fontconfig/fonts.conf, but the omarchy post-update hook re-runs
+       `chezmoi apply` afterward and restores this file. -->
+  <include ignore_missing="yes">{{ .chezmoi.homeDir }}/.local/share/omarchy/config/fontconfig/fonts.conf</include>
+
+  <!-- Apple/CSS UI sans names -> SF Pro Text (SF Pro Display for large text) -->
+  <match target="pattern"><test name="family"><string>system-ui</string></test><edit name="family" mode="prepend" binding="strong"><string>SF Pro Text</string></edit></match>
+  <match target="pattern"><test name="family"><string>-apple-system</string></test><edit name="family" mode="prepend" binding="strong"><string>SF Pro Text</string></edit></match>
+  <match target="pattern"><test name="family"><string>BlinkMacSystemFont</string></test><edit name="family" mode="prepend" binding="strong"><string>SF Pro Text</string></edit></match>
+  <match target="pattern"><test name="family"><string>Segoe UI</string></test><edit name="family" mode="prepend" binding="strong"><string>SF Pro Text</string></edit></match>
+  <match target="pattern">
+    <test name="family" qual="any"><string>SF Pro Text</string></test>
+    <test name="pixelsize" compare="more"><double>21</double></test>
+    <edit name="family" mode="prepend" binding="strong"><string>SF Pro Display</string></edit>
+  </match>
+
+  <!-- Apple/CSS monospace names -> SF Mono -->
+  <match target="pattern"><test name="family"><string>ui-monospace</string></test><edit name="family" mode="prepend" binding="strong"><string>SF Mono</string></edit></match>
+  <match target="pattern"><test name="family"><string>SFMono-Regular</string></test><edit name="family" mode="prepend" binding="strong"><string>SF Mono</string></edit></match>
+  <match target="pattern"><test name="family"><string>Menlo</string></test><edit name="family" mode="prepend" binding="strong"><string>SF Mono</string></edit></match>
+  <match target="pattern"><test name="family"><string>Consolas</string></test><edit name="family" mode="prepend" binding="strong"><string>SF Mono</string></edit></match>
+</fontconfig>
