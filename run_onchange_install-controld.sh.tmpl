@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# Pin this machine to its dedicated ControlD endpoint via ctrld's `--cd` setup.
+# Resolver ID comes from the `controld_resolver_id` chezmoi onboarding field
+# (per-machine, local, never committed); blank skips ctrld.
+#
+# CAVEAT (revisit if needed): `accept-dns=false` drops Tailscale DNS, so MagicDNS
+# (`*.ts.net`) won't resolve here. To restore, swap `--cd` for a static
+# ctrld.toml forwarding `*.ts.net` to 100.100.100.100 (see git history / the
+# `controld-setup` memory). Inbound SSH is unaffected.
+#
+# Reverse: sudo ctrld uninstall; sudo tailscale set --accept-dns=true;
+#          sudo rm -f /etc/systemd/network/20-wlan.network.d/ctrld-dns.conf && sudo networkctl reload
+# Change resolver: `sudo ctrld uninstall` first, then re-apply.
+set -euo pipefail
+
+RESOLVER_ID="{{ if hasKey . "controld_resolver_id" }}{{ .controld_resolver_id }}{{ end }}"
+[[ -z "$RESOLVER_ID" ]] && exit 0
+
+omarchy-pkg-aur-add ctrld-bin
+
+# First run only. --skip_self_checks: ctrld's probe is flaky next to resolved.
+[[ -f /etc/systemd/system/ctrld.service ]] || sudo ctrld start --cd "$RESOLVER_ID" --skip_self_checks
+
+# Hand DNS to ctrld; keep tailscaled up for SSH.
+sudo tailscale set --accept-dns=false
+
+# Pin the Wi-Fi card to ctrld so DHCP never reintroduces the router's 8.8.8.8.
+sudo install -d -m 0755 /etc/systemd/network/20-wlan.network.d
+sudo tee /etc/systemd/network/20-wlan.network.d/ctrld-dns.conf >/dev/null <<'EOF'
+[Network]
+DNS=127.0.0.1
+
+[DHCPv4]
+UseDNS=no
+
+[DHCPv6]
+UseDNS=no
+
+[IPv6AcceptRA]
+UseDNS=no
+EOF
+sudo networkctl reload

@@ -2,6 +2,8 @@
        and writes the output to ~/.config/chezmoi/chezmoi.toml. Subsequent
        runs reuse the local file; no re-prompting. */ -}}
 {{- $personal_email := promptStringOnce . "personal_email" "Personal email" -}}
+{{- $controld_resolver_id := promptStringOnce . "controld_resolver_id" "ControlD resolver ID for this machine (endpoint's Show Resolvers screen; blank to skip ctrld)" -}}
 
 [data]
     personal_email = {{ $personal_email | quote }}
+    controld_resolver_id = {{ $controld_resolver_id | quote }}
