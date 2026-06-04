@@ -12,5 +12,6 @@ source; `chezmoi apply` renders them into `~`.
 
 ## Workflow
 
-- Personal dotfiles repo: commit directly to `main` and push. No feature
-  branches, PRs, or ask-before-merge ceremony needed.
+- Develop on a feature branch and validate (`chezmoi apply` / test) before
+  merging. Self-merge to `main` once validated; no PR or external review
+  needed (personal dotfiles repo).
