@@ -9,3 +9,8 @@ source; `chezmoi apply` renders them into `~`.
   `run_after_*` scripts and any system or config change must be re-runnable
   without side effects, guard against partial or repeated application, and
   avoid destructive or hard-to-reverse operations.
+
+## Workflow
+
+- Personal dotfiles repo: commit directly to `main` and push. No feature
+  branches, PRs, or ask-before-merge ceremony needed.
