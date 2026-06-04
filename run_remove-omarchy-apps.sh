@@ -34,6 +34,9 @@ fi
 # safe to run automatically. Quiet when there are none.
 orphans=$(pacman -Qtdq 2>/dev/null || true)
 if [ -n "$orphans" ]; then
+    # Echo what's about to go so an automatic removal (this also runs from the
+    # post-update hook) is auditable rather than silent.
+    echo "removing orphaned packages:" $orphans
     # shellcheck disable=SC2086
     sudo pacman -Rns --noconfirm $orphans
 fi
