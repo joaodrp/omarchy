@@ -1,0 +1,13 @@
+#!/bin/bash
+# Install Gmail as a webapp and register it as the default mailto handler.
+# Shared install + icon logic lives in .chezmoitemplates/install-webapp.sh;
+# this script just supplies Gmail's parameters. The omarchy webapp installer
+# writes Gmail.desktop with the MimeType; xdg-mime promotes it to the user
+# default. Both steps are idempotent.
+set -e
+{{ template "install-webapp.sh" (dict
+    "name" "Gmail"
+    "url" "https://mail.google.com"
+    "icon" "gmail.png"
+    "mime" "x-scheme-handler/mailto"
+    "default" "yes") }}
