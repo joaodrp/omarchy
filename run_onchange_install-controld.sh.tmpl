@@ -10,7 +10,7 @@
 # `controld-setup` memory). Inbound SSH is unaffected.
 #
 # Reverse: sudo ctrld uninstall; sudo tailscale set --accept-dns=true;
-#          sudo rm -f /etc/systemd/network/20-wlan.network.d/ctrld-dns.conf && sudo networkctl reload
+#          sudo rm -f /etc/systemd/network/{20-wlan,20-ethernet,20-wwan}.network.d/ctrld-dns.conf && sudo networkctl reload
 # Change resolver: `sudo ctrld uninstall` first, then re-apply.
 set -euo pipefail
 
@@ -25,9 +25,13 @@ omarchy-pkg-aur-add ctrld-bin
 # Hand DNS to ctrld; keep tailscaled up for SSH.
 sudo tailscale set --accept-dns=false
 
-# Pin the Wi-Fi card to ctrld so DHCP never reintroduces the router's 8.8.8.8.
-sudo install -d -m 0755 /etc/systemd/network/20-wlan.network.d
-sudo tee /etc/systemd/network/20-wlan.network.d/ctrld-dns.conf >/dev/null <<'EOF'
+# Pin every DHCP uplink to ctrld so DHCP never reintroduces the router's 8.8.8.8.
+# systemd-resolved routes DNS per link, so each interface that can carry the
+# default route (Wi-Fi, Ethernet, WWAN) must force DNS to 127.0.0.1 — pinning
+# only Wi-Fi leaks DNS the moment a wired cable becomes the default route.
+for net in 20-wlan 20-ethernet 20-wwan; do
+    sudo install -d -m 0755 "/etc/systemd/network/${net}.network.d"
+    sudo tee "/etc/systemd/network/${net}.network.d/ctrld-dns.conf" >/dev/null <<'EOF'
 [Network]
 DNS=127.0.0.1
 
@@ -40,4 +44,5 @@ UseDNS=no
 [IPv6AcceptRA]
 UseDNS=no
 EOF
+done
 sudo networkctl reload
