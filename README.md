@@ -54,7 +54,7 @@ Notable files:
 | Git | `~/.gitconfig` over Omarchy's defaults; GitHub `includeIf` `noreply` email; delta pager; `gitleaks` pre-commit scan. |
 | Dev environments | Ruby/Go/Zig via mise, Rust via rustup. |
 | Webapps | Gmail (`mailto:` default) and Google Sheets, with explicit Dashboard Icons glyphs. |
-| Networking | Tailscale; per-machine ControlD via `ctrld`; USB Wi-Fi dongle preferred via route metric; `usb_modeswitch`. |
+| Networking | Tailscale; per-machine ControlD via `ctrld`; USB Wi-Fi dongle preferred via route metric; `usb_modeswitch`; Wi-Fi power-save disabled on AC machines (by chassis). |
 | CLI tooling | Context7 (`ctx7`) per agent; `git-delta`, `go-yq`, `gitleaks`, Playwright Chromium. |
 | Fonts | Apple system fonts mapped over the CSS `system-ui`/`-apple-system` stack. |
 | Apps | Dropbox, LaTeX (TeX Live), Chromium Google OAuth flags. |
