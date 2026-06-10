@@ -1,0 +1,45 @@
+#!/bin/bash
+# chezmoi modify script for ~/.config/waybar/config.jsonc.
+#
+# waybar's battery module aborts the whole bar (SIGABRT) when a peripheral
+# power_supply such as a Logitech wireless mouse (hidpp_battery_N) appears or
+# disappears mid-poll: it walks /sys/class/power_supply/ non-atomically and an
+# fs/inotify error on the vanished node escapes the worker thread -> terminate.
+# Upstream waybar bug Alexays/Waybar#5019, unfixed as of 0.15.0.
+#
+# On a machine with no real (scope=System) battery the module only ever tracks
+# those transient peripheral batteries, so strip it from the bar. On a machine
+# that has a system battery (laptop) keep it: there the module is wanted, and
+# config alone can't dodge the upstream directory-walk race anyway.
+#
+# Idempotent: stripping an already-stripped config is a no-op. Runs each apply,
+# so it survives omarchy regenerating the file (the post-update hook re-applies).
+# Note: omarchy 4 replaces waybar with Quickshell, which retires all of this.
+set -euo pipefail
+
+# Real system battery = type Battery and scope not Device (peripherals are Device;
+# a missing scope file means a normal system battery on older kernels).
+for d in /sys/class/power_supply/*; do
+    [ -r "$d/type" ] && [ "$(cat "$d/type" 2>/dev/null)" = "Battery" ] || continue
+    [ "$(cat "$d/scope" 2>/dev/null)" = "Device" ] && continue
+    exec cat   # system battery present (laptop): leave the config untouched
+done
+
+# No system battery: drop the "battery" element from modules-right, re-emitting
+# the array with correct commas so the JSON stays valid no matter where it sat.
+awk '
+  /"modules-right"[[:space:]]*:[[:space:]]*\[/ { print; collecting = 1; n = 0; next }
+  collecting && /\]/ {
+    for (i = 1; i <= n; i++) print elem[i] (i < n ? "," : "")
+    print
+    collecting = 0
+    next
+  }
+  collecting {
+    if ($0 ~ /"battery"/) next
+    line = $0; sub(/,[[:space:]]*$/, "", line)
+    elem[++n] = line
+    next
+  }
+  { print }
+'

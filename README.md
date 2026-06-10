@@ -59,3 +59,4 @@ Notable files:
 | Fonts | Apple system fonts mapped over the CSS `system-ui`/`-apple-system` stack. |
 | Apps | Dropbox, LaTeX (TeX Live), Chromium Google OAuth flags. |
 | Audio | HDA codec power-save disabled on AC machines (by chassis) to stop idle pops. |
+| Waybar | Battery module stripped on machines with no system battery, dodges an upstream waybar crash on wireless-mouse (`hidpp`) battery churn ([#5019](https://github.com/Alexays/waybar/issues/5019)). |
