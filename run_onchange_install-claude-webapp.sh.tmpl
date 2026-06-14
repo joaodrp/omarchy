@@ -1,0 +1,9 @@
+#!/bin/bash
+# Install Claude (claude.ai) as a webapp. Shared install + icon logic lives in
+# .chezmoitemplates/install-webapp.sh; this script just supplies Claude's
+# parameters. Idempotent: the .desktop guard skips reinstall.
+set -e
+{{ template "install-webapp.sh" (dict
+    "name" "Claude"
+    "url" "https://claude.ai"
+    "icon" "claude-ai.png") }}

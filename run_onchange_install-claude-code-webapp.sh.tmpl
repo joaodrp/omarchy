@@ -1,0 +1,10 @@
+#!/bin/bash
+# Install Claude Code (claude.ai/code) as a webapp. Pointing the app straight at
+# /code keeps the standalone window on-origin instead of bouncing the in-app
+# navigation out to the default browser. Shared install + icon logic lives in
+# .chezmoitemplates/install-webapp.sh; idempotent via the .desktop guard.
+set -e
+{{ template "install-webapp.sh" (dict
+    "name" "Claude Code"
+    "url" "https://claude.ai/code"
+    "icon" "anthropic.png") }}
