@@ -1,0 +1,9 @@
+#!/bin/bash
+# Install Perplexity (perplexity.ai) as a webapp. Shared install + icon logic
+# lives in .chezmoitemplates/install-webapp.sh; this script just supplies
+# Perplexity's parameters. Idempotent: the .desktop guard skips reinstall.
+set -e
+{{ template "install-webapp.sh" (dict
+    "name" "Perplexity"
+    "url" "https://www.perplexity.ai"
+    "icon" "perplexity.png") }}
