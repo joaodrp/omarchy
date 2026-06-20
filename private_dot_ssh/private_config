@@ -1,3 +1,8 @@
+# Home Raspberry Pi (LAN mDNS).
+Host rpi
+  HostName raspberrypi.local
+  User pi
+
 # Route SSH key auth through the 1Password SSH agent (keys stay in 1Password).
 Host *
   IdentityAgent ~/.1password/agent.sock
