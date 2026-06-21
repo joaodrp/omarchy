@@ -1,0 +1,8 @@
+#!/bin/bash
+# Install YNAB (app.ynab.com) as a webapp. Idempotent: the .desktop guard skips
+# reinstall.
+set -e
+{{ template "install-webapp.sh" (dict
+    "name" "YNAB"
+    "url" "https://app.ynab.com"
+    "icon" "ynab.png") }}
