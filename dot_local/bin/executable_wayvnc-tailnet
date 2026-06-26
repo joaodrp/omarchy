@@ -1,7 +1,6 @@
 #!/bin/bash
 # Serve the Hyprland desktop over VNC, bound to the Tailscale IP only (ufw
-# already keeps 5900 off the LAN). Waits for Tailscale to come up first, and
-# caps the frame rate since the display is 5K.
+# already keeps 5900 off the LAN). Waits for Tailscale to come up first.
 set -e
 
 for _ in $(seq 1 30); do
@@ -10,4 +9,4 @@ for _ in $(seq 1 30); do
 done
 [ -n "${ip:-}" ] || exit 0
 
-exec wayvnc "$ip" 5900 --max-fps=30
+exec wayvnc "$ip" 5900
