@@ -1,12 +1,19 @@
 #!/bin/bash
 # Serve the Hyprland desktop over VNC, bound to the Tailscale IP only (ufw
-# already keeps 5900 off the LAN). Waits for Tailscale to come up first.
+# already keeps 5900 off the LAN). Waits for Tailscale to come up first,
+# with a generous timeout since this is launched once via Hyprland's
+# exec-once and has no supervisor to retry it if it gives up too early.
 set -e
 
-for _ in $(seq 1 30); do
-    ip=$(tailscale ip -4 2>/dev/null) && [ -n "$ip" ] && break
+timeout=300
+elapsed=0
+while ! ip=$(tailscale ip -4 2>/dev/null) || [ -z "$ip" ]; do
     sleep 2
+    elapsed=$((elapsed + 2))
+    if [ "$elapsed" -ge "$timeout" ]; then
+        logger -t wayvnc-tailnet "gave up after ${timeout}s waiting for tailscale ip -4; wayvnc not started"
+        exit 1
+    fi
 done
-[ -n "${ip:-}" ] || exit 0
 
 exec wayvnc "$ip" 5900
