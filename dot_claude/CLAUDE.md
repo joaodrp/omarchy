@@ -39,6 +39,11 @@ Write a failing test *before* fixing the bug. Use the lowest test level that cap
 - Never post comments on issues or PRs without explicit consent
 - Use em dashes sparingly in prose; don't lean on them as the default connector
 
+## Plan Mode
+
+- Make the plan extremely concise. Sacrifice grammar for the sake of concision.
+- At the end of each plan, give me a list of unresolved questions to answer, if any.
+
 ## Commits & PRs
 
 - Follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages and PR titles
