@@ -56,7 +56,7 @@ Notable files:
 | Webapps | Gmail (`mailto:` default) and Google Sheets, with explicit Dashboard Icons glyphs. |
 | Networking | Tailscale; per-machine ControlD via `ctrld`; USB Wi-Fi dongle preferred via route metric; `usb_modeswitch`; Wi-Fi power-save disabled on AC machines (by chassis). |
 | CLI tooling | `agent-browser`, `defuddle`, `glab`, `git-delta`, `go-yq`, `gitleaks`, `cfspeedtest`. |
-| AI agents | `~/.claude/CLAUDE.md` is the single source of global prefs, rendered into per-agent `AGENTS.md` for Codex/OpenCode; Perplexity + Context7 MCP servers wired per agent via `op run` (keys from 1Password, nothing on disk). |
+| AI agents | `~/.claude/CLAUDE.md` is the single source of global prefs, rendered into per-agent `AGENTS.md` for Codex/OpenCode; Perplexity + Context7 MCP servers load keys from a `chmod 600` env file materialized from 1Password (`refresh-agent-secrets`), so they start without an `op` prompt over SSH. |
 | Fonts | Apple system fonts mapped over the CSS `system-ui`/`-apple-system` stack. |
 | Apps | Dropbox, LaTeX (TeX Live), Chromium Google OAuth flags. |
 | Audio | HDA codec power-save disabled on AC machines (by chassis) to stop idle pops. |
