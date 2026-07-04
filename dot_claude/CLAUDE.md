@@ -16,7 +16,7 @@
 
 ### Web Testing
 
-Use the `agent-browser` CLI directly. Don't go through MCP servers or wrappers.
+Use the `agent-browser` CLI directly.
 
 ## Repository Paths
 
