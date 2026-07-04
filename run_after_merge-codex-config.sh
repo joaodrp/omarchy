@@ -31,5 +31,10 @@ yq -i -p toml -o toml '
     "args": ["run", "--no-masking", "--", "npx", "-y", "@perplexity-ai/mcp-server"],
     "env": {"PERPLEXITY_API_KEY": "op://Personal/Perplexity/codex_api_key"}
   } |
+  .mcp_servers.context7 = {
+    "command": "op",
+    "args": ["run", "--no-masking", "--", "npx", "-y", "@upstash/context7-mcp"],
+    "env": {"CONTEXT7_API_KEY": "op://Personal/Context7/api_key"}
+  } |
   .plugins."github@openai-curated".enabled = true
 ' "$config"
