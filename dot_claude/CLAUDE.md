@@ -11,12 +11,12 @@
 
 - **`ctx7` CLI** - Library/framework docs, API specs, usage samples, setup instructions
 - **Your own web search tools** - Find things on the web, current events, quick facts
-- **`defuddle` CLI** - Read or grab a web page's main content as Markdown: `defuddle parse <url> --md`. Use whenever you need to fetch or read content from a URL. For JS-heavy or authenticated pages, use `playwright-cli` instead.
+- **`defuddle` CLI** - Read or grab a web page's main content as Markdown: `defuddle parse <url> --md`. Use whenever you need to fetch or read content from a URL. For JS-heavy or authenticated pages, use `agent-browser` instead.
 - **Perplexity MCP** - Deep research on complex topics requiring synthesis from multiple sources
 
 ### Web Testing
 
-Use the `playwright-cli` CLI directly. Don't go through MCP servers or wrappers.
+Use the `agent-browser` CLI directly. Don't go through MCP servers or wrappers.
 
 ## Repository Paths
 
