@@ -27,6 +27,8 @@ Always clone repos under `~/Developer/<host>/<owner>/<repo>`:
 ## Code
 
 - Follow existing patterns in the codebase
+- Comment only where a skilled reader couldn't infer intent from the code; keep comments to clean, concise prose
+- Write comments and commit/PR descriptions in terms of the current state, not the change that produced it; leave out what it replaced, since git history holds that
 - Verify claims about the codebase by reading or searching it, not assuming; flag uncertainty and how to check
 - Verify before finishing: re-check each requirement, run tests and lint, then state what changed, what was verified, and what couldn't be
 
