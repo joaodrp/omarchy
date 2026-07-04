@@ -26,7 +26,7 @@ case "$(hostnamectl chassis 2>/dev/null)" in
         ;;
 esac
 
-# AC-powered machine: install the conf (only when it differs, to stay quiet).
+# AC-powered machine: install the conf (skip if unchanged).
 if [ "$(cat "$CONF" 2>/dev/null)" != "$CONF_CONTENT" ]; then
     printf '%s\n' "$CONF_CONTENT" | sudo tee "$CONF" >/dev/null
 fi

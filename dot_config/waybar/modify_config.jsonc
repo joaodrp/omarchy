@@ -1,6 +1,4 @@
 #!/bin/bash
-# chezmoi modify script for ~/.config/waybar/config.jsonc.
-#
 # waybar's battery module aborts the whole bar (SIGABRT) when a peripheral
 # power_supply such as a Logitech wireless mouse (hidpp_battery_N) appears or
 # disappears mid-poll: it walks /sys/class/power_supply/ non-atomically and an

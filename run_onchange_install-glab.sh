@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install glab, the GitLab CLI (gh's GitLab counterpart).
+# Install glab, the GitLab CLI.
 set -e
 
 omarchy pkg add glab

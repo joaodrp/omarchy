@@ -1,10 +1,9 @@
 #!/bin/bash
 # Add the perplexity and context7 MCP servers to
-# ~/.config/opencode/opencode.json via a jq merge. `op run` resolves each API
-# key from 1Password at server-startup time; nothing secret lands on disk.
+# ~/.config/opencode/opencode.json. `op run` resolves each API key from
+# 1Password at server-startup time; nothing secret lands on disk.
 #
-# Idempotent. Preserves all other opencode settings — omarchy defaults
-# and opencode's runtime writes pass through.
+# Idempotent. Preserves omarchy defaults and opencode's runtime writes.
 set -e
 
 config="$HOME/.config/opencode/opencode.json"

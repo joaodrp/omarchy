@@ -67,7 +67,6 @@ fulldir="$dir"
 if [[ "$dir" == "$HOME"/* ]]; then
     fulldir="~${dir#$HOME}"
 fi
-# Get last 2 path segments
 dirparts=$(echo "$fulldir" | awk -F'/' '{
     n=NF
     if (n<=2) print $0

@@ -1,12 +1,10 @@
 #!/bin/bash
-# Merge personal Codex CLI settings into ~/.codex/config.toml. Same
-# pattern as run_after_merge-claude-settings.sh but for TOML, using
-# mikefarah/yq instead of jq. Preserves codex's runtime additions
-# (trusted projects, plugin toggles, future keys) and rewrites only
-# the managed keys below.
+# Merge personal Codex CLI settings into ~/.codex/config.toml (TOML, via
+# mikefarah/yq). Preserves codex's runtime additions (trusted projects,
+# plugin toggles) and rewrites only the managed keys below.
 #
 # Idempotent. Skips quietly when yq isn't installed yet (first apply
-# on a fresh machine; install-go-yq runs in the same apply, but order
+# on a fresh machine; its installer runs in the same apply, but order
 # isn't guaranteed).
 set -e
 

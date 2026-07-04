@@ -1,12 +1,10 @@
 #!/bin/bash
 # Merge personal Claude Code settings into ~/.claude/settings.json without
 # touching omarchy defaults, runtime-added keys (permission grants), or any
-# future omarchy/Claude Code additions. Idempotent: re-running produces the
-# same result.
+# future omarchy/Claude Code additions. Idempotent.
 #
 # Currently the only managed key is the statusLine pointer, which activates
-# ~/.claude/statusline.sh. Additional keys can be added to the jq filter
-# below as needed.
+# ~/.claude/statusline.sh.
 set -e
 
 SETTINGS="$HOME/.claude/settings.json"

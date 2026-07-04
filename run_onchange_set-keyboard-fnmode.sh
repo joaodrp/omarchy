@@ -8,19 +8,17 @@
 #   fnmode=1                       -> media primary, F1-F12 via Fn
 # We want volume/brightness on a bare press, so fnmode=1.
 #
-# Trade-off baked in: with fnmode=1 the real F1-F12 now require Fn.
-#
 # Persists via modprobe.d (read whenever hid_apple loads; the module is not in
 # initramfs here, so no initramfs rebuild needed) and also pokes the live sysfs
-# param so it takes effect now. Applies to any hid_apple keyboard on the
-# machine, which is harmless when none is attached (the sysfs param only exists
-# while the module is loaded). Idempotent: only writes when content differs.
+# param so it takes effect now. Harmless when no hid_apple keyboard is attached
+# (the sysfs param exists only while the module is loaded). Idempotent: only
+# writes when content differs.
 set -e
 
 CONF=/etc/modprobe.d/keyboard-fnmode.conf
 CONF_CONTENT='options hid_apple fnmode=1'
 
-# Install the conf (only when it differs, to stay quiet).
+# Install the conf (skip if unchanged).
 if [ "$(cat "$CONF" 2>/dev/null)" != "$CONF_CONTENT" ]; then
     printf '%s\n' "$CONF_CONTENT" | sudo tee "$CONF" >/dev/null
 fi

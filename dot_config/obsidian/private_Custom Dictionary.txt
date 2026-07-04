@@ -1,7 +1,5 @@
 Backend
 Kubernetes
-PostHog
-PostHog's
 datastore
 linearizability
 rollout

@@ -22,7 +22,7 @@ for f in "${REMOVE_DESKTOP_FILES[@]}"; do
 done
 
 # Pacman packages to drop. `omarchy pkg drop` is idempotent (skips packages
-# that aren't installed). Empty list is a no-op.
+# that aren't installed).
 DROP_PACKAGES=()
 
 if (( ${#DROP_PACKAGES[@]} > 0 )); then
@@ -34,8 +34,8 @@ fi
 # safe to run automatically. Quiet when there are none.
 orphans=$(pacman -Qtdq 2>/dev/null || true)
 if [ -n "$orphans" ]; then
-    # Echo what's about to go so an automatic removal (this also runs from the
-    # post-update hook) is auditable rather than silent.
+    # Echo what's about to be removed so the automatic removal is auditable, not
+    # silent.
     echo "removing orphaned packages:" $orphans
     # shellcheck disable=SC2086
     sudo pacman -Rns --noconfirm $orphans

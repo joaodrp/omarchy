@@ -30,7 +30,7 @@ case "$(hostnamectl chassis 2>/dev/null)" in
         ;;
 esac
 
-# AC-powered machine: install the rule (only when it differs, to stay quiet).
+# AC-powered machine: install the rule (skip if unchanged, to avoid a needless reload).
 if [ "$(cat "$RULE" 2>/dev/null)" != "$RULE_CONTENT" ]; then
     printf '%s\n' "$RULE_CONTENT" | sudo tee "$RULE" >/dev/null
     sudo udevadm control --reload

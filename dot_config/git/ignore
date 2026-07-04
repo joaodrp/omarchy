@@ -1,14 +1,13 @@
-# Global gitignore (~/.config/git/ignore — read automatically by git)
+# Global gitignore
 
-# Editor temp files (vim/nvim swap and backup)
+# Editor temp files
 *.swp
 *.swo
 *~
 
 # Environment / local overrides
-# Convention: <name>.local or <name>.local.<ext> are user-specific
-# overrides not meant to be committed (e.g. .env.local,
-# settings.local.json, CLAUDE.local.md).
+# Convention: <name>.local / <name>.local.<ext> are user-specific
+# overrides not meant to be committed (e.g. .env.local).
 .env
 *.local
 *.local.*

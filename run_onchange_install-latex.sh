@@ -1,15 +1,10 @@
 #!/bin/bash
 # Install a LaTeX (TeX Live) toolchain for compiling LaTeX documents to PDF.
 #
-# Package set mirrors a typical full-but-not-everything install: the base
-# engine and latex format, the recommended + extra latex packages, the
-# recommended + extra fonts, English language support, and the binextra
-# scripts collection (latexmk, latexindent, texcount, chktex, ...). Pulls in
-# pdflatex/xelatex/lualatex, latexmk, and the bulk of CTAN packages most
-# documents need (skips the multi-GB texlive-meta "everything" group).
+# Full-but-not-everything TeX Live set (pdf/xe/lua-latex, latexmk, latexindent,
+# chktex). Skips the multi-GB texlive-meta "everything" group.
 #
-# Large download (~2-4 GB). Idempotent: omarchy pkg add uses pacman --needed
-# and is a no-op once the packages are present.
+# Large download (~2-4 GB). Idempotent.
 set -e
 
 omarchy pkg add \

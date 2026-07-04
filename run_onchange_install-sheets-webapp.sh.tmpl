@@ -1,7 +1,5 @@
 #!/bin/bash
-# Install Google Sheets as a webapp. Shared install + icon logic lives in
-# .chezmoitemplates/install-webapp.sh; this script just supplies Sheets'
-# parameters. Idempotent: the .desktop guard skips reinstall.
+# Install Google Sheets as a webapp. Idempotent: the .desktop guard skips reinstall.
 set -e
 {{ template "install-webapp.sh" (dict
     "name" "Google Sheets"

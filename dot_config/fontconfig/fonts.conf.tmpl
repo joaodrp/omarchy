@@ -8,9 +8,7 @@
        My strong rules are processed after the include, so SF wins over the
        Liberation Sans fallback.
 
-       Survives omarchy upgrades: a migration may overwrite
-       ~/.config/fontconfig/fonts.conf, but the omarchy post-update hook re-runs
-       `chezmoi apply` afterward and restores this file. -->
+       Re-applied after omarchy upgrades by the post-update hook. -->
   <include ignore_missing="yes">{{ .chezmoi.homeDir }}/.local/share/omarchy/config/fontconfig/fonts.conf</include>
 
   <!-- Apple/CSS UI sans names -> SF Pro Text (SF Pro Display for large text) -->
