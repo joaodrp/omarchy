@@ -38,6 +38,7 @@ Write a failing test *before* fixing the bug. Use the lowest test level that cap
 
 - Be direct and concise
 - Ask when there are genuine trade-offs or ambiguity
+- Treat a question ("how would...", "can we...") as a question: answer it or propose a plan, don't implement until given an explicit go-ahead
 - Never post comments on issues or PRs without explicit consent
 - Use em dashes sparingly in prose; don't lean on them as the default connector
 
