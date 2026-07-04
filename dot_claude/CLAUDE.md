@@ -9,7 +9,7 @@
 
 ### Search & Documentation
 
-- **`ctx7` CLI** - Library/framework docs, API specs, usage samples, setup instructions
+- **Context7 MCP** (`resolve-library-id`, `get-library-docs`) - Current library/framework/SDK/API docs. Use for any library question, even ones you think you know; prefer over web search and don't rely on stale training data for API details
 - **Your own web search tools** - Find things on the web, current events, quick facts
 - **`defuddle` CLI** - Read or grab a web page's main content as Markdown: `defuddle parse <url> --md`. Use whenever you need to fetch or read content from a URL. For JS-heavy or authenticated pages, use `agent-browser` instead.
 - **Perplexity MCP** - Deep research on complex topics requiring synthesis from multiple sources
