@@ -27,6 +27,8 @@ Always clone repos under `~/Developer/<host>/<owner>/<repo>`:
 ## Code
 
 - Follow existing patterns in the codebase
+- Verify claims about the codebase by reading or searching it, not assuming; flag uncertainty and how to check
+- Verify before finishing: re-check each requirement, run tests and lint, then state what changed, what was verified, and what couldn't be
 
 ### Bug Fixes
 
