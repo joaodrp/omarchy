@@ -25,14 +25,12 @@ yq -i -p toml -o toml '
   del(.default_mode_request_user_input) |
   .mcp_servers.openaiDeveloperDocs = {"url": "https://developers.openai.com/mcp"} |
   .mcp_servers.perplexity = {
-    "command": "op",
-    "args": ["run", "--no-masking", "--", "npx", "-y", "@perplexity-ai/mcp-server"],
-    "env": {"PERPLEXITY_API_KEY": "op://Personal/Perplexity/codex_api_key"}
+    "command": "with-agent-secrets",
+    "args": ["npx", "-y", "@perplexity-ai/mcp-server"]
   } |
   .mcp_servers.context7 = {
-    "command": "op",
-    "args": ["run", "--no-masking", "--", "npx", "-y", "@upstash/context7-mcp"],
-    "env": {"CONTEXT7_API_KEY": "op://Personal/Context7/api_key"}
+    "command": "with-agent-secrets",
+    "args": ["npx", "-y", "@upstash/context7-mcp"]
   } |
   .plugins."github@openai-curated".enabled = true
 ' "$config"
