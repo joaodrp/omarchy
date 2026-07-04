@@ -37,7 +37,7 @@ Write a failing test *before* fixing the bug. Use the lowest test level that cap
 - Be direct and concise
 - Ask when there are genuine trade-offs or ambiguity
 - Never post comments on issues or PRs without explicit consent
-- Never use em-dashes (—, ---, or --)
+- Use em dashes sparingly in prose; don't lean on them as the default connector
 
 ## Commits & PRs
 
