@@ -3,7 +3,7 @@
 ## Tools
 
 - Use `gh` CLI for GitHub interactions and `glab` CLI for GitLab interactions
-- Always use GNU syntax in scripts (e.g. `sed -i 'pattern'` not `sed -i '' 'pattern'`) so they remain portable to macOS where GNU coreutils aren't the default
+- Always use GNU syntax in scripts (e.g. `sed -i 'pattern'` not `sed -i '' 'pattern'`); my macOS machines have GNU coreutils installed, so GNU-syntax scripts run there too
 - Prefer individual or bulk operations through CLIs, MCP servers, or built-in tools over writing Bash/Python scripts. Scripts require explicit approval on each run and are harder to review.
 - Never wrap CLI calls in for loops or scripted iterations. Use individual parallel tool calls instead (e.g., multiple `gh api` Bash calls, not a for loop over repos).
 
