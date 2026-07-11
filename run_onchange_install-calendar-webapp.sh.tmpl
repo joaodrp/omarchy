@@ -1,0 +1,7 @@
+#!/bin/bash
+# Install Google Calendar as a webapp. Idempotent: the .desktop guard skips reinstall.
+set -e
+{{ template "install-webapp.sh" (dict
+    "name" "Google Calendar"
+    "url" "https://calendar.google.com"
+    "icon" "google-calendar.png") }}
