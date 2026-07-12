@@ -8,9 +8,8 @@
 ## Communication
 
 - Ask when there are genuine trade-offs or ambiguity.
-- In chat and review annotations alike, a question gets an answer or a plan, never an
-  implementation; only clear directives get acted on. Judge by intent, not grammatical form.
-- When it's unclear whether something is a question or a directive, ask before acting.
+- In chat and in review annotations, a question gets an answer or a plan, never an
+  implementation. Judge by intent, not grammar; ask when unclear.
 - Never post comments on issues or PRs without explicit consent.
 
 ## Writing
