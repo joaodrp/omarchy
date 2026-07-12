@@ -76,7 +76,7 @@ Applies to all prose: chat replies, code comments, commit and PR bodies, docs.
 - One logical change per commit. Never batch unrelated fixes into a single commit.
 - Never amend pushed commits. Verify push status before amending.
 - Use markdown in commit bodies and PR descriptions; use backticks for inline code and identifiers
-- Never mention your plugins or skills
+- Never mention your own tooling (plugins, skills, subagents, models)
 - After merging a PR, switch to the default branch and pull
 - Before making changes on the default branch, create a new feature branch
 
