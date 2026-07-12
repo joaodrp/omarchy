@@ -46,12 +46,11 @@ Applies to all prose: chat replies, code comments, commit and PR bodies, docs.
 - Three literal dots `...`, never the `…` character
 - No symbols a keyboard can't type: `->` not `→`, `!=` not `≠`, `x` not `×`, "section" not
   `§`. Emoji as GitHub shortcodes (`:warning:`), never raw unicode.
-- Em dashes are the exception to that rule and are fine to use; just don't lean on them as
-  the default connector. En dashes never: use a hyphen.
+- Em dashes are the exception, but not the default connector. En dashes never: use a hyphen.
 - No wall-of-text paragraphs — restructure as bullets when a paragraph packs several
   independent facts
-- No decorative name-drops (star counts, "X also does this") — mention a tool only when it
-  is the actual justification; benchmark-style claims need a linked source or get softened
+- No decorative name-drops: mention a tool only when it is the actual justification
+- Benchmark-style claims need a linked source, or get softened
 - Long-lived docs never pin dependency versions — manifests pin; docs record the choice
   and the why
 
@@ -59,10 +58,8 @@ Applies to all prose: chat replies, code comments, commit and PR bodies, docs.
 
 - Be direct and concise
 - Ask when there are genuine trade-offs or ambiguity
-- Treat a question ("how would...", "can we...") as a question: answer it or propose a plan, don't implement until given an explicit go-ahead
-- Same rule in review annotations: a question gets analysis and a proposed path forward,
-  not an applied change; only clear directives ("remove", "too dense", "link this") get
-  applied directly
+- In chat and review annotations alike, a question gets an answer or a plan, never an
+  implementation; only clear directives get acted on. Judge by intent, not grammatical form
 - When it's unclear whether something is a question or a directive, ask before acting
 - Never post comments on issues or PRs without explicit consent
 
