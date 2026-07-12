@@ -37,7 +37,7 @@ Always clone repos under `~/Developer/<host>/<owner>/<repo>`, e.g.
 
 ### Bug Fixes
 
-Write a failing test *before* fixing the bug. Use the lowest test level that captures it (unit > integration > e2e). After the fix, the test must pass. If a test is not feasible (environment-specific, transient), document why.
+Write a failing test *before* fixing the bug. Use the lowest test level that captures it (unit > integration > e2e). After the fix, the test must pass. If a test is not feasible (environment-specific, transient), say why and ask me how to proceed; never skip it on your own judgement.
 
 ## Writing
 
@@ -63,12 +63,15 @@ Applies to all prose: chat replies, code comments, commit and PR bodies, docs.
 - Same rule in review annotations: a question gets analysis and a proposed path forward,
   not an applied change; only clear directives ("remove", "too dense", "link this") get
   applied directly
+- When it's unclear whether something is a question or a directive, ask before acting
 - Never post comments on issues or PRs without explicit consent
 
 ## Plans
 
 - Make the plan extremely concise. Sacrifice grammar for the sake of concision.
-- At the end of each plan, give me a list of unresolved questions to answer, if any.
+- At the end of each plan, give me a list of unresolved questions to answer, if any
+- Never ask what the codebase can answer: look it up. Ask only about decisions that are mine
+- Give your recommended answer with each question
 
 ## Commits & PRs
 
