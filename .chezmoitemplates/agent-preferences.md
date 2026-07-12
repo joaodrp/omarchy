@@ -5,63 +5,30 @@
        tool's file instead. */ -}}
 # User Preferences
 
-## Tools
-
-- Use `gh` CLI for GitHub interactions and `glab` CLI for GitLab interactions.
-- Always use GNU syntax in scripts (e.g. `sed -i 'pattern'` not `sed -i '' 'pattern'`); my macOS machines have GNU coreutils installed, so GNU-syntax scripts run there too.
-- Prefer individual or bulk operations through CLIs, MCP servers, or built-in tools over writing Bash/Python scripts. Scripts require explicit approval on each run and are harder to review.
-
-### Search & Documentation
-
-- **Context7 MCP** (`resolve-library-id`, `get-library-docs`) - Current library/framework/SDK/API docs. Use for any library question, even ones you think you know; prefer over web search and don't rely on stale training data for API details.
-- **Your own web search tools** - Find things on the web, current events, quick facts.
-- **`defuddle` CLI** - Read or grab a web page's main content as Markdown: `defuddle parse <url> --md`. Use whenever you need to fetch or read content from a URL. For JS-heavy or authenticated pages, use `agent-browser` instead.
-- **Perplexity MCP** - Deep research on complex topics requiring synthesis from multiple sources.
-
-### Web Testing
-
-Use the `agent-browser` CLI directly.
-
-## Repository Paths
-
-Always clone repos under `~/Developer/<host>/<owner>/<repo>`, e.g.
-`~/Developer/github.com/joaodrp/omarchy`.
-
-## Code
-
-- Follow existing patterns in the codebase.
-- Comment only where a skilled reader couldn't infer intent from the code; then make every word earn its place.
-- Write comments and commit/PR descriptions in terms of the current state, not the change that produced it; leave out what it replaced, since git history holds that.
-- Verify claims about the codebase by reading or searching it, not assuming; flag uncertainty and how to check.
-- Verify before finishing: re-check each requirement, run tests and lint, then state what changed, what was verified, and what couldn't be.
-
-### Bug Fixes
-
-Write a failing test *before* fixing the bug. Use the lowest test level that captures it (unit > integration > e2e). After the fix, the test must pass. If a test is not feasible (environment-specific, transient), say why and ask me how to proceed; never skip it on your own judgement.
-
-## Writing
-
-Applies to all prose: chat replies, code comments, commit and PR bodies, docs.
-
-- Three literal dots `...`, never the `…` character.
-- No symbols a keyboard can't type: `->` not `→`, `!=` not `≠`, `x` not `×`, "section" not
-  `§`, hyphen not en dash. Em dashes are the only exception. Emoji as GitHub shortcodes
-  (`:warning:`), never raw unicode.
-- No wall-of-text paragraphs — restructure as bullets when a paragraph packs several
-  independent facts.
-- No decorative name-drops: mention a tool only when it is the actual justification.
-- Benchmark-style claims need a linked source, or get softened.
-- Long-lived docs never pin dependency versions — manifests pin; docs record the choice
-  and the why.
-
 ## Communication
 
-- Be direct and concise.
 - Ask when there are genuine trade-offs or ambiguity.
 - In chat and review annotations alike, a question gets an answer or a plan, never an
   implementation; only clear directives get acted on. Judge by intent, not grammatical form.
 - When it's unclear whether something is a question or a directive, ask before acting.
 - Never post comments on issues or PRs without explicit consent.
+
+## Writing
+
+Applies to all prose: chat replies, code comments, commit and PR bodies, docs.
+
+- Be direct and concise.
+- No wall-of-text paragraphs — restructure as bullets when a paragraph packs several
+  independent facts.
+- Write comments and commit/PR descriptions in terms of the current state, not the change that produced it; leave out what it replaced, since git history holds that.
+- No decorative name-drops: mention a tool only when it is the actual justification.
+- Benchmark-style claims need a linked source, or get softened.
+- Long-lived docs never pin dependency versions — manifests pin; docs record the choice
+  and the why.
+- Three literal dots `...`, never the `…` character.
+- No symbols a keyboard can't type: `->` not `→`, `!=` not `≠`, `x` not `×`, "section" not
+  `§`, hyphen not en dash. Em dashes are the only exception. Emoji as GitHub shortcodes
+  (`:warning:`), never raw unicode.
 
 ## Plans
 
@@ -69,6 +36,17 @@ Applies to all prose: chat replies, code comments, commit and PR bodies, docs.
 - At the end of each plan, give me a list of unresolved questions to answer, if any.
 - Never ask what the codebase can answer: look it up. Ask only about decisions that are mine.
 - Give your recommended answer with each question.
+
+## Code
+
+- Follow existing patterns in the codebase.
+- Comment only where a skilled reader couldn't infer intent from the code; then make every word earn its place.
+- Verify claims about the codebase by reading or searching it, not assuming; flag uncertainty and how to check.
+- Verify before finishing: re-check each requirement, run tests and lint, then state what changed, what was verified, and what couldn't be.
+
+### Bug Fixes
+
+Write a failing test *before* fixing the bug. Use the lowest test level that captures it (unit > integration > e2e). After the fix, the test must pass. If a test is not feasible (environment-specific, transient), say why and ask me how to proceed; never skip it on your own judgement.
 
 ## Commits & PRs
 
@@ -80,7 +58,22 @@ Applies to all prose: chat replies, code comments, commit and PR bodies, docs.
 - After merging a PR, switch to the default branch and pull.
 - Before making changes on the default branch, create a new feature branch.
 
-## Memory
+## Tools
+
+- Use `gh` CLI for GitHub interactions and `glab` CLI for GitLab interactions.
+- Clone repos under `~/Developer/<host>/<owner>/<repo>`, e.g. `~/Developer/github.com/joaodrp/omarchy`.
+- Always use GNU syntax in scripts (e.g. `sed -i 'pattern'` not `sed -i '' 'pattern'`); my macOS machines have GNU coreutils installed, so GNU-syntax scripts run there too.
+- Prefer individual or bulk operations through CLIs, MCP servers, or built-in tools over writing Bash/Python scripts. Scripts require explicit approval on each run and are harder to review.
+
+### Research & Web
+
+- **Context7 MCP** (`resolve-library-id`, `get-library-docs`) - Current library/framework/SDK/API docs. Use for any library question, even ones you think you know; prefer over web search and don't rely on stale training data for API details.
+- **Your own web search tools** - Find things on the web, current events, quick facts.
+- **`defuddle` CLI** - Read or grab a web page's main content as Markdown: `defuddle parse <url> --md`. Use whenever you need to fetch or read content from a URL.
+- **`agent-browser` CLI** - Browser automation and web testing. Also the fallback for JS-heavy or authenticated pages that `defuddle` cannot read.
+- **Perplexity MCP** - Deep research on complex topics requiring synthesis from multiple sources.
+
+## Meta
 
 - Never edit this preferences file on your own initiative. When something reads like a
   general preference or working pattern rather than a project fact, raise it and get my
