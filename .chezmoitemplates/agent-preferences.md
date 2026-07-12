@@ -45,8 +45,8 @@ Applies to all prose: chat replies, code comments, commit and PR bodies, docs.
 
 - Three literal dots `...`, never the `…` character.
 - No symbols a keyboard can't type: `->` not `→`, `!=` not `≠`, `x` not `×`, "section" not
-  `§`. Emoji as GitHub shortcodes (`:warning:`), never raw unicode.
-- Em dashes are the exception, but not the default connector. En dashes never: use a hyphen.
+  `§`, hyphen not en dash. Em dashes are the only exception. Emoji as GitHub shortcodes
+  (`:warning:`), never raw unicode.
 - No wall-of-text paragraphs — restructure as bullets when a paragraph packs several
   independent facts.
 - No decorative name-drops: mention a tool only when it is the actual justification.
