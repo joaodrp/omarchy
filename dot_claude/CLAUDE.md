@@ -5,7 +5,6 @@
 - Use `gh` CLI for GitHub interactions and `glab` CLI for GitLab interactions
 - Always use GNU syntax in scripts (e.g. `sed -i 'pattern'` not `sed -i '' 'pattern'`); my macOS machines have GNU coreutils installed, so GNU-syntax scripts run there too
 - Prefer individual or bulk operations through CLIs, MCP servers, or built-in tools over writing Bash/Python scripts. Scripts require explicit approval on each run and are harder to review.
-- Never wrap CLI calls in for loops or scripted iterations. Use individual parallel tool calls instead (e.g., multiple `gh api` Bash calls, not a for loop over repos).
 - Run copyedit/prose-polish subagents on Sonnet: top-tier models are overkill for it, Haiku
   over-edits meaning-bearing wording, and Sonnet's restraint keeps the diff review fast.
 
@@ -22,14 +21,13 @@ Use the `agent-browser` CLI directly.
 
 ## Repository Paths
 
-Always clone repos under `~/Developer/<host>/<owner>/<repo>`:
-- GitHub: `~/Developer/github.com/<owner>/<repo>`
-- GitLab: `~/Developer/gitlab.com/<owner>/<repo>`
+Always clone repos under `~/Developer/<host>/<owner>/<repo>`, e.g.
+`~/Developer/github.com/joaodrp/omarchy`.
 
 ## Code
 
 - Follow existing patterns in the codebase
-- Comment only where a skilled reader couldn't infer intent from the code; keep comments to clean, concise prose
+- Comment only where a skilled reader couldn't infer intent from the code; then make every word earn its place
 - Write comments and commit/PR descriptions in terms of the current state, not the change that produced it; leave out what it replaced, since git history holds that
 - Verify claims about the codebase by reading or searching it, not assuming; flag uncertainty and how to check
 - Verify before finishing: re-check each requirement, run tests and lint, then state what changed, what was verified, and what couldn't be
@@ -38,11 +36,15 @@ Always clone repos under `~/Developer/<host>/<owner>/<repo>`:
 
 Write a failing test *before* fixing the bug. Use the lowest test level that captures it (unit > integration > e2e). After the fix, the test must pass. If a test is not feasible (environment-specific, transient), document why.
 
-### Writing & Docs
+## Writing
+
+Applies to all prose: chat replies, code comments, commit and PR bodies, docs.
 
 - Three literal dots `...`, never the `…` character
 - No symbols a keyboard can't type: `->` not `→`, `!=` not `≠`, `x` not `×`, "section" not
-  `§`, hyphens not en dashes. Emoji as GitHub shortcodes (`:warning:`), never raw unicode.
+  `§`. Emoji as GitHub shortcodes (`:warning:`), never raw unicode.
+- Em dashes are the exception to that rule and are fine to use; just don't lean on them as
+  the default connector. En dashes never: use a hyphen.
 - No wall-of-text paragraphs — restructure as bullets when a paragraph packs several
   independent facts
 - No decorative name-drops (star counts, "X also does this") — mention a tool only when it
@@ -59,7 +61,6 @@ Write a failing test *before* fixing the bug. Use the lowest test level that cap
   not an applied change; only clear directives ("remove", "too dense", "link this") get
   applied directly
 - Never post comments on issues or PRs without explicit consent
-- Use em dashes sparingly in prose; don't lean on them as the default connector
 
 ## Plan Mode
 
@@ -71,7 +72,6 @@ Write a failing test *before* fixing the bug. Use the lowest test level that cap
 - Follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages and PR titles
 - One logical change per commit. Never batch unrelated fixes into a single commit.
 - Never amend pushed commits. Verify push status before amending.
-- Keep descriptions concise and direct
 - Use markdown in commit bodies and PR descriptions; use backticks for inline code and identifiers
 - Never mention your plugins or skills
 - After merging a PR, switch to the default branch and pull
