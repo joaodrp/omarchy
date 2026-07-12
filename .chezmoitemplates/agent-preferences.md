@@ -62,7 +62,6 @@ Write a failing test *before* fixing the bug. Use the lowest test level that cap
 - Use `gh` CLI for GitHub interactions and `glab` CLI for GitLab interactions.
 - Clone repos under `~/Developer/<host>/<owner>/<repo>`, e.g. `~/Developer/github.com/joaodrp/omarchy`.
 - Always use GNU syntax in scripts (e.g. `sed -i 'pattern'` not `sed -i '' 'pattern'`); my macOS machines have GNU coreutils installed, so GNU-syntax scripts run there too.
-- Prefer individual or bulk operations through CLIs, MCP servers, or built-in tools over writing Bash/Python scripts. Scripts require explicit approval on each run and are harder to review.
 
 ### Research & Web
 
