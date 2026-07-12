@@ -1,4 +1,3 @@
-{{ include "dot_claude/CLAUDE.md" -}}
-{{/* Shared preferences come from CLAUDE.md above (single source of truth).
-     Add Codex-only instructions below this line, e.g. a "## Codex-specific"
-     section — they render into ~/.codex/AGENTS.md alongside the shared set. */ -}}
+{{ template "agent-preferences.md" . -}}
+{{/* Shared preferences come from .chezmoitemplates/agent-preferences.md above.
+     Add Codex-only instructions below this line, e.g. a "## Codex" section. */ -}}

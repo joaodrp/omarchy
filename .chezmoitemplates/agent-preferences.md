@@ -1,3 +1,8 @@
+{{- /* Shared coding-agent preferences. Rendered into ~/.claude/CLAUDE.md,
+       ~/.codex/AGENTS.md, and ~/.config/opencode/AGENTS.md, each of which
+       appends its own tool-specific section. Keep everything here portable
+       across agents; anything naming a single tool's features belongs in that
+       tool's file instead. */ -}}
 # User Preferences
 
 ## Tools
@@ -5,8 +10,6 @@
 - Use `gh` CLI for GitHub interactions and `glab` CLI for GitLab interactions
 - Always use GNU syntax in scripts (e.g. `sed -i 'pattern'` not `sed -i '' 'pattern'`); my macOS machines have GNU coreutils installed, so GNU-syntax scripts run there too
 - Prefer individual or bulk operations through CLIs, MCP servers, or built-in tools over writing Bash/Python scripts. Scripts require explicit approval on each run and are harder to review.
-- Run copyedit/prose-polish subagents on Sonnet: top-tier models are overkill for it, Haiku
-  over-edits meaning-bearing wording, and Sonnet's restraint keeps the diff review fast.
 
 ### Search & Documentation
 
@@ -62,7 +65,7 @@ Applies to all prose: chat replies, code comments, commit and PR bodies, docs.
   applied directly
 - Never post comments on issues or PRs without explicit consent
 
-## Plan Mode
+## Plans
 
 - Make the plan extremely concise. Sacrifice grammar for the sake of concision.
 - At the end of each plan, give me a list of unresolved questions to answer, if any.
@@ -79,5 +82,7 @@ Applies to all prose: chat replies, code comments, commit and PR bodies, docs.
 
 ## Memory
 
-- When a new memory looks like a general preference or working pattern rather than a
-  project fact, ask whether to record it in this file (global) instead of project memory.
+- Never edit this preferences file on your own initiative. When something reads like a
+  general preference or working pattern rather than a project fact, raise it and get my
+  explicit confirmation before it goes in here.
+- Everything else stays in project-scoped memory.
