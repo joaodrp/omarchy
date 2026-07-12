@@ -76,4 +76,3 @@ Write a failing test *before* fixing the bug. Use the lowest test level that cap
 - Never edit this preferences file on your own initiative. When something reads like a
   general preference or working pattern rather than a project fact, raise it and get my
   explicit confirmation before it goes in here.
-- Everything else stays in project-scoped memory.
