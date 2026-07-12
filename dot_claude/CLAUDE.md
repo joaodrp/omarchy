@@ -6,6 +6,8 @@
 - Always use GNU syntax in scripts (e.g. `sed -i 'pattern'` not `sed -i '' 'pattern'`); my macOS machines have GNU coreutils installed, so GNU-syntax scripts run there too
 - Prefer individual or bulk operations through CLIs, MCP servers, or built-in tools over writing Bash/Python scripts. Scripts require explicit approval on each run and are harder to review.
 - Never wrap CLI calls in for loops or scripted iterations. Use individual parallel tool calls instead (e.g., multiple `gh api` Bash calls, not a for loop over repos).
+- Run copyedit/prose-polish subagents on Sonnet: top-tier models are overkill for it, Haiku
+  over-edits meaning-bearing wording, and Sonnet's restraint keeps the diff review fast.
 
 ### Search & Documentation
 
@@ -36,11 +38,26 @@ Always clone repos under `~/Developer/<host>/<owner>/<repo>`:
 
 Write a failing test *before* fixing the bug. Use the lowest test level that captures it (unit > integration > e2e). After the fix, the test must pass. If a test is not feasible (environment-specific, transient), document why.
 
+### Writing & Docs
+
+- Three literal dots `...`, never the `…` character
+- No symbols a keyboard can't type: `->` not `→`, `!=` not `≠`, `x` not `×`, "section" not
+  `§`, hyphens not en dashes. Emoji as GitHub shortcodes (`:warning:`), never raw unicode.
+- No wall-of-text paragraphs — restructure as bullets when a paragraph packs several
+  independent facts
+- No decorative name-drops (star counts, "X also does this") — mention a tool only when it
+  is the actual justification; benchmark-style claims need a linked source or get softened
+- Long-lived docs never pin dependency versions — manifests pin; docs record the choice
+  and the why
+
 ## Communication
 
 - Be direct and concise
 - Ask when there are genuine trade-offs or ambiguity
 - Treat a question ("how would...", "can we...") as a question: answer it or propose a plan, don't implement until given an explicit go-ahead
+- Same rule in review annotations: a question gets analysis and a proposed path forward,
+  not an applied change; only clear directives ("remove", "too dense", "link this") get
+  applied directly
 - Never post comments on issues or PRs without explicit consent
 - Use em dashes sparingly in prose; don't lean on them as the default connector
 
@@ -52,11 +69,15 @@ Write a failing test *before* fixing the bug. Use the lowest test level that cap
 ## Commits & PRs
 
 - Follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages and PR titles
-- One logical change per commit. Never batch unrelated fixes into a single
-  commit.
+- One logical change per commit. Never batch unrelated fixes into a single commit.
 - Never amend pushed commits. Verify push status before amending.
 - Keep descriptions concise and direct
 - Use markdown in commit bodies and PR descriptions; use backticks for inline code and identifiers
 - Never mention your plugins or skills
 - After merging a PR, switch to the default branch and pull
 - Before making changes on the default branch, create a new feature branch
+
+## Memory
+
+- When a new memory looks like a general preference or working pattern rather than a
+  project fact, ask whether to record it in this file (global) instead of project memory.
