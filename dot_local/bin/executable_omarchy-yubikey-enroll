@@ -1,0 +1,51 @@
+#!/bin/bash
+# Enroll a YubiKey (FIDO) credential for pam_u2f unlock of polkit -- 1Password's
+# "system authentication" and every other polkit action. Interactive (needs a
+# fingerprint touch) and non-idempotent (mints a fresh credential each run), so
+# it is a manual helper, never a run_ script. Run once per machine; re-run with
+# --add to append a backup key to the same authfile.
+#
+# The RP ID is a fixed, hostname-independent string so one credential works on
+# every omarchy machine. It MUST match origin=/appid= in the polkit PAM drop-in
+# (run_after_yubikey-polkit.sh) -- keep the two in sync.
+set -e
+
+ORIGIN="pam://omarchy"
+AUTHFILE="/etc/Yubico/u2f_keys"
+me="$(id -un)"
+
+command -v pamu2fcfg >/dev/null \
+    || { echo "omarchy-yubikey-enroll: pamu2fcfg not found (install pam-u2f)" >&2; exit 1; }
+
+tmp="$(mktemp)"
+trap 'rm -f "$tmp"' EXIT
+
+case "${1:-}" in
+    --add)
+        [ -s "$AUTHFILE" ] \
+            || { echo "omarchy-yubikey-enroll: no $AUTHFILE yet -- run without --add first" >&2; exit 1; }
+        line="$(sudo sed -n '1p' "$AUTHFILE")"
+        echo "omarchy-yubikey-enroll: touch the BACKUP key now..." >&2
+        cred="$(pamu2fcfg -o "$ORIGIN" -i "$ORIGIN" -V -n)"
+        printf '%s:%s\n' "$line" "$cred" > "$tmp"
+        ;;
+    "")
+        echo "omarchy-yubikey-enroll: touch the key now..." >&2
+        pamu2fcfg -o "$ORIGIN" -i "$ORIGIN" -V > "$tmp"
+        ;;
+    *)
+        echo "usage: omarchy-yubikey-enroll [--add]" >&2; exit 2
+        ;;
+esac
+
+# Guard against a truncated/garbled ceremony reaching /etc: the line must start
+# with this user and carry at least one credential field.
+head -n1 "$tmp" | grep -q "^${me}:." \
+    || { echo "omarchy-yubikey-enroll: unexpected pamu2fcfg output; nothing written" >&2; exit 1; }
+
+sudo install -D -m 600 -o root -g root "$tmp" "$AUTHFILE"
+echo "omarchy-yubikey-enroll: wrote $AUTHFILE"
+# Standalone: remind to deploy the PAM drop-in. Invoked by the chezmoi enroller,
+# that deploy runs in the same apply, so the reminder would be misleading.
+[ -n "${OMARCHY_ENROLL_FROM_APPLY:-}" ] \
+    || echo "omarchy-yubikey-enroll: run 'chezmoi apply' to deploy the polkit PAM drop-in"
