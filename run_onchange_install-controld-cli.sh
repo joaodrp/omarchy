@@ -8,3 +8,10 @@
 set -e
 
 cargo install controld-cli --locked
+
+# Bash completions: bash-completion lazy-loads by command name from this dir, so
+# no bashrc sourcing is needed. Regenerated from the just-installed binary so
+# they always match its version.
+compdir="${XDG_DATA_HOME:-$HOME/.local/share}/bash-completion/completions"
+mkdir -p "$compdir"
+"${CARGO_HOME:-$HOME/.cargo}/bin/cdctl" completions bash >"$compdir/cdctl"
