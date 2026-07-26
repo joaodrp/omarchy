@@ -37,8 +37,6 @@ Applies to all prose: chat replies, code comments, commit and PR bodies, docs.
 - No symbols a keyboard can't type: `...` not `…`, `->` not `→`, `!=` not `≠`, `x` not `×`,
   "section" not `§`, hyphen not en dash. Em dashes are an exception, but never the default
   connector.
-- Emoji are fine in chat. In code, docs, and commit/PR text use GitHub shortcodes
-  (`:warning:`), never raw unicode.
 - In chat and docs, prefer tables and diagrams to prose wherever they make something
   easier to scan.
 
