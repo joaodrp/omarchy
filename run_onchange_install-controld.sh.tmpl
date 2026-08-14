@@ -9,8 +9,7 @@
 # ctrld.toml forwarding `*.ts.net` to 100.100.100.100 (see git history / the
 # `controld-setup` memory). Inbound SSH is unaffected.
 #
-# Reverse: sudo ctrld uninstall; sudo tailscale set --accept-dns=true;
-#          sudo rm -f /etc/systemd/network/{20-wlan,20-ethernet,20-wwan}.network.d/ctrld-dns.conf && sudo networkctl reload
+# Reverse: sudo ctrld uninstall; sudo tailscale set --accept-dns=true
 # Change resolver: `sudo ctrld uninstall` first, then re-apply.
 set -euo pipefail
 
@@ -25,24 +24,11 @@ omarchy-pkg-aur-add ctrld-bin
 # Hand DNS to ctrld; keep tailscaled up for SSH.
 sudo tailscale set --accept-dns=false
 
-# Pin every DHCP uplink to ctrld so DHCP never reintroduces the router's 8.8.8.8.
-# systemd-resolved routes DNS per link, so each interface that can carry the
-# default route (Wi-Fi, Ethernet, WWAN) must force DNS to 127.0.0.1 — pinning
-# only Wi-Fi leaks DNS the moment a wired cable becomes the default route.
-for net in 20-wlan 20-ethernet 20-wwan; do
-    sudo install -d -m 0755 "/etc/systemd/network/${net}.network.d"
-    sudo tee "/etc/systemd/network/${net}.network.d/ctrld-dns.conf" >/dev/null <<'EOF'
-[Network]
-DNS=127.0.0.1
-
-[DHCPv4]
-UseDNS=no
-
-[DHCPv6]
-UseDNS=no
-
-[IPv6AcceptRA]
-UseDNS=no
-EOF
-done
-sudo networkctl reload
+# DHCP DNS is fenced off by ctrld itself: it drops
+# /etc/NetworkManager/conf.d/99-ctrld.conf with `dns=none`, which stops
+# NetworkManager writing resolv.conf or publishing DHCP servers at all. That
+# supersedes the per-link systemd-networkd pinning this used to install.
+#
+# Unverified: ctrld pins only the interface holding the default route, so a
+# route failover to a second uplink may not re-pin. Re-check `resolvectl dns`
+# after any multi-uplink change.
