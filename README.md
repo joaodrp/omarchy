@@ -1,7 +1,8 @@
 # dotfiles
 
 Personal config managed with [chezmoi](https://chezmoi.io), targeting
-[Omarchy](https://omarchy.org/) (Arch + Hyprland).
+[Omarchy](https://omarchy.org/) 4 (`quattro`) — Arch + Hyprland, with Hyprland
+configured in Lua and the desktop provided by Quickshell.
 
 ## Bootstrap on a new machine
 
@@ -39,25 +40,28 @@ Notable files:
 
 | Path | Purpose |
 | --- | --- |
-| `dot_config/hypr/modify_bindings.conf` | Maintains a fenced block of personal Hyprland bindings (brightness + disabled webapp launchers) inside Omarchy's `bindings.conf`. |
+| `dot_config/hypr/modify_bindings.lua` | Maintains a fenced block of personal Hyprland bindings inside Omarchy's `bindings.lua`: drops unwanted preinstalled webapp keys, rebinds mail/calendar to the Google webapps, and corrects Picture-in-Picture placement. |
+| `dot_config/hypr/modify_autostart.lua` | Starts `wayvnc-tailnet` with the session. |
 | `dot_config/omarchy/hooks/post-update` | Re-runs `chezmoi apply` after every `omarchy update` so migrations can't clobber overrides. |
-| `.chezmoitemplates/install-webapp.sh` | Shared webapp install + icon logic; per-webapp `.tmpl` scripts just pass parameters. |
+| `.chezmoitemplates/install-webapp.sh` | Shared webapp install logic; per-webapp `.tmpl` scripts just pass parameters. |
 | `run_after_merge-*.sh` | Merge personal keys into agent/CLI configs (Claude, Codex, opencode) without touching each tool's runtime state. |
-| `run_remove-omarchy-apps.sh` | Strips unused `.desktop` entries and sweeps package orphans on every apply. |
+| `run_after_yubikey-harden-pam.sh` | Adds the options Omarchy's FIDO2 setup omits, so the key verifies a fingerprint rather than mere presence. |
+| `run_remove-omarchy-apps.sh` | Strips unwanted `.desktop` entries and sweeps package orphans on every apply. |
+| `run_after_retire-polkit-plugin-clone.sh` | Self-retiring carrier for an upstream polkit fix; deletes itself once Omarchy ships it. |
 
 ## What's managed
 
 | Area | Details |
 | --- | --- |
-| Brightness | F1/F2 → `omarchy-brightness-display` (±5%; `SHIFT` min/max; `ALT` ±2%). Handles Apple Studio Displays and laptop backlights. |
-| Removed defaults | HEY, Basecamp, Figma, Fizzy, Google Photos, Google Messages + their keybindings. |
+| Hyprland | Personal bindings block; wayvnc autostart; PiP right-edge placement fix. |
+| Security | YubiKey Bio for `sudo` and polkit: Omarchy's `omarchy setup security fido2` owns the packages, authfile and PAM lines; this repo layers on a fixed `pam://omarchy` origin and `userverification=1` so a fingerprint match is required, not just a touch. |
+| Removed defaults | Basecamp, HEY, Google Photos, plus their keybindings. |
+| Webapps | Gmail (`mailto:` default), Google Calendar, Google Sheets, Claude, Claude Code, Claude Design, Perplexity, YNAB, Home Assistant, GitHub — with explicit Dashboard Icons glyphs. |
+| Networking | Tailscale (SSH enabled); per-machine ControlD via `ctrld`, pinned per NetworkManager profile so no uplink falls back to DHCP DNS; USB Wi-Fi dongle preferred via a route-metric dispatcher; `usb_modeswitch`; ufw opened on `tailscale0` for Mosh. |
 | Git | `~/.gitconfig` over Omarchy's defaults; GitHub `includeIf` `noreply` email; delta pager; `gitleaks` pre-commit scan. |
 | Dev environments | Ruby/Go/Zig via mise, Rust via rustup. |
-| Webapps | Gmail (`mailto:` default) and Google Sheets, with explicit Dashboard Icons glyphs. |
-| Networking | Tailscale; per-machine ControlD via `ctrld`; USB Wi-Fi dongle preferred via route metric; `usb_modeswitch`; Wi-Fi power-save disabled on AC machines (by chassis). |
-| CLI tooling | `agent-browser`, `defuddle`, `glab`, `git-delta`, `go-yq`, `gitleaks`, `cfspeedtest`. |
-| AI agents | `~/.claude/CLAUDE.md` is the single source of global prefs, rendered into per-agent `AGENTS.md` for Codex/OpenCode; Perplexity + Context7 MCP servers load keys from a `chmod 600` env file materialized from 1Password (`refresh-agent-secrets`), so they start without an `op` prompt over SSH. |
+| CLI tooling | `agent-browser`, `defuddle`, `glab`, `git-delta`, `go-yq`, `gitleaks`, `cfspeedtest`, `cdctl`, `mosh`, `release-plz`, `ansible`. |
+| AI agents | `~/.claude/CLAUDE.md` is the single source of global prefs, rendered into per-agent `AGENTS.md` for Codex/OpenCode; Perplexity + Context7 MCP servers load keys from a `chmod 600` env file materialized from 1Password (`refresh-agent-secrets`), so they start without an `op` prompt over SSH. ChatGPT desktop (bundles Codex) via `omarchy install ai-chatgpt`. |
 | Fonts | Apple system fonts mapped over the CSS `system-ui`/`-apple-system` stack. |
-| Apps | Dropbox, LaTeX (TeX Live), Chromium Google OAuth flags. |
-| Audio | HDA codec power-save disabled on AC machines (by chassis) to stop idle pops. |
-| Waybar | Battery module stripped on machines with no system battery, dodges an upstream waybar crash on wireless-mouse (`hidpp`) battery churn ([#5019](https://github.com/Alexays/waybar/issues/5019)). |
+| Apps | Dropbox, Telegram, Calibre, LaTeX (TeX Live), Chromium Google OAuth flags. |
+| Hardware | HDA codec power-save disabled on AC machines (by chassis) to stop idle pops; `hid_apple` fnmode override; `dmidecode`. |
