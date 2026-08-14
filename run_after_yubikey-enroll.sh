@@ -1,9 +1,8 @@
 #!/bin/bash
 # Offer to enroll a YubiKey during `chezmoi apply`, but only when it makes
 # sense: no authfile yet, a key is plugged in, and a human is at the terminal.
-# Keyless or unattended runs skip silently so applies never block. The ceremony
-# itself lives in omarchy-yubikey-enroll; this only decides whether to invoke
-# it. Declining is always safe -- password auth is unaffected.
+# Keyless or unattended runs skip silently so applies never block. Declining is
+# always safe -- password auth is unaffected.
 set -e
 
 AUTHFILE="/etc/fido2/fido2"
@@ -15,7 +14,7 @@ ENROLL="$HOME/.local/bin/omarchy-yubikey-enroll"
 command -v fido2-token >/dev/null || exit 0
 fido2-token -L 2>/dev/null | grep -q . || exit 0         # no FIDO key present
 
-printf 'YubiKey detected, not yet enrolled for polkit unlock. Enroll now? [y/N] ' >&2
+printf 'YubiKey detected, not yet enrolled for sudo/polkit unlock. Enroll now? [y/N] ' >&2
 read -t 30 -r reply || reply=""
 case "$reply" in
     [yY] | [yY][eE][sS])

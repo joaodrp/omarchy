@@ -36,22 +36,13 @@ o.bind("SUPER + SHIFT + E", "Gmail",
 o.bind("SUPER + SHIFT + C", "Google Calendar",
   o.launch_webapp_sole("Google Calendar", "https://calendar.google.com"))
 
--- Fix Picture-in-Picture clipping off the right screen edge. omarchy's pip
--- rules compute X from window_w (Chromium's intrinsic ~512px PiP width)
--- *before* the `size = { 600, 338 }` rule widens the window, so the right edge
--- overhangs. Recompute X from the forced 600px width: monitor_w - 600 (width)
--- - 40 (margin) = monitor_w - 640. This file loads after the defaults, so the
--- later move wins. monitor_w/_h are per-monitor and logical, so this stays
--- correct across screens and HiDPI scales.
---
--- Still reproducible on omarchy 4.0.0: with this rule removed, a PiP window on
--- a 2560px-wide logical screen lands at x=2008 (= 2560-512-40), putting its
--- right edge at 2608 and clipping 48px off-screen. With the rule, x=1920.
---
--- Self-neutralising: once window_w resolves to the forced 600, upstream's
--- formula and this one agree, so the override becomes a no-op rather than a
--- regression -- re-test by deleting it, not by reading the code. Keep 640 in
--- sync if omarchy changes the size default.
+-- Fix Picture-in-Picture clipping off the right screen edge: omarchy's pip
+-- rules compute X from window_w (Chromium's intrinsic ~512px PiP width) before
+-- `size = { 600, 338 }` widens the window. Recompute from the forced width:
+-- monitor_w - 600 - 40 (margin) = monitor_w - 640. This file loads after the
+-- defaults, so the later move wins, and monitor_w/_h are per-monitor and
+-- logical, so it holds across screens and HiDPI scales. Keep 640 in sync if
+-- omarchy changes the size default.
 o.window({ tag = "pip" }, {
   move = { "(monitor_w-640)", "(monitor_h*0.04)" },
 })
