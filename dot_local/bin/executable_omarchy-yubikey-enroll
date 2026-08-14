@@ -6,12 +6,17 @@
 # --add to append a backup key to the same authfile.
 #
 # The RP ID is a fixed, hostname-independent string so one credential works on
-# every omarchy machine. It MUST match origin=/appid= in the polkit PAM drop-in
-# (run_after_yubikey-polkit.sh) -- keep the two in sync.
+# every omarchy machine, rather than pamu2fcfg's default `pam://$hostname`. It
+# MUST match origin=/appid= in the PAM hardener -- keep the two in sync.
+#
+# The authfile is omarchy's own path: `omarchy setup security fido2` writes the
+# pam_u2f lines pointing here, and `omarchy remove security fido2` tears the
+# whole thing down. `-V` enrols a credential capable of on-device user
+# verification, which is what userverification=1 later demands.
 set -e
 
 ORIGIN="pam://omarchy"
-AUTHFILE="/etc/Yubico/u2f_keys"
+AUTHFILE="/etc/fido2/fido2"
 me="$(id -un)"
 
 command -v pamu2fcfg >/dev/null \
@@ -45,7 +50,9 @@ head -n1 "$tmp" | grep -q "^${me}:." \
 
 sudo install -D -m 600 -o root -g root "$tmp" "$AUTHFILE"
 echo "omarchy-yubikey-enroll: wrote $AUTHFILE"
-# Standalone: remind to deploy the PAM drop-in. Invoked by the chezmoi enroller,
-# that deploy runs in the same apply, so the reminder would be misleading.
-[ -n "${OMARCHY_ENROLL_FROM_APPLY:-}" ] \
-    || echo "omarchy-yubikey-enroll: run 'chezmoi apply' to deploy the polkit PAM drop-in"
+# Standalone: remind to wire up PAM. Invoked by the chezmoi enroller, the
+# hardener runs in the same apply, so the reminder would be misleading.
+[ -n "${OMARCHY_ENROLL_FROM_APPLY:-}" ] || cat >&2 <<'EOF'
+omarchy-yubikey-enroll: next, run `omarchy setup security fido2` to add the
+pam_u2f lines, then `chezmoi apply` to harden them.
+EOF
