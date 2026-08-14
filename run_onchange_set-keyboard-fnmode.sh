@@ -15,6 +15,9 @@
 # writes when content differs.
 set -e
 
+# omarchy writes /etc/modprobe.d/hid_apple.conf with fnmode=2. modprobe reads
+# the directory in lexical order and the last value for a duplicate option
+# wins, so this filename must keep sorting after hid_apple.conf.
 CONF=/etc/modprobe.d/keyboard-fnmode.conf
 CONF_CONTENT='options hid_apple fnmode=1'
 
