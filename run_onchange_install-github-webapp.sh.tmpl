@@ -1,0 +1,7 @@
+#!/bin/bash
+# Install GitHub as a webapp.
+set -e
+{{ template "install-webapp.sh" (dict
+    "name" "GitHub"
+    "url" "https://github.com"
+    "icon" "github.png") }}

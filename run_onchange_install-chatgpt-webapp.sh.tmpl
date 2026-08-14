@@ -1,0 +1,7 @@
+#!/bin/bash
+# Install ChatGPT as a webapp.
+set -e
+{{ template "install-webapp.sh" (dict
+    "name" "ChatGPT"
+    "url" "https://chatgpt.com"
+    "icon" "chatgpt.png") }}

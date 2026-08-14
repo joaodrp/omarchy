@@ -1,0 +1,7 @@
+#!/bin/bash
+# Install the Tailscale admin console as a webapp.
+set -e
+{{ template "install-webapp.sh" (dict
+    "name" "Tailscale"
+    "url" "https://login.tailscale.com/admin/machines"
+    "icon" "tailscale.png") }}
