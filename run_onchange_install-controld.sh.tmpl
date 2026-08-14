@@ -30,30 +30,37 @@ sudo tailscale set --accept-dns=false
 # other link that comes up later carries DHCP DNS -- and systemd-resolved will
 # happily use it, because resolution is routed per link.
 #
-# It has to be per connection profile. Neither NetworkManager's global-dns nor
-# a [connection-*] default reaches resolved once ctrld's own drop-in sets
-# `dns=none`; both were measured doing nothing here.
+# It has to be per connection profile: ctrld's own drop-in sets `dns=none`,
+# which cuts NetworkManager's global-dns and [connection-*] defaults off from
+# resolved. `omarchy dns Custom` writes the same profile settings, but it also
+# rewrites resolved.conf with a FallbackDNS list -- the DHCP-DNS bypass this
+# exists to prevent -- and skips gsm/cdma.
 pin_dns() {
     sudo nmcli connection modify "$1" \
         ipv4.ignore-auto-dns yes ipv4.dns 127.0.0.1 \
         ipv6.ignore-auto-dns yes
 }
 
+pinned=
 while IFS=: read -r uuid type; do
     case "$type" in
     802-11-wireless | 802-3-ethernet | gsm | cdma) ;;
     *) continue ;;
     esac
-    [ "$(nmcli -g ipv4.ignore-auto-dns connection show "$uuid")" = "yes" ] || pin_dns "$uuid"
+    [ "$(nmcli -g ipv4.ignore-auto-dns connection show "$uuid")" = "yes" ] || { pin_dns "$uuid"; pinned=1; }
 done < <(nmcli -t -f UUID,TYPE connection show)
 
-while IFS=: read -r dev state type; do
-    [ "$state" = "connected" ] || continue
-    case "$type" in wifi | ethernet | gsm) sudo nmcli device reapply "$dev" >/dev/null 2>&1 || true ;; esac
-done < <(nmcli -t -f DEVICE,STATE,TYPE device status)
+# Reapply only when something changed: it re-negotiates addressing and fires a
+# dispatcher `up` event on every connected device.
+if [ -n "$pinned" ]; then
+    while IFS=: read -r dev state type; do
+        [ "$state" = "connected" ] || continue
+        case "$type" in wifi | ethernet | gsm) sudo nmcli device reapply "$dev" >/dev/null 2>&1 || true ;; esac
+    done < <(nmcli -t -f DEVICE,STATE,TYPE device status)
+fi
 
 # Profiles added later (a new SSID) would still arrive unpinned, so catch them
-# as they come up. Same guard-then-reapply shape as the metric dispatcher.
+# as they come up.
 dispatcher=/etc/NetworkManager/dispatcher.d/05-ctrld-dns
 dispatcher_content=$(cat <<'DISPATCHER'
 #!/bin/bash
@@ -78,19 +85,24 @@ DISPATCHER
 
 if [ "$(sudo cat "$dispatcher" 2>/dev/null)" != "$dispatcher_content" ]; then
     printf '%s\n' "$dispatcher_content" | sudo tee "$dispatcher" >/dev/null
+    # NetworkManager silently skips dispatcher scripts that are not root-owned
+    # or are group/other-writable.
     sudo chown root:root "$dispatcher"
     sudo chmod 0755 "$dispatcher"
 fi
 
-# Cosmetic but load-bearing for the UI: `omarchy dns` and the shell's network
-# panel read this file to decide which provider is highlighted. Without it they
-# report DHCP, which invites a click that would repoint DNS away from ctrld.
-sudo install -d -m 0755 /etc/NetworkManager/conf.d
-sudo tee /etc/NetworkManager/conf.d/20-omarchy-dns.conf >/dev/null <<'EOF'
-# Managed by omarchy-dns. Remove this file or run omarchy dns DHCP to use DHCP DNS again.
+# `omarchy dns` and the shell's network panel read this file to pick the
+# highlighted provider. Without it they show DHCP, inviting a click that would
+# repoint DNS away from ctrld. Inert otherwise, given `dns=none`.
+dns_conf=/etc/NetworkManager/conf.d/20-omarchy-dns.conf
+dns_conf_content='# Managed by omarchy-dns. Remove this file or run omarchy dns DHCP to use DHCP DNS again.
 [global-dns]
 
 [global-dns-domain-*]
-servers=127.0.0.1
-EOF
-sudo nmcli general reload conf >/dev/null 2>&1 || true
+servers=127.0.0.1'
+
+if [ "$(sudo cat "$dns_conf" 2>/dev/null)" != "$dns_conf_content" ]; then
+    sudo install -d -m 0755 /etc/NetworkManager/conf.d
+    printf '%s\n' "$dns_conf_content" | sudo tee "$dns_conf" >/dev/null
+    sudo nmcli general reload conf >/dev/null 2>&1 || true
+fi
