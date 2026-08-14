@@ -31,7 +31,11 @@ for f in /etc/pam.d/sudo /etc/pam.d/polkit-1; do
     sudo test -f "$f" || continue
     # Nothing to harden until omarchy's setup has written its line.
     sudo grep -q 'pam_u2f\.so' "$f" || continue
-    sudo grep -qF "pam_u2f.so $OPTS" "$f" && continue
+    # Compare the option tail exactly. A substring test would read a line with
+    # extra options appended (a stray `debug`, say) as already hardened.
+    current=$(sudo sed -n -E \
+        's|^[[:space:]]*auth[[:space:]]+sufficient[[:space:]]+pam_u2f\.so[[:space:]]+(.*)$|\1|p' "$f" | head -1)
+    [ "$current" = "$OPTS" ] && continue
 
     sudo sed -i -E \
         "s|^([[:space:]]*auth[[:space:]]+sufficient[[:space:]]+)pam_u2f\.so.*|\1pam_u2f.so $OPTS|" "$f"
