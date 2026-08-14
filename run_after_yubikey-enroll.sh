@@ -1,12 +1,12 @@
 #!/bin/bash
-# Offer to enroll a YubiKey for polkit unlock during `chezmoi apply`, but only
-# when it makes sense: no authfile yet, a key is plugged in, and a human is at
-# the terminal. Keyless or unattended runs skip silently so applies never block.
-# The ceremony itself lives in omarchy-yubikey-enroll; this only decides whether
-# to invoke it. Declining is always safe -- password unlock is unaffected.
+# Offer to enroll a YubiKey during `chezmoi apply`, but only when it makes
+# sense: no authfile yet, a key is plugged in, and a human is at the terminal.
+# Keyless or unattended runs skip silently so applies never block. The ceremony
+# itself lives in omarchy-yubikey-enroll; this only decides whether to invoke
+# it. Declining is always safe -- password auth is unaffected.
 set -e
 
-AUTHFILE="/etc/Yubico/u2f_keys"
+AUTHFILE="/etc/fido2/fido2"
 ENROLL="$HOME/.local/bin/omarchy-yubikey-enroll"
 
 [ -s "$AUTHFILE" ] && exit 0                             # already enrolled here
