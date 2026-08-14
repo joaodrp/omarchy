@@ -1,7 +1,0 @@
-# herdr renders its UI from the terminal's ANSI palette rather than a built-in
-# named theme, so it follows omarchy theme switches the same way tmux does.
-# omarchy themes the terminal emulator; anything drawing in ANSI slots inherits
-# that for free. A named theme here would pin one palette and need a
-# theme-set hook mapping omarchy's themes onto herdr's much smaller set.
-[theme]
-name = "terminal"

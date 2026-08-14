@@ -7,14 +7,12 @@ set -e
 
 APPS_DIR="$HOME/.local/share/applications"
 
-# Webapp .desktop files created by omarchy's first-run / webapp generator.
+# Webapp .desktop files omarchy ships and re-copies on every
+# `omarchy refresh applications`.
 REMOVE_DESKTOP_FILES=(
     "Basecamp.desktop"
     "HEY.desktop"
-    "Figma.desktop"
-    "Fizzy.desktop"
     "Google Photos.desktop"
-    "Google Messages.desktop"
 )
 
 for f in "${REMOVE_DESKTOP_FILES[@]}"; do

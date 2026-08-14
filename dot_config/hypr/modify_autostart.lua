@@ -5,8 +5,8 @@
 set -e
 
 awk '
-  /^# >>> dotfiles: .* >>>$/ { skip = 1; next }
-  skip && /^# <<< dotfiles: .* <<<$/ { skip = 0; next }
+  /^-- >>> dotfiles: .* >>>$/ { skip = 1; next }
+  skip && /^-- <<< dotfiles: .* <<<$/ { skip = 0; next }
   !skip
 ' | awk '
   { lines[NR] = $0; if (NF) last = NR }
@@ -15,8 +15,8 @@ awk '
 
 cat <<EOF
 
-# >>> dotfiles: wayvnc autostart >>>
-# Remote desktop over VNC, served on the Tailscale IP.
-exec-once = $HOME/.local/bin/wayvnc-tailnet
-# <<< dotfiles: wayvnc autostart <<<
+-- >>> dotfiles: wayvnc autostart >>>
+-- Remote desktop over VNC, served on the Tailscale IP.
+o.launch_on_start("$HOME/.local/bin/wayvnc-tailnet")
+-- <<< dotfiles: wayvnc autostart <<<
 EOF
