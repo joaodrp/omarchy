@@ -56,7 +56,7 @@ Notable files:
 | Hyprland | Personal bindings block; wayvnc autostart; PiP right-edge placement fix. |
 | Security | YubiKey Bio for `sudo` and polkit: Omarchy's `omarchy setup security fido2` owns the packages, authfile and PAM lines; this repo layers on a fixed `pam://omarchy` origin and `userverification=1` so a fingerprint match is required, not just a touch. |
 | Removed defaults | Basecamp, HEY, Google Photos, plus their keybindings. |
-| Webapps | Gmail (`mailto:` default), Google Calendar, Google Sheets, Claude, Claude Code, Claude Design, Perplexity, YNAB, Home Assistant, GitHub — with explicit Dashboard Icons glyphs. |
+| Webapps | Gmail (`mailto:` default), Google Calendar, Google Sheets, Claude, Claude Design, Perplexity, YNAB, Home Assistant, GitHub — with explicit Dashboard Icons glyphs. |
 | Networking | Tailscale (SSH enabled); per-machine ControlD via `ctrld`, pinned per NetworkManager profile so no uplink falls back to DHCP DNS; USB Wi-Fi dongle preferred via a route-metric dispatcher; `usb_modeswitch`; ufw opened on `tailscale0` for Mosh. |
 | Git | `~/.gitconfig` over Omarchy's defaults; GitHub `includeIf` `noreply` email; delta pager; `gitleaks` pre-commit scan. |
 | Dev environments | Ruby/Go/Zig via mise, Rust via rustup. |
