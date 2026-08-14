@@ -8,11 +8,8 @@
 #
 # The metric lives on the connection profile, which is keyed by SSID -- and the
 # same SSID roams across both radios, so it cannot encode which radio is
-# preferred. The choice has to be made when a link comes up, hence a dispatcher
-# script: on `up` it sets metric 300 for a USB-attached Wi-Fi interface and
-# clears it for a built-in one, slotting the dongle between Ethernet (100) and
-# built-in Wi-Fi (600):
-#   Ethernet > USB Wi-Fi dongle > built-in Wi-Fi.
+# preferred. The choice has to be made when a link comes up, hence a dispatcher:
+#   Ethernet (100) > USB Wi-Fi dongle (300) > built-in Wi-Fi (600).
 # The built-in card stays connected as an automatic fallback.
 #
 # Inert on machines with no USB Wi-Fi dongle: the bus check matches nothing.
@@ -34,10 +31,9 @@ case "$(readlink -f "/sys/class/net/$iface/device" 2>/dev/null)" in
     *) want=-1 ;;
 esac
 
-# One profile per SSID serves both radios, so the metric has to be rewritten
-# every time the link moves -- including back to -1 (NM's 600 default), or the
-# built-in card keeps the dongle's priority once the dongle is unplugged.
-# Bailing when already correct stops the reapply below retriggering this.
+# Reset to -1 (NM's 600 default) too, or the built-in card keeps the dongle's
+# priority once the dongle is unplugged. Bailing when already correct stops the
+# reapply below retriggering this.
 [ "$(nmcli -g ipv4.route-metric connection show "$CONNECTION_UUID")" = "$want" ] && exit 0
 
 nmcli connection modify "$CONNECTION_UUID" ipv4.route-metric "$want" ipv6.route-metric "$want"
@@ -53,5 +49,5 @@ if [ "$(sudo cat "$target" 2>/dev/null)" != "$content" ]; then
     sudo chmod 0755 "$target"
 fi
 
-# The systemd-networkd rule this replaces; networkd is disabled under omarchy 4.
+# networkd is unused under omarchy 4; clear its rule.
 sudo rm -f /etc/systemd/network/10-wifi-dongle.network

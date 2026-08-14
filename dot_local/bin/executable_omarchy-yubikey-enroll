@@ -9,9 +9,8 @@
 # every omarchy machine, rather than pamu2fcfg's default `pam://$hostname`. It
 # MUST match origin=/appid= in the PAM hardener -- keep the two in sync.
 #
-# The authfile is omarchy's own path: `omarchy setup security fido2` writes the
-# pam_u2f lines pointing here, and `omarchy remove security fido2` tears the
-# whole thing down. `-V` enrols a credential capable of on-device user
+# The authfile is omarchy's own path, where `omarchy setup security fido2`
+# points its pam_u2f lines. `-V` enrols a credential capable of on-device user
 # verification, which is what userverification=1 later demands.
 set -e
 
