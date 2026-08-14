@@ -44,9 +44,14 @@ o.bind("SUPER + SHIFT + C", "Google Calendar",
 -- later move wins. monitor_w/_h are per-monitor and logical, so this stays
 -- correct across screens and HiDPI scales.
 --
+-- Still reproducible on omarchy 4.0.0: with this rule removed, a PiP window on
+-- a 2560px-wide logical screen lands at x=2008 (= 2560-512-40), putting its
+-- right edge at 2608 and clipping 48px off-screen. With the rule, x=1920.
+--
 -- Self-neutralising: once window_w resolves to the forced 600, upstream's
--- formula and this one agree, so the override is a no-op rather than a
--- regression. Keep 640 in sync if omarchy changes the size default.
+-- formula and this one agree, so the override becomes a no-op rather than a
+-- regression -- re-test by deleting it, not by reading the code. Keep 640 in
+-- sync if omarchy changes the size default.
 o.window({ tag = "pip" }, {
   move = { "(monitor_w-640)", "(monitor_h*0.04)" },
 })
