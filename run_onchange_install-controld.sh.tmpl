@@ -11,6 +11,7 @@
 # Reverse: sudo ctrld uninstall; sudo tailscale set --accept-dns=true;
 #          sudo rm -f /etc/NetworkManager/dispatcher.d/05-ctrld-dns
 #          sudo rm -f /etc/systemd/resolved.conf.d/50-magicdns-search.conf
+#          sudo rm -f /etc/systemd/resolved.conf.d/50-ctrld-no-fallback.conf
 #          omarchy dns DHCP
 set -euo pipefail
 
@@ -130,6 +131,21 @@ fi
 # Hand DNS to ctrld; keep tailscaled up for SSH. The `ts.net` rule keeps MagicDNS
 # working: Quad100 answers whatever this is set to.
 sudo tailscale set --accept-dns=false
+
+# resolved's built-in fallback servers answer whenever ctrld returns SERVFAIL,
+# routing around ControlD and the pinning above without a trace. Drop them so an
+# unreachable upstream fails instead: the bypass rules are explicit routes, so
+# captive portals still resolve.
+fallback_conf=/etc/systemd/resolved.conf.d/50-ctrld-no-fallback.conf
+fallback_conf_content='[Resolve]
+FallbackDNS='
+
+if [[ "$(sudo cat "$fallback_conf" 2>/dev/null)" != "$fallback_conf_content" ]]; then
+    sudo install -d -m 0755 /etc/systemd/resolved.conf.d
+    printf '%s\n' "$fallback_conf_content" | sudo tee "$fallback_conf" >/dev/null
+    sudo systemctl restart systemd-resolved
+    sudo systemctl restart ctrld
+fi
 
 # Short peer names need the suffix as a search domain. A resolved drop-in is the
 # only durable spot: `dns=none` stops NetworkManager reaching resolved, and
