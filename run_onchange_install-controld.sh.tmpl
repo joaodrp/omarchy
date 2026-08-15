@@ -1,29 +1,153 @@
 #!/bin/bash
 #
-# Pin this machine to its dedicated ControlD endpoint via ctrld's `--cd` setup.
-# Resolver ID comes from the `controld_resolver_id` chezmoi onboarding field
-# (per-machine, local, never committed); blank skips ctrld.
+# Pin this machine to its dedicated ControlD endpoint, and keep MagicDNS working
+# alongside it. Resolver ID comes from the `controld_resolver_id` chezmoi
+# onboarding field (per-machine, local, never committed); blank skips ctrld.
 #
-# CAVEAT (revisit if needed): `accept-dns=false` drops Tailscale DNS, so MagicDNS
-# (`*.ts.net`) won't resolve here. To restore, swap `--cd` for a static
-# ctrld.toml forwarding `*.ts.net` to 100.100.100.100 (see git history / the
-# `controld-setup` memory). Inbound SSH is unaffected.
+# Local config mode, not `--cd`: the MagicDNS rule has to live in a file the API
+# will not regenerate, so the captive-portal list is refetched on every apply. A
+# machine joining the tailnet later gets its search domain on the next apply.
 #
 # Reverse: sudo ctrld uninstall; sudo tailscale set --accept-dns=true;
-#          sudo rm -f /etc/NetworkManager/dispatcher.d/05-ctrld-dns; omarchy dns DHCP
-# Change resolver: `sudo ctrld uninstall` first, then re-apply.
+#          sudo rm -f /etc/NetworkManager/dispatcher.d/05-ctrld-dns
+#          sudo rm -f /etc/systemd/resolved.conf.d/50-magicdns-search.conf
+#          omarchy dns DHCP
 set -euo pipefail
+
+MARKER='# Managed by chezmoi. Local config mode: ctrld does not regenerate this.'
 
 RESOLVER_ID="{{ if hasKey . "controld_resolver_id" }}{{ .controld_resolver_id }}{{ end }}"
 [[ -z "$RESOLVER_ID" ]] && exit 0
 
 omarchy-pkg-aur-add ctrld-bin
 
-# First run only. --skip_self_checks: ctrld's probe is flaky next to resolved.
-[[ -f /etc/systemd/system/ctrld.service ]] || sudo ctrld start --cd "$RESOLVER_ID" --skip_self_checks
+# ControlD's curated captive-portal domains. A rule with no upstream resolves via
+# the OS resolver, so the portal's DNS hijack still reaches us and its login page
+# appears. Unauthenticated: the resolver ID identifies the endpoint.
+excludes=$(curl -fsS --max-time 15 -X POST https://api.controld.com/utility \
+    -H 'Content-Type: application/json' \
+    -d "$(jq -nc --arg uid "$RESOLVER_ID" '{uid:$uid}')" 2>/dev/null |
+    jq -r '.body.resolver.exclude[]?' | sort -u) || excludes=
 
-# Hand DNS to ctrld; keep tailscaled up for SSH.
+# Fail closed: a config without these looks healthy and breaks at a hotel. Only
+# ours carries the `ts.net` rule, so never migrate the unit onto a `--cd` file.
+if [[ -z "$excludes" ]] && ! sudo grep -qF "$MARKER" /etc/controld/ctrld.toml 2>/dev/null; then
+    echo "ControlD API unreachable and no chezmoi-managed ctrld.toml; leaving ctrld alone" >&2
+    exit 1
+fi
+
+# `ts.net` first: rules match top to bottom. No ControlD fallback, so tailnet
+# names never leave the machine; they just fail while the tailnet is down.
+if [[ -n "$excludes" ]]; then
+    rules="        {        'ts.net' = ['upstream.1']},
+        {        '*.ts.net' = ['upstream.1']},"
+    while read -r domain; do
+        rules+=$'\n'"        {        '$domain' = []},"
+    done <<<"$excludes"
+    rules=${rules%,}
+
+    ctrld_toml="$MARKER
+
+# On by default: leaks to the network's resolver when an upstream fails, then
+# unpins ctrld from every interface -- silently dropping filtering. The tailnet
+# upstream is unreachable until tailscaled answers, so it fires on every boot.
+[service]
+  leak_on_upstream_failure = false
+
+[listener]
+  [listener.0]
+    ip = '127.0.0.1'
+    port = 53
+
+    [listener.0.policy]
+      name = 'My Policy'
+      rules = [
+$rules
+      ]
+
+[network]
+  [network.0]
+    name = 'Network 0'
+    cidrs = ['0.0.0.0/0']
+
+[upstream]
+  [upstream.0]
+    name = 'Control D'
+    type = 'doh'
+    endpoint = 'https://dns.controld.com/$RESOLVER_ID'
+    bootstrap_ip = '76.76.2.22'
+    timeout = 5000
+
+  [upstream.1]
+    name = 'Tailscale MagicDNS'
+    type = 'legacy'
+    endpoint = '100.100.100.100:53'
+    timeout = 1000"
+
+    if [[ "$(sudo cat /etc/controld/ctrld.toml 2>/dev/null)" != "$ctrld_toml" ]]; then
+        # Stage and parse first: a half-written config survives into the next boot.
+        sudo install -d -m 0755 /etc/controld
+        staged=$(sudo mktemp /etc/controld/.ctrld.toml.XXXXXX)
+        printf '%s\n' "$ctrld_toml" | sudo tee "$staged" >/dev/null
+        if ! sudo python3 -c 'import sys,tomllib; tomllib.load(open(sys.argv[1],"rb"))' "$staged"; then
+            sudo rm -f "$staged"
+            echo "generated ctrld.toml did not parse; keeping the current one" >&2
+            exit 1
+        fi
+        sudo chown root:root "$staged"
+        sudo chmod 0600 "$staged"
+        sudo mv "$staged" /etc/controld/ctrld.toml
+        ctrld_changed=1
+    fi
+fi
+
+# First run only. --skip_self_checks: ctrld's probe is flaky next to resolved.
+[[ -f /etc/systemd/system/ctrld.service ]] ||
+    sudo ctrld start --config=/etc/controld/ctrld.toml --skip_self_checks
+
+# Unconditional so a first apply owns the unit too. Drops `--cd`, which would
+# refetch and overwrite the config; a drop-in survives ctrld rewriting its unit.
+unit_dropin=/etc/systemd/system/ctrld.service.d/10-local-config.conf
+unit_dropin_content='[Unit]
+# Narrows the boot window where the tailnet resolver is not answering yet.
+After=tailscaled.service
+
+[Service]
+ExecStart=
+ExecStart=/usr/bin/ctrld run --config=/etc/controld/ctrld.toml --homedir=/etc/controld --iface=auto --skip_self_checks'
+
+if [[ "$(sudo cat "$unit_dropin" 2>/dev/null)" != "$unit_dropin_content" ]]; then
+    sudo install -d -m 0755 /etc/systemd/system/ctrld.service.d
+    printf '%s\n' "$unit_dropin_content" | sudo tee "$unit_dropin" >/dev/null
+    sudo systemctl daemon-reload
+    ctrld_changed=1
+fi
+
+if [[ -n "${ctrld_changed:-}" ]]; then
+    sudo systemctl restart ctrld
+fi
+
+# Hand DNS to ctrld; keep tailscaled up for SSH. The `ts.net` rule keeps MagicDNS
+# working: Quad100 answers whatever this is set to.
 sudo tailscale set --accept-dns=false
+
+# Short peer names need the suffix as a search domain. A resolved drop-in is the
+# only durable spot: `dns=none` stops NetworkManager reaching resolved, and
+# per-link state is wiped on restart. Derived at runtime, being a private id.
+suffix=$(tailscale status --json 2>/dev/null | jq -r '.MagicDNSSuffix // empty') || suffix=
+search_conf=/etc/systemd/resolved.conf.d/50-magicdns-search.conf
+if [[ -n "$suffix" ]]; then
+    search_conf_content="[Resolve]
+Domains=$suffix"
+
+    if [[ "$(sudo cat "$search_conf" 2>/dev/null)" != "$search_conf_content" ]]; then
+        sudo install -d -m 0755 /etc/systemd/resolved.conf.d
+        printf '%s\n' "$search_conf_content" | sudo tee "$search_conf" >/dev/null
+        sudo systemctl restart systemd-resolved
+        # resolved drops runtime per-link DNS on restart, and ctrld owns it.
+        sudo systemctl restart ctrld
+    fi
+fi
 
 # Pin every uplink to ctrld so DHCP never reintroduces the router's servers.
 # ctrld only pins the link holding the default route when it starts, so any
