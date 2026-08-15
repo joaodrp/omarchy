@@ -18,6 +18,13 @@
 # when the dock is absent, and the initramfs is rebuilt only on change.
 set -e
 
+# Per-host opt-in, staged: off until the host is assessed -- `domain0/boot_acl`
+# means firmware can authorize the dock pre-boot, making this redundant -- and
+# a reboot proves it. Disabling does not undo an apply; remove the /etc files
+# and rebuild.
+ENABLED="{{ if hasKey . "thunderbolt_keyboard_at_luks" }}{{ .thunderbolt_keyboard_at_luks }}{{ end }}"
+[[ "$ENABLED" == "true" ]] || exit 0
+
 DOCK_VENDOR='CalDigit, Inc.'
 DOCK_DEVICE='TS5'
 
