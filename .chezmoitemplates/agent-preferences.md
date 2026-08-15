@@ -9,6 +9,8 @@
 
 - Never print, echo, or commit secrets (tokens, keys, passwords). Read them from the
   environment or a secret store.
+- Never commit private identifiers (internal hostnames, network and account IDs,
+  private IPs). Derive them at runtime or read them from local, uncommitted config.
 - Never discard uncommitted work (`reset --hard`, `checkout .`, `clean -fd`) without asking.
 - Never force-push or rewrite history on a shared branch without asking.
 
