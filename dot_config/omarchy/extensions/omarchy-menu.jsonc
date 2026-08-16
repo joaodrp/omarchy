@@ -2,9 +2,13 @@
   // Extends the Quickshell menu. Field reference and defaults:
   // /usr/share/omarchy/default/omarchy/omarchy-menu.jsonc
   //
-  // Sits alongside the stock DNS options. Its own row is needed because the
-  // panel can switch away from ControlD but not back: the resolver id rides
-  // in the DoT SNI hostname, which the Custom dialog cannot express. Reports
-  // as Custom, so that is what `checked` matches.
-  "setup.network.dns.controld": {"icon":"󰇧","label":"ControlD","checked":"[[ \"$(omarchy-dns)\" == \"Custom\" ]]","action":"omarchy-launch-floating-terminal-with-presentation dns-controld"},
+  // ControlD needs its own row because the panel can switch away from it but
+  // not back: the resolver id rides in the DoT SNI hostname, which the Custom
+  // dialog cannot express.
+  //
+  // `omarchy-dns` reports ControlD as Custom, so neither row can key off that
+  // alone without both ticking. Match the live resolver instead, and redeclare
+  // Custom so it excludes ControlD -- which also lands it after this row.
+  "setup.network.dns.controld": {"icon":"󰇧","label":"ControlD","checked":"resolvectl status 2>/dev/null | grep -q 'Current DNS Server.*dns\\.controld\\.com'","action":"omarchy-launch-floating-terminal-with-presentation dns-controld"},
+  "setup.network.dns.custom": {"icon":"","label":"Custom","checked":"[[ \"$(omarchy-dns)\" == \"Custom\" ]] && ! resolvectl status 2>/dev/null | grep -q 'dns\\.controld\\.com'","action":"omarchy-launch-floating-terminal-with-presentation 'omarchy-dns Custom'"},
 }
