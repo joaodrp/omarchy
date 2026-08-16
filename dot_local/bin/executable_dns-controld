@@ -1,0 +1,49 @@
+#!/bin/bash
+# Point DNS back at ControlD after the omarchy DNS panel switched away.
+#
+# The panel can switch away but not back: `DNS=` accumulates across config
+# files and the panel's entry is read first, so it wins. Coming back means
+# dropping what it wrote -- the drop-in already holds the real endpoint. The
+# Custom dialog cannot express it anyway, since the resolver id rides in the
+# DoT SNI hostname rather than the address.
+#
+# Idempotent: only writes and restarts when something actually differs.
+set -euo pipefail
+
+RESOLVED_CONF=/etc/systemd/resolved.conf
+# Anycast addresses only -- the endpoint with the resolver id lives in the
+# drop-in. This file exists so the panel reports Custom rather than DHCP.
+NM_CONF=/etc/NetworkManager/conf.d/20-omarchy-dns.conf
+NM_CONF_CONTENT='# Managed by chezmoi. Reports the provider to omarchy; the endpoint that is
+# actually used lives in /etc/systemd/resolved.conf.d/50-controld.conf.
+[global-dns]
+
+[global-dns-domain-*]
+servers=76.76.2.22,76.76.10.22'
+
+changed=
+
+if grep -qE '^\s*(DNS|FallbackDNS|DNSOverTLS)\s*=' "$RESOLVED_CONF" 2>/dev/null; then
+    sudo sed -i -E '/^\s*(DNS|FallbackDNS|DNSOverTLS)\s*=/d' "$RESOLVED_CONF"
+    changed=1
+fi
+
+if [[ "$(sudo cat "$NM_CONF" 2>/dev/null)" != "$NM_CONF_CONTENT" ]]; then
+    printf '%s\n' "$NM_CONF_CONTENT" | sudo install -Dm644 /dev/stdin "$NM_CONF"
+    changed=1
+fi
+
+if [[ -n $changed ]]; then
+    sudo systemctl restart systemd-resolved
+    sleep 2
+fi
+
+# A real IP here means something other than ControlD answered.
+blocked=$(getent ahostsv4 ads.doubleclick.net 2>/dev/null | awk 'NR==1 {print $1}')
+if [[ $blocked == "0.0.0.0" ]]; then
+    echo "DNS: ControlD (filtering active)"
+else
+    echo "DNS: ControlD configured, but a test lookup returned '${blocked:-nothing}'." >&2
+    echo "Check 'resolvectl status' -- another resolver may still be ahead of it." >&2
+    exit 1
+fi
