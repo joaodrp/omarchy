@@ -54,6 +54,16 @@ FallbackDNS=")" ]]; then
     sudo systemctl restart systemd-resolved
 fi
 
+# Inert while NetworkManager is out of DNS, but `omarchy dns` and the shell
+# panel read `servers=` here and fall back to resolved.conf, never conf.d --
+# without it they report DHCP, inviting a click that would repoint DNS.
+install_conf /etc/NetworkManager/conf.d/20-omarchy-dns.conf '# Managed by chezmoi. Reports the provider to omarchy; the endpoint that is
+# actually used lives in /etc/systemd/resolved.conf.d/50-controld.conf.
+[global-dns]
+
+[global-dns-domain-*]
+servers=76.76.2.22,76.76.10.22' >/dev/null
+
 # Lets tailscaled own MagicDNS. Safe only while the tailnet's Override is off;
 # with it on this machine would silently move to the shared tailnet profile.
 sudo tailscale set --accept-dns=true
