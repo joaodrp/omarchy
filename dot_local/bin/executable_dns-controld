@@ -1,20 +1,34 @@
 #!/bin/bash
-# Point DNS back at ControlD after the omarchy DNS panel switched away.
+# Point DNS back at ControlD, or step aside so something else can serve it.
 #
-# The panel can switch away but not back: `DNS=` accumulates across config
-# files and the panel's entry is read first, so it wins. Coming back means
-# dropping what it wrote -- the drop-in already holds the real endpoint. The
-# Custom dialog cannot express it anyway, since the resolver id rides in the
-# DoT SNI hostname rather than the address.
+#   dns-controld            restore ControlD and verify it is answering
+#   dns-controld --pause    stand down until the next restore
 #
-# Idempotent: only writes and restarts when something actually differs.
+# The DNS panel can switch away from ControlD but not back: `DNS=` accumulates
+# across config files and the panel's entry is read first, so it wins. Coming
+# back means dropping what it wrote -- the drop-in already holds the real
+# endpoint, which the Custom dialog could not express anyway, the resolver id
+# riding in the DoT SNI hostname rather than the address.
+#
+# Pausing exists because the drop-in also forces DNSOverTLS. A plain resolver
+# -- a hotel portal, a router, a Pi-hole -- cannot answer under it, and resolved
+# quietly falls back to ControlD instead of failing, so the choice looks
+# applied but is not. Pausing lifts that and hands DNS back to DHCP.
+#
+# Idempotent both ways: only writes and restarts when something differs.
 set -euo pipefail
 
+DROPIN=/etc/systemd/resolved.conf.d/50-controld.conf
+PAUSED=/etc/systemd/resolved.conf.d/50-controld.conf.disabled
 RESOLVED_CONF=/etc/systemd/resolved.conf
-# Anycast addresses only -- the endpoint with the resolver id lives in the
-# drop-in. This file exists so the panel reports Custom rather than DHCP.
-NM_CONF=/etc/NetworkManager/conf.d/20-omarchy-dns.conf
-NM_CONF_CONTENT='# Managed by chezmoi. Reports the provider to omarchy; the endpoint that is
+NM_CONF=/etc/NetworkManager/conf.d/99-dns-none.conf
+NM_CONF_CONTENT='[main]
+dns=none
+systemd-resolved=false'
+# Anycast addresses only -- the endpoint carrying the resolver id lives in the
+# drop-in. This file exists so omarchy reports Custom rather than DHCP.
+MARKER=/etc/NetworkManager/conf.d/20-omarchy-dns.conf
+MARKER_CONTENT='# Managed by chezmoi. Reports the provider to omarchy; the endpoint that is
 # actually used lives in /etc/systemd/resolved.conf.d/50-controld.conf.
 [global-dns]
 
@@ -31,33 +45,79 @@ if ((EUID != 0)); then
     fi
 fi
 
+reload_network() {
+    systemctl reload NetworkManager 2>/dev/null || true
+    systemctl restart systemd-resolved
+    # NetworkManager only publishes DNS for a profile once it is reapplied.
+    while IFS=: read -r dev state; do
+        [[ $state == connected ]] || continue
+        nmcli device reapply "$dev" >/dev/null 2>&1 || true
+    done < <(nmcli -t -f DEVICE,STATE device status)
+    sleep 2
+}
+
+# Uplinks carrying their own DNS, which outranks the global endpoint because
+# resolution is routed per link. tailscale0 is excluded: MagicDNS is
+# tailscaled's to manage and belongs there.
+links_with_dns() {
+    while IFS=: read -r dev state type; do
+        [[ $state == connected ]] || continue
+        case "$type" in wifi | ethernet | gsm) ;; *) continue ;; esac
+        [[ -n "$(resolvectl dns "$dev" 2>/dev/null | sed 's/^[^:]*://;s/[[:space:]]//g')" ]] || continue
+        printf '%s\n' "$dev"
+    done < <(nmcli -t -f DEVICE,STATE,TYPE device status)
+}
+
+# Pausing lets DHCP put servers on the uplinks; they have to go on the way back.
+clear_link_dns() {
+    for dev in $(links_with_dns); do
+        resolvectl revert "$dev" 2>/dev/null || true
+    done
+}
+
+if [[ ${1:-} == --pause ]]; then
+    [[ -f $DROPIN ]] && mv "$DROPIN" "$PAUSED"
+    # Hand DNS back to DHCP, and stop claiming to be on ControlD.
+    rm -f "$NM_CONF" "$MARKER"
+    reload_network
+    echo "DNS: ControlD paused; whatever the panel or DHCP provides is now in use."
+    echo "Restore with: dns-controld"
+    exit 0
+fi
+
 changed=
+
+[[ -f $PAUSED ]] && { mv "$PAUSED" "$DROPIN"; changed=1; }
 
 if grep -qE '^\s*(DNS|FallbackDNS|DNSOverTLS)\s*=' "$RESOLVED_CONF" 2>/dev/null; then
     sed -i -E '/^\s*(DNS|FallbackDNS|DNSOverTLS)\s*=/d' "$RESOLVED_CONF"
     changed=1
 fi
 
-if [[ "$(cat "$NM_CONF" 2>/dev/null)" != "$NM_CONF_CONTENT" ]]; then
-    printf '%s\n' "$NM_CONF_CONTENT" | install -Dm644 /dev/stdin "$NM_CONF"
+for pair in "$NM_CONF:$NM_CONF_CONTENT" "$MARKER:$MARKER_CONTENT"; do
+    path=${pair%%:*}
+    want=${pair#*:}
+    [[ "$(cat "$path" 2>/dev/null)" == "$want" ]] && continue
+    printf '%s\n' "$want" | install -Dm644 /dev/stdin "$path"
     changed=1
-fi
+done
 
-if [[ -n $changed ]]; then
-    systemctl restart systemd-resolved
-    sleep 2
-fi
+[[ -n $changed ]] && reload_network
+clear_link_dns
 
-# A real IP here means something other than ControlD answered. Quiet on
-# success so the menu row behaves like the other providers; a notification
-# carries the failure, which would otherwise pass unnoticed.
+# A real IP here means something other than ControlD answered, and a server
+# left on a link would outrank it silently -- check both, not just the lookup.
+# Quiet on success so the menu row behaves like the other providers; a
+# notification carries the failure, which would otherwise pass unnoticed.
 blocked=$(getent ahostsv4 ads.doubleclick.net 2>/dev/null | awk 'NR==1 {print $1}')
-if [[ $blocked == "0.0.0.0" ]]; then
+stray=$(links_with_dns | tr '\n' ' ')
+if [[ $blocked == "0.0.0.0" && -z ${stray// /} ]]; then
     echo "DNS: ControlD (filtering active)"
     exit 0
 fi
 
-echo "DNS: ControlD configured, but a test lookup returned '${blocked:-nothing}'." >&2
-echo "Check 'resolvectl status' -- another resolver may still be ahead of it." >&2
+echo "DNS: ControlD configured, but the check failed." >&2
+echo "  test lookup returned '${blocked:-nothing}' (want 0.0.0.0)" >&2
+[[ -n ${stray// /} ]] && echo "  uplinks still carrying their own DNS: $stray" >&2
 notify-send -u critical "DNS" "ControlD is not answering; check resolvectl status" 2>/dev/null || true
 exit 1
