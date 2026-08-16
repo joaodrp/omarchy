@@ -21,29 +21,43 @@ NM_CONF_CONTENT='# Managed by chezmoi. Reports the provider to omarchy; the endp
 [global-dns-domain-*]
 servers=76.76.2.22,76.76.10.22'
 
+# Same escalation omarchy-dns uses, so this works from a terminal and from the
+# menu, where there is no tty to take a password.
+if ((EUID != 0)); then
+    if [[ -t 0 ]]; then
+        exec sudo "$(readlink -f "${BASH_SOURCE[0]}")" "$@"
+    else
+        exec pkexec "$(readlink -f "${BASH_SOURCE[0]}")" "$@"
+    fi
+fi
+
 changed=
 
 if grep -qE '^\s*(DNS|FallbackDNS|DNSOverTLS)\s*=' "$RESOLVED_CONF" 2>/dev/null; then
-    sudo sed -i -E '/^\s*(DNS|FallbackDNS|DNSOverTLS)\s*=/d' "$RESOLVED_CONF"
+    sed -i -E '/^\s*(DNS|FallbackDNS|DNSOverTLS)\s*=/d' "$RESOLVED_CONF"
     changed=1
 fi
 
-if [[ "$(sudo cat "$NM_CONF" 2>/dev/null)" != "$NM_CONF_CONTENT" ]]; then
-    printf '%s\n' "$NM_CONF_CONTENT" | sudo install -Dm644 /dev/stdin "$NM_CONF"
+if [[ "$(cat "$NM_CONF" 2>/dev/null)" != "$NM_CONF_CONTENT" ]]; then
+    printf '%s\n' "$NM_CONF_CONTENT" | install -Dm644 /dev/stdin "$NM_CONF"
     changed=1
 fi
 
 if [[ -n $changed ]]; then
-    sudo systemctl restart systemd-resolved
+    systemctl restart systemd-resolved
     sleep 2
 fi
 
-# A real IP here means something other than ControlD answered.
+# A real IP here means something other than ControlD answered. Quiet on
+# success so the menu row behaves like the other providers; a notification
+# carries the failure, which would otherwise pass unnoticed.
 blocked=$(getent ahostsv4 ads.doubleclick.net 2>/dev/null | awk 'NR==1 {print $1}')
 if [[ $blocked == "0.0.0.0" ]]; then
     echo "DNS: ControlD (filtering active)"
-else
-    echo "DNS: ControlD configured, but a test lookup returned '${blocked:-nothing}'." >&2
-    echo "Check 'resolvectl status' -- another resolver may still be ahead of it." >&2
-    exit 1
+    exit 0
 fi
+
+echo "DNS: ControlD configured, but a test lookup returned '${blocked:-nothing}'." >&2
+echo "Check 'resolvectl status' -- another resolver may still be ahead of it." >&2
+notify-send -u critical "DNS" "ControlD is not answering; check resolvectl status" 2>/dev/null || true
+exit 1

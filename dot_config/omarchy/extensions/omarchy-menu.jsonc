@@ -13,6 +13,6 @@
   // ControlD sorts last and cannot be moved: rows keep the position of their
   // first declaration, and the defaults load first. Redeclaring an id updates
   // its fields without moving it, and `when` does not hide a stock row.
-  "setup.network.dns.controld": {"icon":"󰇧","label":"ControlD","checked":"resolvectl status 2>/dev/null | grep -q 'Current DNS Server.*dns\\.controld\\.com'","action":"omarchy-launch-floating-terminal-with-presentation dns-controld"},
+  "setup.network.dns.controld": {"icon":"󰇧","label":"ControlD","checked":"resolvectl status 2>/dev/null | grep -q 'Current DNS Server.*dns\\.controld\\.com'","action":"dns-controld"},
   "setup.network.dns.custom": {"icon":"","label":"Custom","checked":"[[ \"$(omarchy-dns)\" == \"Custom\" ]] && ! resolvectl status 2>/dev/null | grep -q 'dns\\.controld\\.com'","action":"omarchy-launch-floating-terminal-with-presentation 'omarchy-dns Custom'"},
 }
