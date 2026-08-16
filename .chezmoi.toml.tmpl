@@ -2,7 +2,7 @@
        and writes the output to ~/.config/chezmoi/chezmoi.toml. Subsequent
        runs reuse the local file; no re-prompting. */ -}}
 {{- $personal_email := promptStringOnce . "personal_email" "Personal email" -}}
-{{- $controld_resolver_id := promptStringOnce . "controld_resolver_id" "ControlD resolver ID for this machine (endpoint's Show Resolvers screen; blank to skip ctrld)" -}}
+{{- $controld_resolver_id := promptStringOnce . "controld_resolver_id" "ControlD resolver ID for this machine (endpoint's Show Resolvers screen; blank to leave DNS alone)" -}}
 {{- $thunderbolt_keyboard_at_luks := promptBoolOnce . "thunderbolt_keyboard_at_luks" "Authorize the Thunderbolt dock at the LUKS prompt (yes only if this host lacks a preboot ACL and a reboot has verified it)" false -}}
 
 [data]

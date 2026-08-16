@@ -2,17 +2,16 @@
   // Extends the Quickshell menu. Field reference and defaults:
   // /usr/share/omarchy/default/omarchy/omarchy-menu.jsonc
   //
-  // ControlD needs its own row because the panel can switch away from it but
-  // not back: the resolver id rides in the DoT SNI hostname, which the Custom
-  // dialog cannot express.
+  // Why ControlD needs a row of its own: see ~/.local/bin/dns-controld.
   //
-  // `omarchy-dns` reports ControlD as Custom, so neither row can key off that
-  // alone without both ticking. Match the live resolver instead, and redeclare
-  // Custom so it excludes ControlD.
+  // Rows merge per key, so Custom only restates `checked`. It has to: omarchy
+  // reports ControlD as Custom, and both rows keying off that would tick at
+  // once. Both defer to `dns-controld --status` so one definition decides.
   //
-  // ControlD sorts last and cannot be moved: rows keep the position of their
-  // first declaration, and the defaults load first. Redeclaring an id updates
-  // its fields without moving it, and `when` does not hide a stock row.
-  "setup.network.dns.controld": {"icon":"󰇧","label":"ControlD","checked":"resolvectl status 2>/dev/null | grep -q 'Current DNS Server.*dns\\.controld\\.com'","action":"dns-controld"},
-  "setup.network.dns.custom": {"icon":"","label":"Custom","checked":"[[ \"$(omarchy-dns)\" == \"Custom\" ]] && ! resolvectl status 2>/dev/null | grep -q 'dns\\.controld\\.com'","action":"omarchy-launch-floating-terminal-with-presentation 'omarchy-dns Custom'"},
+  // ControlD sorts last because rows keep the position of their first
+  // declaration and the defaults load first. Reordering would mean hiding the
+  // stock rows with `when` and redeclaring them under fresh ids -- possible,
+  // but it trades ordering for restating rows that would then drift.
+  "setup.network.dns.controld": {"icon":"󰇧","label":"ControlD","checked":"dns-controld --status","action":"dns-controld"},
+  "setup.network.dns.custom": {"checked":"[[ \"$(omarchy-dns)\" == \"Custom\" ]] && ! dns-controld --status"},
 }

@@ -1,49 +1,76 @@
 #!/bin/bash
-# Point DNS back at ControlD, or step aside so something else can serve it.
+# Own which resolver this machine uses.
 #
 #   dns-controld            restore ControlD and verify it is answering
 #   dns-controld --pause    stand down until the next restore
+#   dns-controld --status   exit 0 when ControlD is the live resolver
 #
-# The DNS panel can switch away from ControlD but not back: `DNS=` accumulates
-# across config files and the panel's entry is read first, so it wins. Coming
-# back means dropping what it wrote -- the drop-in already holds the real
-# endpoint, which the Custom dialog could not express anyway, the resolver id
-# riding in the DoT SNI hostname rather than the address.
+# ControlD is configured globally in resolved rather than per link. That is
+# deliberate: a link-scoped resolver fails open, so a new SSID would resolve
+# through DHCP with no filtering and no signal. Global scope fails closed.
 #
-# Pausing exists because the drop-in also forces DNSOverTLS. A plain resolver
-# -- a hotel portal, a router, a Pi-hole -- cannot answer under it, and resolved
-# quietly falls back to ControlD instead of failing, so the choice looks
-# applied but is not. Pausing lifts that and hands DNS back to DHCP.
+# The price is that global scope also forces DNSOverTLS, which a plain resolver
+# -- a hotel portal, a router, a Pi-hole -- cannot answer under; resolved falls
+# back to ControlD rather than failing, so picking one looks applied but is
+# not. Pausing is how you stand ControlD down on purpose.
 #
-# Idempotent both ways: only writes and restarts when something differs.
+# The DNS panel cannot bring it back: the resolver id rides in the DoT SNI
+# hostname, which its Custom dialog only takes addresses for.
 set -euo pipefail
 
 DROPIN=/etc/systemd/resolved.conf.d/50-controld.conf
-PAUSED=/etc/systemd/resolved.conf.d/50-controld.conf.disabled
+PAUSED=$DROPIN.disabled
 RESOLVED_CONF=/etc/systemd/resolved.conf
+# Only DNS= accumulates across the main file and drop-ins; drop-ins already
+# outrank the main file for FallbackDNS and DNSOverTLS.
+PANEL_KEY='^[[:space:]]*DNS[[:space:]]*='
 NM_CONF=/etc/NetworkManager/conf.d/99-dns-none.conf
+# Resolution is routed per link, so a DHCP server on one would outrank the
+# global endpoint. `dns=none` alone is not enough: NM still pushes over D-Bus.
 NM_CONF_CONTENT='[main]
 dns=none
 systemd-resolved=false'
-# Anycast addresses only -- the endpoint carrying the resolver id lives in the
-# drop-in. This file exists so omarchy reports Custom rather than DHCP.
+# Only a provider label for `omarchy dns`, which reads NM global-dns and then
+# resolved.conf but never resolved.conf.d, so it cannot see the real endpoint.
+# Inert under dns=none. Without it the panel reports DHCP and invites a click.
 MARKER=/etc/NetworkManager/conf.d/20-omarchy-dns.conf
-MARKER_CONTENT='# Managed by chezmoi. Reports the provider to omarchy; the endpoint that is
-# actually used lives in /etc/systemd/resolved.conf.d/50-controld.conf.
+MARKER_CONTENT='# Managed by chezmoi. A provider label for omarchy, not the endpoint in use:
+# that is /etc/systemd/resolved.conf.d/50-controld.conf.
 [global-dns]
 
 [global-dns-domain-*]
 servers=76.76.2.22,76.76.10.22'
 
+controld_is_live() {
+    resolvectl status 2>/dev/null | grep -q 'Current DNS Server.*dns\.controld\.com'
+}
+
+# Needs no privileges, and the menu calls it on every open.
+if [[ ${1:-} == --status ]]; then
+    controld_is_live
+    exit $?
+fi
+
 # Same escalation omarchy-dns uses, so this works from a terminal and from the
 # menu, where there is no tty to take a password.
 if ((EUID != 0)); then
-    if [[ -t 0 ]]; then
-        exec sudo "$(readlink -f "${BASH_SOURCE[0]}")" "$@"
-    else
-        exec pkexec "$(readlink -f "${BASH_SOURCE[0]}")" "$@"
-    fi
+    [[ -t 0 ]] && escalate=sudo || escalate=pkexec
+    exec "$escalate" "$(readlink -f "${BASH_SOURCE[0]}")" "$@"
 fi
+
+# Root has no session bus; the notification has to go back to the caller.
+notify_caller() {
+    local uid=${PKEXEC_UID:-${SUDO_UID:-}}
+    [[ -n $uid ]] || return 0
+    runuser -u "$(id -nu "$uid" 2>/dev/null)" -- \
+        env "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$uid/bus" \
+        notify-send -u critical "$@" 2>/dev/null || true
+}
+
+write_conf() {
+    [[ "$(cat "$1" 2>/dev/null)" == "$2" ]] && return 1
+    printf '%s\n' "$2" | install -Dm644 /dev/stdin "$1"
+}
 
 reload_network() {
     systemctl reload NetworkManager 2>/dev/null || true
@@ -53,12 +80,10 @@ reload_network() {
         [[ $state == connected ]] || continue
         nmcli device reapply "$dev" >/dev/null 2>&1 || true
     done < <(nmcli -t -f DEVICE,STATE device status)
-    sleep 2
 }
 
-# Uplinks carrying their own DNS, which outranks the global endpoint because
-# resolution is routed per link. tailscale0 is excluded: MagicDNS is
-# tailscaled's to manage and belongs there.
+# Uplinks carrying their own DNS, which outranks the global endpoint.
+# tailscale0 is excluded: MagicDNS is tailscaled's to manage and belongs there.
 links_with_dns() {
     while IFS=: read -r dev state type; do
         [[ $state == connected ]] || continue
@@ -66,13 +91,6 @@ links_with_dns() {
         [[ -n "$(resolvectl dns "$dev" 2>/dev/null | sed 's/^[^:]*://;s/[[:space:]]//g')" ]] || continue
         printf '%s\n' "$dev"
     done < <(nmcli -t -f DEVICE,STATE,TYPE device status)
-}
-
-# Pausing lets DHCP put servers on the uplinks; they have to go on the way back.
-clear_link_dns() {
-    for dev in $(links_with_dns); do
-        resolvectl revert "$dev" 2>/dev/null || true
-    done
 }
 
 if [[ ${1:-} == --pause ]]; then
@@ -86,38 +104,36 @@ if [[ ${1:-} == --pause ]]; then
 fi
 
 changed=
-
 [[ -f $PAUSED ]] && { mv "$PAUSED" "$DROPIN"; changed=1; }
-
-if grep -qE '^\s*(DNS|FallbackDNS|DNSOverTLS)\s*=' "$RESOLVED_CONF" 2>/dev/null; then
-    sed -i -E '/^\s*(DNS|FallbackDNS|DNSOverTLS)\s*=/d' "$RESOLVED_CONF"
-    changed=1
-fi
-
-for pair in "$NM_CONF:$NM_CONF_CONTENT" "$MARKER:$MARKER_CONTENT"; do
-    path=${pair%%:*}
-    want=${pair#*:}
-    [[ "$(cat "$path" 2>/dev/null)" == "$want" ]] && continue
-    printf '%s\n' "$want" | install -Dm644 /dev/stdin "$path"
-    changed=1
-done
+grep -qE "$PANEL_KEY" "$RESOLVED_CONF" 2>/dev/null &&
+    { sed -i -E "/$PANEL_KEY/d" "$RESOLVED_CONF"; changed=1; }
+write_conf "$NM_CONF" "$NM_CONF_CONTENT" && changed=1
+write_conf "$MARKER" "$MARKER_CONTENT" && changed=1
 
 [[ -n $changed ]] && reload_network
-clear_link_dns
+# Pausing lets DHCP put servers on the uplinks; they have to go on the way back.
+for dev in $(links_with_dns); do
+    resolvectl revert "$dev" 2>/dev/null || true
+done
 
-# A real IP here means something other than ControlD answered, and a server
-# left on a link would outrank it silently -- check both, not just the lookup.
-# Quiet on success so the menu row behaves like the other providers; a
-# notification carries the failure, which would otherwise pass unnoticed.
+# Wait on the resolver actually answering rather than a fixed guess.
+for _ in $(seq 20); do
+    controld_is_live && break
+    sleep 0.25
+done
+
+# A real IP means something else answered, and a server left on a link would
+# outrank ControlD silently -- check both, not just the lookup. Quiet on
+# success so the menu row behaves like the other providers.
 blocked=$(getent ahostsv4 ads.doubleclick.net 2>/dev/null | awk 'NR==1 {print $1}')
-stray=$(links_with_dns | tr '\n' ' ')
-if [[ $blocked == "0.0.0.0" && -z ${stray// /} ]]; then
+stray=$(links_with_dns)
+if [[ $blocked == "0.0.0.0" && -z $stray ]]; then
     echo "DNS: ControlD (filtering active)"
     exit 0
 fi
 
 echo "DNS: ControlD configured, but the check failed." >&2
 echo "  test lookup returned '${blocked:-nothing}' (want 0.0.0.0)" >&2
-[[ -n ${stray// /} ]] && echo "  uplinks still carrying their own DNS: $stray" >&2
-notify-send -u critical "DNS" "ControlD is not answering; check resolvectl status" 2>/dev/null || true
+[[ -n $stray ]] && echo "  uplinks still carrying their own DNS: ${stray//$'\n'/ }" >&2
+notify_caller "DNS" "ControlD is not answering; check resolvectl status"
 exit 1

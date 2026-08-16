@@ -4,16 +4,20 @@
 # systemd-resolved directly -- no forwarding daemon. Resolver ID comes from the
 # `controld_resolver_id` chezmoi field (per-machine, local, never committed).
 #
+# Everything that is not templated -- the NetworkManager files, restoring after
+# the DNS panel switches away, verifying -- belongs to `dns-controld`, which is
+# also what the menu calls. This writes the one file that needs the id, then
+# hands over, so there is a single owner of the runtime state.
+#
 # MagicDNS is left entirely to tailscaled: with the tailnet's "Override DNS
 # servers" off, it claims only `ts.net` on its own link and ControlD stays the
 # default. Anything that reasserts that link config from here loses a race with
 # tailscaled, so don't.
 #
-# Captive portals are manual: strict DoT fails closed rather than following a
-# portal's DNS hijack. `omarchy dns DHCP`, sign in, then re-apply.
+# Captive portals: `dns-controld --pause`, sign in, then `dns-controld`.
 #
 # Reverse: sudo rm -f /etc/systemd/resolved.conf.d/50-controld.conf
-#          sudo rm -f /etc/NetworkManager/conf.d/99-dns-none.conf
+#          sudo rm -f /etc/NetworkManager/conf.d/{99-dns-none,20-omarchy-dns}.conf
 #          sudo systemctl restart systemd-resolved NetworkManager
 set -euo pipefail
 
@@ -21,78 +25,38 @@ RESOLVER_ID="{{ if hasKey . "controld_resolver_id" }}{{ .controld_resolver_id }}
 [[ -z "$RESOLVER_ID" ]] && exit 0
 
 DOT_HOST="$RESOLVER_ID.dns.controld.com"
-
-# Write $2 to $1 when it differs. Echoes 'changed' so callers can react.
-install_conf() {
-    [[ "$(sudo cat "$1" 2>/dev/null)" == "$2" ]] && return 0
-    printf '%s\n' "$2" | sudo install -Dm644 /dev/stdin "$1"
-    echo changed
-}
-
-# NetworkManager must not publish DHCP servers: resolution is routed per link,
-# so a link-scoped server would beat the global endpoint below and bypass it.
-# `dns=none` alone is not enough -- NM still pushes over D-Bus unless
-# `systemd-resolved` is off too.
-if [[ -n "$(install_conf /etc/NetworkManager/conf.d/99-dns-none.conf '[main]
-dns=none
-systemd-resolved=false')" ]]; then
-    sudo rm -f /etc/NetworkManager/conf.d/99-ctrld.conf
-    sudo systemctl reload NetworkManager
-fi
+DROPIN=/etc/systemd/resolved.conf.d/50-controld.conf
+PAUSED=$DROPIN.disabled
 
 # `#hostname` is SNI plus certificate validation, and carries the resolver id
 # that selects this machine's ControlD profile. Empty FallbackDNS so an
 # unreachable endpoint fails closed instead of leaking to Google/Cloudflare.
 #
-# No `Domains=` here: resolved treats a domain without `~` as routing as well as
-# search, so a global tailnet suffix would make the global scope authoritative
-# for tailnet names and send them to ControlD. tailscaled sets it per link.
-if [[ -n "$(install_conf /etc/systemd/resolved.conf.d/50-controld.conf "[Resolve]
+# No `Domains=` here: resolved treats a domain without `~` as routing as well
+# as search, so a global tailnet suffix would make the global scope
+# authoritative for tailnet names and send them to ControlD. tailscaled sets
+# it per link.
+DROPIN_CONTENT="[Resolve]
 DNS=76.76.2.22#$DOT_HOST 76.76.10.22#$DOT_HOST
 DNSOverTLS=yes
-FallbackDNS=")" ]]; then
-    sudo systemctl restart systemd-resolved
+FallbackDNS="
+
+# Write to whichever name is live so an apply cannot silently un-pause.
+target=$DROPIN
+[[ -f $PAUSED ]] && target=$PAUSED
+
+if [[ "$(sudo cat "$target" 2>/dev/null)" != "$DROPIN_CONTENT" ]]; then
+    printf '%s\n' "$DROPIN_CONTENT" | sudo install -Dm644 /dev/stdin "$target"
 fi
-
-# Inert while NetworkManager is out of DNS, but `omarchy dns` and the shell
-# panel read `servers=` here and fall back to resolved.conf, never conf.d --
-# without it they report DHCP, inviting a click that would repoint DNS.
-install_conf /etc/NetworkManager/conf.d/20-omarchy-dns.conf '# Managed by chezmoi. Reports the provider to omarchy; the endpoint that is
-# actually used lives in /etc/systemd/resolved.conf.d/50-controld.conf.
-[global-dns]
-
-[global-dns-domain-*]
-servers=76.76.2.22,76.76.10.22' >/dev/null
 
 # Lets tailscaled own MagicDNS. Safe only while the tailnet's Override is off;
 # with it on this machine would silently move to the shared tailnet profile.
 sudo tailscale set --accept-dns=true
 
-# Transitional: retire the ctrld stack and the machinery that kept it pinned to
-# every uplink. Drop this block once no machine is still carrying it.
-if command -v ctrld >/dev/null 2>&1; then
-    sudo ctrld uninstall 2>/dev/null || true
+if [[ -f $PAUSED ]]; then
+    echo "ControlD is paused; endpoint updated but not applied. Restore with: dns-controld"
+elif command -v dns-controld >/dev/null 2>&1; then
+    dns-controld
+else
+    echo "dns-controld not on PATH yet; re-run chezmoi apply to finish." >&2
 fi
-sudo systemctl disable --now ctrld-pin-dns.timer magicdns-route.service 2>/dev/null || true
-sudo rm -f /etc/systemd/system/ctrld.service \
-    /etc/systemd/system/ctrld.service.d/10-local-config.conf \
-    /etc/systemd/system/ctrld-pin-dns.service \
-    /etc/systemd/system/ctrld-pin-dns.timer \
-    /etc/systemd/system/magicdns-route.service \
-    /usr/local/bin/ctrld-pin-dns \
-    /etc/NetworkManager/dispatcher.d/05-ctrld-dns \
-    /etc/systemd/resolved.conf.d/50-ctrld.conf \
-    /etc/systemd/resolved.conf.d/50-ctrld-no-fallback.conf \
-    /etc/systemd/resolved.conf.d/50-magicdns-search.conf
-sudo rmdir /etc/systemd/system/ctrld.service.d 2>/dev/null || true
-sudo rm -rf /etc/controld
-sudo systemctl daemon-reload
-if pacman -Qq ctrld-bin >/dev/null 2>&1; then
-    sudo pacman -Rns --noconfirm ctrld-bin
-fi
-
-# Profiles pinned to the retired local listener would resolve to nothing.
-while IFS=: read -r uuid _; do
-    [[ "$(nmcli -g ipv4.dns connection show "$uuid" 2>/dev/null)" == "127.0.0.1" ]] || continue
-    sudo nmcli connection modify "$uuid" ipv4.dns '' ipv6.dns ''
-done < <(nmcli -t -f UUID,TYPE connection show)
