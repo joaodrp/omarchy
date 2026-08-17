@@ -41,6 +41,13 @@ DNS=76.76.2.22#$DOT_HOST 76.76.10.22#$DOT_HOST
 DNSOverTLS=yes
 FallbackDNS="
 
+# Left by the ctrld-era setup. `50-magicdns-search.conf` set a global
+# `Domains=`, which would make the global scope authoritative for tailnet
+# names and route them to ControlD instead of tailscale0; the dispatcher
+# re-pins profiles to a listener that no longer exists.
+sudo rm -f /etc/systemd/resolved.conf.d/50-magicdns-search.conf \
+    /etc/NetworkManager/dispatcher.d/05-ctrld-dns
+
 # Write to whichever name is live so an apply cannot silently un-pause.
 target=$DROPIN
 [[ -f $PAUSED ]] && target=$PAUSED

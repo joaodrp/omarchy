@@ -3,7 +3,7 @@
 #
 #   dns-controld            restore ControlD and verify it is answering
 #   dns-controld --pause    stand down until the next restore
-#   dns-controld --status   exit 0 when ControlD is the live resolver
+#   dns-controld --status   exit 0 when ControlD is the only resolver in play
 #
 # ControlD is configured globally in resolved rather than per link. That is
 # deliberate: a link-scoped resolver fails open, so a new SSID would resolve
@@ -41,8 +41,23 @@ MARKER_CONTENT='# Managed by chezmoi. A provider label for omarchy, not the endp
 [global-dns-domain-*]
 servers=76.76.2.22,76.76.10.22'
 
+# Uplinks carrying their own DNS. Any one of them outranks the global endpoint
+# for its own traffic, so a single entry here is a bypass. tailscale0 is
+# excluded: MagicDNS is tailscaled's to manage and is scoped to ts.net.
+links_with_dns() {
+    while IFS=: read -r dev state type; do
+        [[ $state == connected ]] || continue
+        case "$type" in wifi | ethernet | gsm) ;; *) continue ;; esac
+        [[ -n "$(resolvectl dns "$dev" 2>/dev/null | sed 's/^[^:]*://;s/[[:space:]]//g')" ]] || continue
+        printf '%s\n' "$dev"
+    done < <(nmcli -t -f DEVICE,STATE,TYPE device status)
+}
+
+# ControlD answering is not enough -- a resolver on any uplink could answer
+# first and never show up here. Both halves, or it is not healthy.
 controld_is_live() {
-    resolvectl status 2>/dev/null | grep -q 'Current DNS Server.*dns\.controld\.com'
+    resolvectl status 2>/dev/null | grep -q 'Current DNS Server.*dns\.controld\.com' &&
+        [[ -z "$(links_with_dns)" ]]
 }
 
 # Needs no privileges, and the menu calls it on every open.
@@ -67,9 +82,14 @@ notify_caller() {
         notify-send -u critical "$@" 2>/dev/null || true
 }
 
+# Returns 1 for "already correct". A failed write is fatal, not a no-op: it
+# would otherwise be indistinguishable, leaving DHCP suppression off.
 write_conf() {
     [[ "$(cat "$1" 2>/dev/null)" == "$2" ]] && return 1
-    printf '%s\n' "$2" | install -Dm644 /dev/stdin "$1"
+    printf '%s\n' "$2" | install -Dm644 /dev/stdin "$1" || {
+        echo "dns-controld: cannot write $1" >&2
+        exit 1
+    }
 }
 
 reload_network() {
@@ -80,17 +100,6 @@ reload_network() {
         [[ $state == connected ]] || continue
         nmcli device reapply "$dev" >/dev/null 2>&1 || true
     done < <(nmcli -t -f DEVICE,STATE device status)
-}
-
-# Uplinks carrying their own DNS, which outranks the global endpoint.
-# tailscale0 is excluded: MagicDNS is tailscaled's to manage and belongs there.
-links_with_dns() {
-    while IFS=: read -r dev state type; do
-        [[ $state == connected ]] || continue
-        case "$type" in wifi | ethernet | gsm) ;; *) continue ;; esac
-        [[ -n "$(resolvectl dns "$dev" 2>/dev/null | sed 's/^[^:]*://;s/[[:space:]]//g')" ]] || continue
-        printf '%s\n' "$dev"
-    done < <(nmcli -t -f DEVICE,STATE,TYPE device status)
 }
 
 if [[ ${1:-} == --pause ]]; then
@@ -104,11 +113,13 @@ if [[ ${1:-} == --pause ]]; then
 fi
 
 changed=
+# The guards go down before the drop-in comes back: interrupted here, DNS is
+# simply still paused, rather than ControlD active with DHCP free to publish.
+write_conf "$NM_CONF" "$NM_CONF_CONTENT" && changed=1
+write_conf "$MARKER" "$MARKER_CONTENT" && changed=1
 [[ -f $PAUSED ]] && { mv "$PAUSED" "$DROPIN"; changed=1; }
 grep -qE "$PANEL_KEY" "$RESOLVED_CONF" 2>/dev/null &&
     { sed -i -E "/$PANEL_KEY/d" "$RESOLVED_CONF"; changed=1; }
-write_conf "$NM_CONF" "$NM_CONF_CONTENT" && changed=1
-write_conf "$MARKER" "$MARKER_CONTENT" && changed=1
 
 [[ -n $changed ]] && reload_network
 # Pausing lets DHCP put servers on the uplinks; they have to go on the way back.
@@ -122,10 +133,9 @@ for _ in $(seq 20); do
     sleep 0.25
 done
 
-# A real IP means something else answered, and a server left on a link would
-# outrank ControlD silently -- check both, not just the lookup. Quiet on
-# success so the menu row behaves like the other providers.
-blocked=$(getent ahostsv4 ads.doubleclick.net 2>/dev/null | awk 'NR==1 {print $1}')
+# A real IP means something else answered. `|| true` so a total DNS failure
+# still reaches the diagnostics below instead of exiting on the pipeline.
+blocked=$(getent ahostsv4 ads.doubleclick.net 2>/dev/null | awk 'NR==1 {print $1}') || true
 stray=$(links_with_dns)
 if [[ $blocked == "0.0.0.0" && -z $stray ]]; then
     echo "DNS: ControlD (filtering active)"
