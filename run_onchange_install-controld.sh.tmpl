@@ -56,10 +56,6 @@ if [[ "$(sudo cat "$target" 2>/dev/null)" != "$DROPIN_CONTENT" ]]; then
     printf '%s\n' "$DROPIN_CONTENT" | sudo install -Dm644 /dev/stdin "$target"
 fi
 
-# Lets tailscaled own MagicDNS. Safe only while the tailnet's Override is off;
-# with it on this machine would silently move to the shared tailnet profile.
-sudo tailscale set --accept-dns=true
-
 if [[ -f $PAUSED ]]; then
     echo "ControlD is paused; endpoint updated but not applied. Restore with: dns-controld"
 elif command -v dns-controld >/dev/null 2>&1; then
