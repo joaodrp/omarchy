@@ -1,0 +1,20 @@
+[tools]
+"cargo:controld-cli" = "latest"
+claude = "latest"
+codex = "latest"
+copilot = "latest"
+go = "latest"
+node = "latest"
+"npm:agent-browser" = "latest"
+"npm:defuddle-cli" = "latest"
+opencode = "latest"
+pi = "latest"
+ruby = "latest"
+zig = "latest"
+zls = "latest"
+
+[settings]
+idiomatic_version_file_enable_tools = ["ruby"]
+
+[settings.ruby]
+compile = false

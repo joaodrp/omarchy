@@ -47,6 +47,7 @@ Notable files:
 | `dot_config/hypr/modify_bindings.lua` | Maintains a fenced block of personal Hyprland bindings inside Omarchy's `bindings.lua`: drops unwanted preinstalled webapp keys, rebinds mail/calendar to the Google webapps, and corrects Picture-in-Picture placement. |
 | `dot_config/hypr/modify_autostart.lua` | Starts `wayvnc-tailnet` with the session. |
 | `dot_config/omarchy/hooks/post-update` | Re-runs `chezmoi apply` after every `omarchy update` so migrations can't clobber overrides. |
+| `dot_config/mise/config.toml` | Declares the mise-managed toolchains and CLIs; `run_after_mise-install.sh` realizes it. Vendored so the tool list is versioned rather than living only in a file several installers mutate. |
 | `.chezmoitemplates/install-webapp.sh` | Shared webapp install logic; per-webapp `.tmpl` scripts just pass parameters. |
 | `run_after_merge-*.sh` | Merge personal keys into agent/CLI configs (Claude, Codex, opencode) without touching each tool's runtime state. |
 | `run_after_yubikey-harden-pam.sh` | Adds the options Omarchy's FIDO2 setup omits, so the key verifies a fingerprint rather than mere presence. |
