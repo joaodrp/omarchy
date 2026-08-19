@@ -2,6 +2,15 @@
 # Re-apply chezmoi-managed dotfiles after `omarchy update`.
 # Migrations occasionally rewrite files in ~/.config/hypr/, and this hook
 # ensures personal overrides are restored without manual intervention.
-if command -v chezmoi >/dev/null 2>&1; then
-    chezmoi apply --force >/dev/null 2>&1 || true
-fi
+command -v chezmoi >/dev/null 2>&1 || exit 0
+
+log="${XDG_STATE_HOME:-$HOME/.local/state}/chezmoi-post-update.log"
+mkdir -p "$(dirname "$log")"
+
+# Keep the output: an apply that fails here, or that removes packages, would
+# otherwise leave no trace. A non-zero exit lets omarchy report the failure.
+date -Is >"$log"
+chezmoi apply --force >>"$log" 2>&1 || {
+    echo "chezmoi apply failed; see $log" >&2
+    exit 1
+}
