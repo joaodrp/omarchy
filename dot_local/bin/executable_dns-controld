@@ -53,11 +53,23 @@ links_with_dns() {
     done < <(nmcli -t -f DEVICE,STATE,TYPE device status)
 }
 
+# A link claiming the default route outranks the global endpoint for every
+# name, so nothing may claim it: ControlD is global-scope only, and tailscaled
+# scopes itself to ts.net unless the tailnet's "Override DNS servers" is on.
+# That switch is flipped remotely, from outside this machine, and would
+# otherwise leave every lookup going elsewhere while the config here still
+# reads as ControlD.
+links_with_default_route() {
+    resolvectl status 2>/dev/null |
+        awk '/^Link [0-9]+ \(/ {link=$3} /\+DefaultRoute/ {gsub(/[()]/,"",link); print link}'
+}
+
 # ControlD answering is not enough -- a resolver on any uplink could answer
-# first and never show up here. Both halves, or it is not healthy.
+# first and never show up here. All three, or it is not healthy.
 controld_is_live() {
     resolvectl status 2>/dev/null | grep -q 'Current DNS Server.*dns\.controld\.com' &&
-        [[ -z "$(links_with_dns)" ]]
+        [[ -z "$(links_with_dns)" ]] &&
+        [[ -z "$(links_with_default_route)" ]]
 }
 
 # Needs no privileges, and the menu calls it on every open.
@@ -137,7 +149,8 @@ done
 # still reaches the diagnostics below instead of exiting on the pipeline.
 blocked=$(getent ahostsv4 ads.doubleclick.net 2>/dev/null | awk 'NR==1 {print $1}') || true
 stray=$(links_with_dns)
-if [[ $blocked == "0.0.0.0" && -z $stray ]]; then
+hijacked=$(links_with_default_route)
+if [[ $blocked == "0.0.0.0" && -z $stray && -z $hijacked ]]; then
     echo "DNS: ControlD (filtering active)"
     exit 0
 fi
@@ -145,5 +158,7 @@ fi
 echo "DNS: ControlD configured, but the check failed." >&2
 echo "  test lookup returned '${blocked:-nothing}' (want 0.0.0.0)" >&2
 [[ -n $stray ]] && echo "  uplinks still carrying their own DNS: ${stray//$'\n'/ }" >&2
+[[ -n $hijacked ]] &&
+    echo "  links claiming the default route: ${hijacked//$'\n'/ } (tailnet DNS override?)" >&2
 notify_caller "DNS" "ControlD is not answering; check resolvectl status"
 exit 1
