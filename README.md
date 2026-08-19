@@ -12,6 +12,10 @@ chezmoi init https://github.com/joaodrp/omarchy.git
 chezmoi apply
 ```
 
+`init` prompts for the personal email, this machine's ControlD resolver ID,
+and whether to authorize the Thunderbolt dock at the LUKS prompt. Any can be
+left blank; a headless bootstrap has to supply them another way.
+
 The source tree lives at `~/.local/share/chezmoi/` — chezmoi's XDG default.
 Run `chezmoi cd` to drop into a subshell there.
 
@@ -57,7 +61,7 @@ Notable files:
 | Security | YubiKey Bio for `sudo` and polkit: Omarchy's `omarchy setup security fido2` owns the packages, authfile and PAM lines; this repo layers on a fixed `pam://omarchy` origin and `userverification=1` so a fingerprint match is required, not just a touch. |
 | Removed defaults | Basecamp, HEY, Google Photos, plus their keybindings. |
 | Webapps | Gmail (`mailto:` default), Google Calendar, Google Sheets, Claude, Claude Design, Perplexity, YNAB, Home Assistant, GitHub — with explicit Dashboard Icons glyphs. |
-| Networking | Tailscale (SSH enabled); per-machine ControlD via `ctrld`, pinned per NetworkManager profile so no uplink falls back to DHCP DNS; USB Wi-Fi dongle preferred via a route-metric dispatcher; `usb_modeswitch`; ufw opened on `tailscale0` for Mosh. |
+| Networking | Tailscale (SSH enabled); per-machine ControlD over DoT in systemd-resolved, with NetworkManager kept out of DNS so no uplink falls back to DHCP; `dns-controld --pause` to switch resolver temporarily; USB Wi-Fi dongle preferred via a route-metric dispatcher; `usb_modeswitch`; ufw trusts `tailscale0` for Mosh and wayvnc. |
 | Git | `~/.gitconfig` over Omarchy's defaults; GitHub `includeIf` `noreply` email; delta pager; `gitleaks` pre-commit scan. |
 | Dev environments | Ruby/Go/Zig via mise, Rust via rustup. |
 | CLI tooling | `agent-browser`, `defuddle`, `glab`, `git-delta`, `go-yq`, `gitleaks`, `cfspeedtest`, `cdctl`, `mosh`, `release-plz`, `ansible`. |
