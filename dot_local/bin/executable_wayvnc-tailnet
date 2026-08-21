@@ -1,8 +1,11 @@
 #!/bin/bash
 # Serve the Hyprland desktop over VNC, bound to the Tailscale IP only (ufw
-# already keeps 5900 off the LAN). Waits for Tailscale to come up first,
-# with a generous timeout since this is launched once via Hyprland's
-# exec-once and has no supervisor to retry it if it gives up too early.
+# already keeps 5900 off the LAN). Waits for Tailscale to come up first; the
+# timeout is generous because giving up costs a restart cycle rather than
+# failing fast into one.
+#
+# `--gpu` captures through DMA-BUF instead of a CPU copy of every frame, which
+# is most of what makes a scaled 1440p output tolerable over the tailnet.
 set -e
 
 timeout=300
@@ -16,4 +19,4 @@ while ! ip=$(tailscale ip -4 2>/dev/null) || [ -z "$ip" ]; do
     fi
 done
 
-exec wayvnc "$ip" 5900
+exec wayvnc --gpu "$ip" 5900
