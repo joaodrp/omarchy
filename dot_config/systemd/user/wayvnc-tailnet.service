@@ -1,0 +1,22 @@
+[Unit]
+Description=wayvnc on the Tailscale address
+# wayvnc captures a Wayland output, so it is meaningless without a session:
+# the condition keeps it from restarting into nothing, matching omarchy's own
+# Wayland-bound units. Supervision is the point -- losing the output (a dock or
+# monitor replug) kills wayvnc, and Hyprland's autostart hook fires only at
+# login, so a blip left VNC down until the next one.
+ConditionEnvironment=WAYLAND_DISPLAY
+PartOf=graphical-session.target
+After=graphical-session.target
+# The wrapper's own wait for a Tailscale address paces the retry; this only
+# catches wayvnc failing fast, so it gives up rather than respinning forever.
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+ExecStart=%h/.local/bin/wayvnc-tailnet
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target
