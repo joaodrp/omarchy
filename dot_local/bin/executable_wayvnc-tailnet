@@ -6,6 +6,8 @@
 #
 # `--gpu` captures through DMA-BUF instead of a CPU copy of every frame, which
 # is most of what makes a scaled 1440p output tolerable over the tailnet.
+# The frame cap matches the output rather than wayvnc's default 30; drop it
+# back if a link ever turns out to be bandwidth-bound rather than CPU-bound.
 set -e
 
 timeout=300
@@ -19,4 +21,4 @@ while ! ip=$(tailscale ip -4 2>/dev/null) || [ -z "$ip" ]; do
     fi
 done
 
-exec wayvnc --gpu "$ip" 5900
+exec wayvnc --gpu --max-fps=60 "$ip" 5900
