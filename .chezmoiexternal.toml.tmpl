@@ -1,0 +1,12 @@
+{{/* Vendor the Control D bar widget -- except on a machine where it is being
+     developed. There the plugin path is a symlink to the working checkout, and
+     an external would replace it with a clone, silently ending the dev loop:
+     edits would stop reaching the shell with nothing to indicate why. */ -}}
+{{ if not (stat (joinPath .chezmoi.homeDir "Developer" "github.com" "joaodrp" "omarchy-controld-panel")) -}}
+[".config/omarchy/plugins/io.github.joaodrp.controld"]
+    type = "git-repo"
+    url = "https://github.com/joaodrp/omarchy-controld-panel.git"
+    refreshPeriod = "168h"
+    [".config/omarchy/plugins/io.github.joaodrp.controld".pull]
+        args = ["--ff-only"]
+{{ end -}}
