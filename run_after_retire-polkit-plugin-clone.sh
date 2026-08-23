@@ -28,7 +28,11 @@ grep -q 'pam_u2f' "$PACKAGED" 2>/dev/null || exit 0
 echo "polkit: omarchy now handles pam_u2f, retiring the $CLONE_ID clone"
 omarchy plugin enable omarchy.polkit
 omarchy plugin remove "$CLONE_ID" --yes
-omarchy restart shell
+# Left to a human: omarchy's lock lives inside the shell, so restarting while
+# locked strands Hyprland, and nothing reports lock state reliably. Recover with
+# `hyprctl --instance 0 eval 'hl.clear_crashed_lockscreen()'`.
+notify-send "polkit" "Clone retired. Run: omarchy restart shell" 2>/dev/null || true
+echo "polkit: restart the shell to finish -- omarchy restart shell"
 
 # Named literally: chezmoi runs scripts from a temp copy, so $0 is not the
 # source path.
