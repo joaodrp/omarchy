@@ -20,6 +20,12 @@ entries='[
     "statusCommand": "dns-controld --status",
     "pauseCommand": "dns-controld --pause",
     "resumeCommand": "dns-controld"
+  },
+  {
+    "id": "io.github.joaodrp.auto-brightness"
+  },
+  {
+    "id": "io.github.joaodrp.green-room"
   }
 ]'
 
