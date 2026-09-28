@@ -21,3 +21,9 @@ mise install
 compdir="${XDG_DATA_HOME:-$HOME/.local/share}/bash-completion/completions"
 mkdir -p "$compdir"
 mise exec -- cdctl completions bash >"$compdir/cdctl"
+
+# Todoist CLI agent skills. --force so the skill text follows the installed
+# `td` version; "universal" lands in ~/.agents/skills for OpenCode and others.
+for agent in claude-code codex pi universal; do
+    mise exec -- td skill install --force "$agent" >/dev/null
+done
