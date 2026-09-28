@@ -65,7 +65,7 @@ Notable files:
 | Networking | Tailscale (SSH enabled); per-machine ControlD over DoT in systemd-resolved, with NetworkManager kept out of DNS so no uplink falls back to DHCP; `dns-controld --pause` to switch resolver temporarily; USB Wi-Fi dongle preferred via a route-metric dispatcher; `usb_modeswitch`; ufw trusts `tailscale0` for Mosh and wayvnc. |
 | Git | `~/.gitconfig` over Omarchy's defaults; GitHub `includeIf` `noreply` email; delta pager; `gitleaks` pre-commit scan. |
 | Dev environments | Ruby/Go/Zig via mise, Rust via rustup. |
-| CLI tooling | `agent-browser`, `defuddle`, `glab`, `git-delta`, `go-yq`, `gitleaks`, `cfspeedtest`, `cdctl`, `mosh`, `release-plz`, `ansible`. |
+| CLI tooling | `agent-browser`, `defuddle`, `td` (Todoist), `glab`, `git-delta`, `go-yq`, `gitleaks`, `cfspeedtest`, `cdctl`, `mosh`, `release-plz`, `ansible`. |
 | AI agents | `~/.claude/CLAUDE.md` is the single source of global prefs, rendered into per-agent `AGENTS.md` for Codex/OpenCode; Perplexity + Context7 MCP servers load keys from a `chmod 600` env file materialized from 1Password (`refresh-agent-secrets`), so they start without an `op` prompt over SSH. ChatGPT desktop (bundles Codex) via `omarchy install ai-chatgpt`. |
 | Fonts | Apple system fonts mapped over the CSS `system-ui`/`-apple-system` stack. |
 | Apps | Dropbox, Telegram, Calibre, LaTeX (TeX Live), Chromium Google OAuth flags. |
