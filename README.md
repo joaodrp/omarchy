@@ -69,4 +69,4 @@ Notable files:
 | AI agents | `~/.claude/CLAUDE.md` is the single source of global prefs, rendered into per-agent `AGENTS.md` for Codex/OpenCode; Perplexity + Context7 MCP servers load keys from a `chmod 600` env file materialized from 1Password (`refresh-agent-secrets`), so they start without an `op` prompt over SSH. ChatGPT desktop (bundles Codex) via `omarchy install ai-chatgpt`. |
 | Fonts | Apple system fonts mapped over the CSS `system-ui`/`-apple-system` stack. |
 | Apps | Dropbox, Telegram, Calibre, LaTeX (TeX Live), Chromium Google OAuth flags. |
-| Hardware | HDA codec power-save disabled on AC machines (by chassis) to stop idle pops; `hid_apple` fnmode override; `dmidecode`. |
+| Hardware | HDA codec power-save disabled on AC machines (by chassis) to stop idle pops; AirPlay receivers (HomePod, Apple TV) as PipeWire outputs via `pipewire-zeroconf`; `hid_apple` fnmode override; `dmidecode`. |
