@@ -1,4 +1,5 @@
 [tools]
+"cargo:cfspeedtest" = "latest"
 "cargo:controld-cli" = "latest"
 claude = "latest"
 codex = "latest"
