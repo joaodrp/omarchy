@@ -40,7 +40,9 @@ fi
 # Git branch and dirty indicators (skip optional locks)
 branch=""
 git_indicators=""
-if [[ -d "$dir/.git" ]]; then
+# rev-parse, not a .git directory check: also matches subdirectories and
+# linked worktrees (where .git is a file).
+if [[ -n "$dir" ]] && git -C "$dir" --no-optional-locks rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     branch=$(cd "$dir" && git --no-optional-locks branch --show-current 2>/dev/null)
     # Dirty: staged, unstaged, or untracked
     if ! (cd "$dir" && git diff-index --ignore-submodules --cached --quiet HEAD -- 2>/dev/null) \
