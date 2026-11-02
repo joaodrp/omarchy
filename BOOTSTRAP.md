@@ -24,7 +24,7 @@ everything that chezmoi cannot vendor; loop until it exits 0.
 6. **Default agent popup:** pick the agent and log in to it. The choice itself
    is vendored (`~/.config/omarchy/defaults/agent`), so on a rebuild the popup
    only appears if it fires before the first apply.
-7. **1Password app:** sign in, then Settings → Developer:
+7. **1Password app:** sign in, then Settings > Developer:
    - *Integrate with 1Password CLI*
    - *Use the SSH agent* (keys must be in a vault the agent may use)
 
@@ -61,14 +61,15 @@ Then open the agent and say: *bootstrap this machine from joaodrp/omarchy*.
 
    An agent has no TTY, so it asks the human and passes the answers. The flags
    match on the full prompt text from `.chezmoi.toml.tmpl`, not the data key:
-   `--promptString "Personal email=…" --promptString "<ControlD prompt>=…" --promptBool "<Thunderbolt prompt>=false"`.
+   `--promptString "Personal email=..." --promptString "<ControlD prompt>=..." --promptBool "<Thunderbolt prompt>=false"`.
 
 10. **Apply:** `chezmoi apply --keep-going`, so one failing installer is
     reported instead of aborting the rest; re-run until clean. Long on a first
-    run (TeX Live, Android SDK,
-    toolchains). The **human** finishes these when they appear:
-    - Tailscale: browser login printed by `tailscale up`
-    - Dropbox: tray icon → sign in
+    run (TeX Live, Android SDK, toolchains). The **human** finishes these when
+    they appear:
+    - Tailscale: open the login URL `tailscale up` prints; approve the device
+      in the admin console if the tailnet requires it
+    - Dropbox: tray icon > sign in
     - ChatGPT desktop launches once; close it
 
 11. **GitHub CLI — human:** `gh auth login` (browser, one code). git itself
