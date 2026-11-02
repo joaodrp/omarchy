@@ -5,7 +5,7 @@ by an agent alongside the human: each step names who acts and how to verify it.
 Steps are idempotent: resume from the first one whose check fails.
 
 Agents: confirm each check before moving on, and ask the human only for the
-steps marked **human**. `dotfiles-doctor` (installed by step 8) re-checks
+steps marked **human**. `dotfiles-doctor` (installed by step 10) re-checks
 everything that chezmoi cannot vendor; loop until it exits 0.
 
 ## Before install (human)
