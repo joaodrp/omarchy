@@ -1,0 +1,38 @@
+#!/bin/bash
+# Clone every non-archived source repo I can see on GitHub -- my account and
+# each org I belong to, enumerated live -- into ~/Developer/github.com/<owner>/.
+# Default branch only, so neither this clone nor later fetches pull every
+# branch. Existing checkouts are left alone, so re-running only adds new repos.
+set -o pipefail
+
+command -v gh >/dev/null || { echo "clone-my-repos: gh not found" >&2; exit 1; }
+gh auth status >/dev/null 2>&1 || { echo "clone-my-repos: run gh auth login first" >&2; exit 1; }
+
+owners=$( { gh api user -q .login; gh org list --limit 1000; } ) ||
+    { echo "clone-my-repos: cannot list owners" >&2; exit 1; }
+
+base="$HOME/Developer/github.com"
+cloned=0 present=0 failed=0
+for owner in $owners; do
+    repos=$(gh repo list "$owner" --source --no-archived --limit 1000 \
+        --json name -q '.[].name') || { echo "  ! $owner: cannot list repos" >&2; failed=$((failed + 1)); continue; }
+    for repo in $repos; do
+        dest="$base/$owner/$repo"
+        if [ -e "$dest" ]; then
+            present=$((present + 1))
+            continue
+        fi
+        mkdir -p "$base/$owner"
+        if git clone -q --single-branch "https://github.com/$owner/$repo.git" "$dest" 2>/dev/null; then
+            echo "  + $owner/$repo"
+            cloned=$((cloned + 1))
+        else
+            echo "  ! $owner/$repo: clone failed" >&2
+            rm -rf "$dest"
+            failed=$((failed + 1))
+        fi
+    done
+done
+
+echo "clone-my-repos: $cloned cloned, $present already present, $failed failed"
+[ "$failed" -eq 0 ]

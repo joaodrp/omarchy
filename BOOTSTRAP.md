@@ -81,6 +81,12 @@ Then open the agent and say: *bootstrap this machine from joaodrp/omarchy*.
     through `gh auth git-credential`, so remotes stay HTTPS and nothing
     prompts per push.
 
+    Then `clone-my-repos`: every non-archived source repo of the account and
+    its orgs, default branch only, into `~/Developer/github.com/<owner>/<repo>`.
+    Re-runnable; existing checkouts are skipped. To develop a vendored bar
+    widget, symlink its plugin path to the checkout; a checkout alone leaves
+    the plugin managed.
+
 12. **Restart the agent, then `chezmoi apply` again.** A running Claude Code
     rewrites `~/.claude.json` on exit, dropping the MCP servers merged while it
     ran.
