@@ -22,6 +22,14 @@ compdir="${XDG_DATA_HOME:-$HOME/.local/share}/bash-completion/completions"
 mkdir -p "$compdir"
 mise exec -- cdctl completions bash >"$compdir/cdctl"
 
+# cdctl's API token, piped so it never lands in argv or the log. Non-fatal:
+# 1Password may be locked, and every apply retries until it is stored.
+if ! mise exec -- cdctl auth status >/dev/null 2>&1; then
+    op read "op://Private/Control D/rw_api_key" 2>/dev/null |
+        mise exec -- cdctl auth login --token-stdin >/dev/null 2>&1 ||
+        echo "cdctl: not logged in (1Password locked?); retrying next apply" >&2
+fi
+
 # Todoist CLI agent skills. --force so the skill text follows the installed
 # `td` version; "universal" lands in ~/.agents/skills for OpenCode and others.
 for agent in claude-code codex pi universal; do
