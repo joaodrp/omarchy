@@ -1,31 +1,22 @@
-{{/* Vendor my own bar widgets -- except on a machine where one is being
-     developed. There the plugin path is a symlink to the working checkout, and
-     an external would replace it with a clone, silently ending the dev loop:
-     edits would stop reaching the shell with nothing to indicate why. */ -}}
+{{/* Vendor my own bar widgets -- except one being developed on this machine,
+     whose plugin path is a symlink to its working checkout. An external would
+     replace that symlink with a clone, silently ending the dev loop: edits
+     would stop reaching the shell with nothing to indicate why. A checkout
+     merely present under ~/Developer does not count. */ -}}
 
-{{ if not (stat (joinPath .chezmoi.homeDir "Developer" "github.com" "joaodrp" "omarchy-controld-panel")) -}}
-[".config/omarchy/plugins/io.github.joaodrp.controld"]
+{{ range $id, $repo := dict
+    "controld" "omarchy-controld-panel"
+    "auto-brightness" "omarchy-auto-brightness"
+    "green-room" "omarchy-green-room" -}}
+{{   $path := printf ".config/omarchy/plugins/io.github.joaodrp.%s" $id -}}
+{{   $st := lstat (joinPath $.chezmoi.homeDir $path) -}}
+{{   if not (and $st (eq $st.type "symlink")) -}}
+[{{ $path | quote }}]
     type = "git-repo"
-    url = "https://github.com/joaodrp/omarchy-controld-panel.git"
+    url = "https://github.com/joaodrp/{{ $repo }}.git"
     refreshPeriod = "168h"
-    [".config/omarchy/plugins/io.github.joaodrp.controld".pull]
+    [{{ $path | quote }}.pull]
         args = ["--ff-only"]
-{{ end -}}
 
-{{ if not (stat (joinPath .chezmoi.homeDir "Developer" "github.com" "joaodrp" "omarchy-auto-brightness")) -}}
-[".config/omarchy/plugins/io.github.joaodrp.auto-brightness"]
-    type = "git-repo"
-    url = "https://github.com/joaodrp/omarchy-auto-brightness.git"
-    refreshPeriod = "168h"
-    [".config/omarchy/plugins/io.github.joaodrp.auto-brightness".pull]
-        args = ["--ff-only"]
-{{ end -}}
-
-{{ if not (stat (joinPath .chezmoi.homeDir "Developer" "github.com" "joaodrp" "omarchy-green-room")) -}}
-[".config/omarchy/plugins/io.github.joaodrp.green-room"]
-    type = "git-repo"
-    url = "https://github.com/joaodrp/omarchy-green-room.git"
-    refreshPeriod = "168h"
-    [".config/omarchy/plugins/io.github.joaodrp.green-room".pull]
-        args = ["--ff-only"]
+{{   end -}}
 {{ end -}}
