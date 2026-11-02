@@ -52,6 +52,11 @@ if [ -n "$(chezmoi execute-template '{{ .controld_resolver_id }}' 2>/dev/null)" 
 else
     opt "ControlD resolver not set" "add controld_resolver_id to ~/.config/chezmoi/chezmoi.toml, chezmoi apply"
 fi
+if omarchy-pkg-present apple-fonts 2>/dev/null; then
+    ok "Apple fonts installed"
+else
+    opt "Apple fonts not installed (AUR checksums often stale)" "omarchy pkg aur add apple-fonts"
+fi
 if [ -s /etc/fido2/fido2 ]; then
     ok "YubiKey enrolled"
 else
