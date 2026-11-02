@@ -2,13 +2,13 @@
 
 The full sequence from bare metal to a converged machine. Written to be walked
 by an agent alongside the human: each step names who acts and how to verify it.
-Steps are idempotent — resume from the first one whose check fails.
+Steps are idempotent: resume from the first one whose check fails.
 
 Agents: confirm each check before moving on, and ask the human only for the
-steps marked **human**. `dotfiles-doctor` (installed by step 8) re-checks
+steps marked **human**. `dotfiles-doctor` (installed by step 10) re-checks
 everything that chezmoi cannot vendor; loop until it exits 0.
 
-## Before install — human
+## Before install (human)
 
 1. **Firmware:** Secure Boot off (the Omarchy ISO is unsigned).
 2. **Dual boot only:** in Windows, turn BitLocker / Device encryption off and
@@ -16,7 +16,7 @@ everything that chezmoi cannot vendor; loop until it exits 0.
 3. **Install Omarchy.** Give it a separate EFI partition when dual booting, so
    Windows updates cannot touch Limine.
 
-## First boot — human
+## First boot (human)
 
 4. **Wi-Fi.**
 5. **Fingerprint popup** (machines with a reader): accept and enroll a finger.
@@ -34,9 +34,9 @@ everything that chezmoi cannot vendor; loop until it exits 0.
 
 Then open the agent and say: *bootstrap this machine from joaodrp/omarchy*.
 
-## Converge — agent leads
+## Converge (agent leads)
 
-8. **Root for the apply — human.** About a dozen scripts need sudo, and an
+8. **Root for the apply (human).** About a dozen scripts need sudo, and an
    agent's shell has no terminal to type a password into (fingerprint PAM does
    not reach it either). In a real terminal:
 
@@ -56,8 +56,8 @@ Then open the agent and say: *bootstrap this machine from joaodrp/omarchy*.
 
    Prompts, asked once and stored in `~/.config/chezmoi/chezmoi.toml`:
    - personal email
-   - ControlD resolver ID — blank leaves DNS to Omarchy; add it later and re-apply
-   - Thunderbolt dock at LUKS — no, unless the host was assessed for it
+   - ControlD resolver ID: blank leaves DNS to Omarchy; add it later and re-apply
+   - Thunderbolt dock at LUKS: no, unless the host was assessed for it
 
    An agent has no TTY, so it asks the human and passes the answers. The flags
    match on the full prompt text from `.chezmoi.toml.tmpl`, not the data key:
@@ -72,7 +72,7 @@ Then open the agent and say: *bootstrap this machine from joaodrp/omarchy*.
     - Dropbox: tray icon > sign in
     - ChatGPT desktop launches once; close it
 
-11. **GitHub — human:** `gh auth login` (browser, one code). It covers both
+11. **GitHub (human):** `gh auth login` (browser, one code). It covers both
     the `gh` CLI and git over HTTPS: `~/.gitconfig` routes GitHub credentials
     through `gh auth git-credential`, so remotes stay HTTPS and nothing
     prompts per push.

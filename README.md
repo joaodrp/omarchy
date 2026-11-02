@@ -7,7 +7,7 @@ configured in Lua and the desktop provided by Quickshell.
 ## Bootstrap on a new machine
 
 Full sequence, including the manual steps nothing can vendor (firmware,
-1Password toggles, logins), is in [BOOTSTRAP.md](BOOTSTRAP.md) — written so an
+1Password toggles, logins), is in [BOOTSTRAP.md](BOOTSTRAP.md), written so an
 agent can walk it with you. The core is:
 
 ```bash
