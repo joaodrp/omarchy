@@ -17,8 +17,8 @@ echo "chezmoi"
 src=$(chezmoi source-path 2>/dev/null)
 check "source is $src" "chezmoi init --source ~/Developer/github.com/joaodrp/omarchy joaodrp/omarchy" \
     test "$src" = "$HOME/Developer/github.com/joaodrp/omarchy"
-check "no pending changes (chezmoi status)" "chezmoi apply" \
-    bash -c '[ -z "$(chezmoi status 2>/dev/null)" ]'
+check "no pending file changes" "chezmoi apply" \
+    bash -c '[ -z "$(chezmoi status --exclude=scripts 2>/dev/null)" ]'
 
 echo "1Password (app: Settings > Developer)"
 check "CLI integration" "turn on 'Integrate with 1Password CLI'" op account list
