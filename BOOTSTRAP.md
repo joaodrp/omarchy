@@ -30,6 +30,10 @@ everything that chezmoi cannot vendor; loop until it exits 0.
 
    App settings are HMAC-signed per device, so none of this can be vendored.
 
+   The apply reads secrets by `op://` reference, so they must already exist:
+   the Perplexity and Context7 API keys, and the Control D API token that logs
+   `cdctl` in for the bar widget.
+
    Check: `op account list` lists the account; `SSH_AUTH_SOCK=~/.1password/agent.sock ssh-add -l` lists keys.
 
 Then open the agent and say: *bootstrap this machine from joaodrp/omarchy*.

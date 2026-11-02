@@ -29,6 +29,8 @@ check "agent secrets materialized" "refresh-agent-secrets (1Password unlocked)" 
 
 echo "Accounts"
 check "gh authenticated" "gh auth login" gh auth status
+check "cdctl logged in (Control D widget)" "chezmoi apply with 1Password unlocked" \
+    cdctl auth status
 if command -v tailscale >/dev/null; then
     check "tailscale logged in" "sudo tailscale up --accept-routes" tailscale status
 else
