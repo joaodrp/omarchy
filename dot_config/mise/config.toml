@@ -4,6 +4,7 @@
 claude = "latest"
 codex = "latest"
 copilot = "latest"
+gh = "latest"
 go = "latest"
 java = "lts"
 just = "latest"
@@ -30,6 +31,11 @@ _.path = [
 
 [settings]
 idiomatic_version_file_enable_tools = ["ruby"]
+
+# Set by omarchy's installer via `mise settings set`; restated because this
+# file replaces the one it wrote.
+[settings.upgrade]
+auto_prune = false
 
 [settings.ruby]
 compile = false

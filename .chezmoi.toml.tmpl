@@ -5,6 +5,9 @@
 {{- $controld_resolver_id := promptStringOnce . "controld_resolver_id" "ControlD resolver ID for this machine (endpoint's Show Resolvers screen; blank to leave DNS alone)" -}}
 {{- $thunderbolt_keyboard_at_luks := promptBoolOnce . "thunderbolt_keyboard_at_luks" "Authorize the Thunderbolt dock at the LUKS prompt (yes only if this host lacks a preboot ACL and a reboot has verified it)" false -}}
 
+# Persist the clone location: `init --source` only applies to that one run.
+sourceDir = {{ .chezmoi.sourceDir | quote }}
+
 [data]
     personal_email = {{ $personal_email | quote }}
     controld_resolver_id = {{ $controld_resolver_id | quote }}

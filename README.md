@@ -6,28 +6,23 @@ configured in Lua and the desktop provided by Quickshell.
 
 ## Bootstrap on a new machine
 
+Full sequence, including the manual steps nothing can vendor (firmware,
+1Password toggles, logins), is in [BOOTSTRAP.md](BOOTSTRAP.md) — written so an
+agent can walk it with you. The core is:
+
 ```bash
 omarchy pkg add chezmoi
-chezmoi init https://github.com/joaodrp/omarchy.git
+chezmoi init --source ~/Developer/github.com/joaodrp/omarchy joaodrp/omarchy
 chezmoi apply
 ```
 
 `init` prompts for the personal email, this machine's ControlD resolver ID,
 and whether to authorize the Thunderbolt dock at the LUKS prompt. Any can be
-left blank; a headless bootstrap has to supply them another way.
+left blank. The clone lives under `~/Developer/<host>/<org>/<repo>` like any
+other project; `sourceDir` is persisted so later commands find it.
 
-The source tree lives at `~/.local/share/chezmoi/` — chezmoi's XDG default.
-Run `chezmoi cd` to drop into a subshell there.
-
-Optionally, for navigating the repo the same way as any other project under
-`~/Developer/<host>/<org>/<repo>`:
-
-```bash
-mkdir -p ~/Developer/github.com/joaodrp
-ln -s ~/.local/share/chezmoi ~/Developer/github.com/joaodrp/omarchy
-```
-
-`chezmoi apply` is idempotent — re-run after any drift.
+`chezmoi apply` is idempotent — re-run after any drift. `dotfiles-doctor`
+reports what is still missing.
 
 ## Layout
 
@@ -45,7 +40,8 @@ Notable files:
 | Path | Purpose |
 | --- | --- |
 | `dot_config/hypr/modify_bindings.lua` | Maintains a fenced block of personal Hyprland bindings inside Omarchy's `bindings.lua`: drops unwanted preinstalled webapp keys, rebinds mail/calendar to the Google webapps, and corrects Picture-in-Picture placement. |
-| `dot_config/hypr/modify_autostart.lua` | Starts `wayvnc-tailnet` with the session. |
+| `dot_config/systemd/user/wayvnc-tailnet.service` | Supervised wayvnc on the Tailscale address, started with the graphical session. |
+| `dot_local/bin/dotfiles-doctor` | Read-only check of the state chezmoi cannot vendor (1Password toggles, logins, per-machine answers). |
 | `dot_config/omarchy/hooks/post-update` | Re-runs `chezmoi apply` after every `omarchy update` so migrations can't clobber overrides. |
 | `dot_config/mise/config.toml` | Declares the mise-managed toolchains and CLIs; `run_after_mise-install.sh` realizes it. Vendored so the tool list is versioned rather than living only in a file several installers mutate. |
 | `.chezmoitemplates/install-webapp.sh` | Shared webapp install logic; per-webapp `.tmpl` scripts just pass parameters. |
@@ -58,7 +54,8 @@ Notable files:
 
 | Area | Details |
 | --- | --- |
-| Hyprland | Personal bindings block; wayvnc autostart; PiP right-edge placement fix. |
+| Hyprland | Personal bindings block; PiP right-edge placement fix. |
+| Desktop | Default agent (Claude Code, set only if unset); Voxtype dictation with omarchy's default config. |
 | Security | YubiKey Bio for `sudo` and polkit: Omarchy's `omarchy setup security fido2` owns the packages, authfile and PAM lines; this repo layers on a fixed `pam://omarchy` origin and `userverification=1` so a fingerprint match is required, not just a touch. |
 | Removed defaults | Basecamp, HEY, Google Photos, plus their keybindings. |
 | Webapps | Gmail (`mailto:` default), Google Calendar, Google Sheets, Claude, Claude Design, Perplexity, YNAB, Home Assistant, GitHub — with explicit Dashboard Icons glyphs. |

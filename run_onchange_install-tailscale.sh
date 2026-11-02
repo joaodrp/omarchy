@@ -4,5 +4,5 @@
 set -e
 
 if ! omarchy pkg present tailscale; then
-    omarchy install tailscale
+    omarchy install service tailscale
 fi

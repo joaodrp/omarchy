@@ -58,8 +58,12 @@
 	navigate = true
 	line-numbers = true
 
-[filter "lfs"]
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
-	clean = git-lfs clean -- %f
+; `gh auth login` writes these into ~/.config/git/config with gh's absolute,
+; versioned mise path, which breaks once mise upgrades gh. The empty helper
+; resets that list, so only the PATH-resolved gh remains.
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !gh auth git-credential
