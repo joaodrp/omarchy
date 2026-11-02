@@ -13,8 +13,9 @@ SDK="$HOME/Android/Sdk"
 CMDLINE="$SDK/cmdline-tools/latest"
 ZIP=commandlinetools-linux-16111833_latest.zip
 
-# sdkmanager needs a JDK, which the vendored mise config declares.
-mise install >/dev/null
+# sdkmanager needs only the JDK the vendored mise config declares. Installing
+# every tool here fails on a fresh machine: cargo-backed ones precede rustup.
+mise install java >/dev/null
 
 if [ ! -x "$CMDLINE/bin/sdkmanager" ]; then
     tmp=$(mktemp -d)
