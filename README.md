@@ -41,6 +41,7 @@ Notable files:
 | --- | --- |
 | `dot_config/hypr/modify_bindings.lua` | Maintains a fenced block of personal Hyprland bindings inside Omarchy's `bindings.lua`: drops unwanted preinstalled webapp keys, rebinds mail/calendar to the Google webapps, and corrects Picture-in-Picture placement. |
 | `dot_config/systemd/user/wayvnc-tailnet.service` | Supervised wayvnc on the Tailscale address, started with the graphical session. |
+| `dot_local/bin/clone-my-repos` | Clones every non-archived source repo of the account and its orgs, default branch only, under `~/Developer`. |
 | `dot_local/bin/dotfiles-doctor` | Read-only check of the state chezmoi cannot vendor (1Password toggles, logins, per-machine answers). |
 | `dot_config/omarchy/hooks/post-update` | Re-runs `chezmoi apply` after every `omarchy update` so migrations can't clobber overrides. |
 | `dot_config/mise/config.toml` | Declares the mise-managed toolchains and CLIs; `run_after_mise-install.sh` realizes it. Vendored so the tool list is versioned rather than living only in a file several installers mutate. |
