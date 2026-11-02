@@ -72,13 +72,10 @@ Then open the agent and say: *bootstrap this machine from joaodrp/omarchy*.
     - Dropbox: tray icon > sign in
     - ChatGPT desktop launches once; close it
 
-11. **GitHub CLI — human:** `gh auth login` (browser, one code). git itself
-    authenticates over SSH through 1Password, so only `gh` needs this.
-    Then point this repo at SSH:
-
-    ```bash
-    git -C ~/Developer/github.com/joaodrp/omarchy remote set-url origin git@github.com:joaodrp/omarchy.git
-    ```
+11. **GitHub — human:** `gh auth login` (browser, one code). It covers both
+    the `gh` CLI and git over HTTPS: `~/.gitconfig` routes GitHub credentials
+    through `gh auth git-credential`, so remotes stay HTTPS and nothing
+    prompts per push.
 
 12. **Restart the agent, then `chezmoi apply` again.** A running Claude Code
     rewrites `~/.claude.json` on exit, dropping the MCP servers merged while it
