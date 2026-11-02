@@ -29,6 +29,12 @@ entries='[
   }
 ]'
 
+# The Control D widget looks for cdctl once, when it loads. On a first apply
+# cdctl is built after this runs, so hold the widget back until the next one.
+if ! command -v cdctl >/dev/null 2>&1; then
+    entries=$(jq -c 'map(select(.id != "io.github.joaodrp.controld"))' <<<"$entries")
+fi
+
 # Sibling of the config so the mv is an atomic rename, not a cross-device copy.
 tmpfile=$(mktemp "$config.XXXXXX")
 trap 'rm -f "$tmpfile"' EXIT
