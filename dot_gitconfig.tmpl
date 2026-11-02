@@ -58,9 +58,8 @@
 	navigate = true
 	line-numbers = true
 
-; `gh auth login` writes these into ~/.config/git/config with gh's absolute,
-; versioned mise path, which breaks once mise upgrades gh. The empty helper
-; resets that list, so only the PATH-resolved gh remains.
+; Overrides the versioned mise path `gh auth login` writes, which breaks when
+; mise upgrades gh. The empty helper clears the inherited list.
 [credential "https://github.com"]
 	helper =
 	helper = !gh auth git-credential

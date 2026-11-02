@@ -32,8 +32,7 @@ _.path = [
 [settings]
 idiomatic_version_file_enable_tools = ["ruby"]
 
-# Set by omarchy's installer via `mise settings set`; restated because this
-# file replaces the one it wrote.
+# omarchy's installer sets this in the file this one replaces.
 [settings.upgrade]
 auto_prune = false
 
