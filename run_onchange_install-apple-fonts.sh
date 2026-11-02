@@ -7,12 +7,13 @@
 # (dot_config/fontconfig/fonts.conf) -- never Apple's
 # font files. (Apple licenses SF for Apple platforms; using it here is personal.)
 #
-# Non-blocking and retried on every apply until installed: Apple republishes
-# the DMGs under the same version, so the AUR checksums go stale for weeks and
-# a fatal failure would abort the rest of a bootstrap over cosmetics.
+# Non-fatal and tried once: Apple republishes the DMGs under the same version,
+# so the AUR checksums go stale for weeks. Failing would abort a bootstrap over
+# cosmetics, and retrying every apply would need sudo each time for the build
+# dependencies. dotfiles-doctor reports it while missing.
 set -e
 
 if omarchy-pkg-missing apple-fonts; then
     omarchy pkg aur add apple-fonts ||
-        echo "apple-fonts: AUR build failed (stale checksums?); retrying next apply" >&2
+        echo "apple-fonts: AUR build failed (stale checksums?); see dotfiles-doctor" >&2
 fi

@@ -13,7 +13,11 @@ set -e
 command -v tailscale >/dev/null || exit 0
 tailscale status >/dev/null 2>&1 || exit 0
 
-sudo tailscale set --ssh --accept-dns=true
+# Prefs are readable unprivileged, so sudo is asked only for a real change and
+# a converged apply (the post-update hook included) needs none.
+if ! tailscale debug prefs 2>/dev/null | jq -e '.RunSSH and .CorpDNS' >/dev/null; then
+    sudo tailscale set --ssh --accept-dns=true
+fi
 
 # Tailscale SSH services Unix-socket forwarding from the root tailscaled
 # process, so an unprivileged session can reach root-only sockets. Unpatched as
