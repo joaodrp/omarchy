@@ -7,6 +7,7 @@ set -e
 
 systemctl is-active --quiet ufw || exit 0
 
-if ! sudo ufw status | grep -q 'tailscale0'; then
+# ufw's rule files are world-readable, so a converged apply needs no sudo.
+if ! grep -q 'in_tailscale0$' /etc/ufw/user.rules /etc/ufw/user6.rules 2>/dev/null; then
     sudo ufw allow in on tailscale0
 fi
