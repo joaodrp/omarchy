@@ -5,5 +5,5 @@
 set -e
 
 if ! omarchy pkg present dropbox; then
-    omarchy install dropbox
+    omarchy install service dropbox
 fi

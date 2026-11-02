@@ -3,6 +3,13 @@
 chezmoi-managed dotfiles for omarchy (Arch + Hyprland). Files here are the
 source; `chezmoi apply` renders them into `~`.
 
+## New machine
+
+To set up a new machine, walk the human through `BOOTSTRAP.md` step by step,
+verifying each step and finishing with `dotfiles-doctor`. When a manual step
+turns out missing or wrong, update `BOOTSTRAP.md` (and the doctor) in the same
+change.
+
 ## Target
 
 omarchy 4 (`quattro`) and later. It ships as pacman packages, so
