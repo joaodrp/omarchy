@@ -63,7 +63,9 @@ Then open the agent and say: *bootstrap this machine from joaodrp/omarchy*.
    match on the full prompt text from `.chezmoi.toml.tmpl`, not the data key:
    `--promptString "Personal email=…" --promptString "<ControlD prompt>=…" --promptBool "<Thunderbolt prompt>=false"`.
 
-10. **Apply:** `chezmoi apply`. Long on a first run (TeX Live, Android SDK,
+10. **Apply:** `chezmoi apply --keep-going`, so one failing installer is
+    reported instead of aborting the rest; re-run until clean. Long on a first
+    run (TeX Live, Android SDK,
     toolchains). The **human** finishes these when they appear:
     - Tailscale: browser login printed by `tailscale up`
     - Dropbox: tray icon → sign in
