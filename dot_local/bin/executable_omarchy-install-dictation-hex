@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# omarchy:summary=Install and configure Hex dictation
+# omarchy:requires-sudo=true
+
+# Vendored from Omarchy (omacom/omarchy#17186) until a release ships it; the
+# packaged copy in /usr/share/omarchy/bin comes first on PATH and takes over.
+# Before Omarchy 4.5 there is no omarchy-dictation-use or omarchy-i18n, so the
+# selection is written directly, in the file 4.5 reads, and the notice is plain.
+
+set -e
+
+omarchy-pkg-add hex-bin
+# Download the speech model here, with progress, instead of silently on first launch.
+hex model install
+systemctl --user enable hex.service
+# Launching through the CLI saves this session's display environment for the unit before starting it.
+hex start
+if omarchy-cmd-present omarchy-dictation-use; then
+  omarchy-dictation-use hex
+else
+  config="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/defaults/dictation"
+  mkdir -p "${config%/*}"
+  printf '%s\n' hex > "$config.tmp" && mv -f "$config.tmp" "$config"
+fi
+hyprctl reload >/dev/null
+omarchy-notification-send -g "Hex dictation is ready" "Hold Right Alt to dictate, or toggle with Super + Ctrl + X" -t 10000

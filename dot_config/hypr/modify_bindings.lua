@@ -46,5 +46,17 @@ o.bind("SUPER + SHIFT + C", "Google Calendar",
 o.window({ tag = "pip" }, {
   move = { "(monitor_w-640)", "(monitor_h*0.04)" },
 })
+
+-- Hex dictation on omarchy's dictation keys, until omarchy itself binds them:
+-- from 4.5 its dictation layer binds Right Alt and Super + Ctrl + X to
+-- `omarchy dictation`, which reaches Hex through omarchy-dictation-hex. Hold
+-- Right Alt to talk. The modifier's own mask differs between press and
+-- release, so match the keysym whatever the mask, as 4.5 does. Right Alt in a
+-- chord dictates too; use Left Alt for chords.
+if not o.cmd_present("omarchy-dictation") then
+  o.bind("SUPER + CTRL + X", "Toggle dictation", "omarchy-dictation-hex toggle")
+  o.bind("ALT + Alt_R", "Start dictation (push-to-talk)", "omarchy-dictation-hex start", { ignore_mods = true })
+  o.bind("ALT + Alt_R", "Stop dictation (push-to-talk)", "omarchy-dictation-hex stop", { ignore_mods = true, release = true })
+end
 -- <<< dotfiles: personal hyprland <<<
 EOF

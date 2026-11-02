@@ -40,7 +40,9 @@ fi
 echo "Desktop"
 check "default agent set" "omarchy default agent claude" \
     bash -c '[ -n "$(omarchy-default-agent)" ]'
-check "voxtype running" "chezmoi apply" systemctl --user is-active voxtype
+check "hex dictation running" "omarchy-install-dictation-hex" systemctl --user is-active hex
+check "hex selected for dictation" "omarchy-install-dictation-hex" \
+    bash -c '[ "$(cat "${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/defaults/dictation" 2>/dev/null)" = hex ]'
 if omarchy-hw-fingerprint 2>/dev/null; then
     check "fingerprint enrolled" "omarchy-setup-security-fingerprint" \
         test -f /etc/pam.d/omarchy-lock-fingerprint

@@ -56,7 +56,7 @@ Notable files:
 | Area | Details |
 | --- | --- |
 | Hyprland | Personal bindings block; PiP right-edge placement fix. |
-| Desktop | Default agent (Claude Code, set only if unset); Voxtype dictation with omarchy's default config. |
+| Desktop | Default agent (Claude Code, set only if unset); Hex dictation (anomalyco/hex) on omarchy's dictation keys, through omarchy's own Hex backend scripts, vendored until a release ships them; Voxtype removed. |
 | Security | YubiKey Bio for `sudo` and polkit: Omarchy's `omarchy setup security fido2` owns the packages, authfile and PAM lines; this repo layers on a fixed `pam://omarchy` origin and `userverification=1` so a fingerprint match is required, not just a touch. |
 | Removed defaults | Basecamp, HEY, Google Photos, plus their keybindings. |
 | Webapps | Gmail (`mailto:` default), Google Calendar, Google Sheets, Claude, Claude Design, Perplexity, YNAB, Home Assistant, GitHub — with explicit Dashboard Icons glyphs. |
