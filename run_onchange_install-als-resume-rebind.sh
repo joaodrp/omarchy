@@ -8,6 +8,9 @@
 # hook cannot outlive it, so this is a unit ordered after the sleep targets.
 # Other HID light sensors, a Studio Display's included, are left alone.
 #
+# TODO: drop this once the EC firmware is fixed upstream:
+# https://github.com/FrameworkComputer/SoftwareFirmwareIssueTracker/issues/179
+#
 # Installed only where that hub exists; elsewhere it is removed. Idempotent:
 # writes, reloads and enables only on a real change.
 set -e
