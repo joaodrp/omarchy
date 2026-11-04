@@ -52,16 +52,17 @@ if ls -l /sys/bus/platform/drivers/hid_sensor_als/ 2>/dev/null | grep -q FRMW000
         systemctl is-enabled --quiet als-rebind.service
 fi
 
+check "web system fonts resolve to Apple's (SF Pro, SF Mono, New York)" "chezmoi apply (needs network)" \
+    bash -c '[ "$(fc-match -f "%{family[0]}" "\-apple\-system")" = "SF Pro Text" ] &&
+        [ "$(fc-match -f "%{family[0]}" "ui\-monospace")" = "SF Mono" ] &&
+        [ "$(fc-match -f "%{family[0]}" "ui\-serif")" = "New York" ]'
+check "Inter installed (Apple font fallback)" "chezmoi apply" omarchy-pkg-present inter-font
+
 echo "Per machine (optional)"
 if [ -n "$(chezmoi execute-template '{{ .controld_resolver_id }}' 2>/dev/null)" ]; then
     ok "ControlD resolver set"
 else
     opt "ControlD resolver not set" "add controld_resolver_id to ~/.config/chezmoi/chezmoi.toml, chezmoi apply"
-fi
-if omarchy-pkg-present apple-fonts 2>/dev/null; then
-    ok "Apple fonts installed"
-else
-    opt "Apple fonts not installed (AUR checksums often stale)" "omarchy pkg aur add apple-fonts"
 fi
 if [ -s /etc/fido2/fido2 ]; then
     ok "YubiKey enrolled"

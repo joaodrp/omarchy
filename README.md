@@ -65,6 +65,6 @@ Notable files:
 | Dev environments | Ruby/Go/Zig via mise, Rust via rustup. |
 | CLI tooling | `agent-browser`, `defuddle`, `td` (Todoist), `glab`, `git-delta`, `go-yq`, `gitleaks`, `cfspeedtest`, `cdctl`, `mosh`, `release-plz`, `ansible`, `7zip`. |
 | AI agents | `~/.claude/CLAUDE.md` is the single source of global prefs, rendered into per-agent `AGENTS.md` for Codex/OpenCode; Perplexity + Context7 MCP servers load keys from a `chmod 600` env file materialized from 1Password (`refresh-agent-secrets`), so they start without an `op` prompt over SSH. ChatGPT desktop (bundles Codex) via `omarchy install ai-chatgpt`. Todoist CLI skill installed for every agent. |
-| Fonts | Apple system fonts mapped over the CSS `system-ui`/`-apple-system` stack. |
+| Fonts | Apple's SF Pro, SF Mono and New York, installed straight from Apple (not the AUR, whose pinned checksums go stale) and refreshed when Apple republishes them; mapped over the CSS `system-ui`/`-apple-system`/`ui-monospace`/`ui-serif` stack, with Inter as the fallback. |
 | Apps | Dropbox, Telegram, Calibre, LaTeX (TeX Live), Chromium Google OAuth flags. |
 | Hardware | HDA codec power-save disabled on AC machines (by chassis) to stop idle pops; AirPlay receivers (HomePod, Apple TV) as PipeWire outputs via `pipewire-zeroconf`; `hid_apple` fnmode override; the Framework light sensor rebound after resume, where it reads 0 until then; `dmidecode`. |

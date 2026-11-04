@@ -91,8 +91,8 @@ Then open the agent and say: *bootstrap this machine from joaodrp/omarchy*.
     rewrites `~/.claude.json` on exit, dropping the MCP servers merged while it
     ran.
 
-13. **Verify:** `dotfiles-doctor` exits 0. Optional rows (ControlD, Apple fonts, YubiKey)
-    may stay `skip`.
+13. **Verify:** `dotfiles-doctor` exits 0. Optional rows (ControlD, YubiKey) may stay
+    `skip`.
 
 ## Later, per machine
 
