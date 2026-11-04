@@ -1,10 +1,14 @@
 #!/bin/bash
-# Make a keyboard on the Thunderbolt dock work at the LUKS passphrase prompt.
+# Make a keyboard on the Thunderbolt dock work at the LUKS passphrase prompt,
+# on hosts that need it.
 #
-# The dock's USB ports are an xHCI inside the dock, reached over a PCIe tunnel.
-# Security level `user` withholds that tunnel until something writes
+# Whether a host needs it depends on how the dock's USB reaches it. Where the
+# dock's ports sit behind an xHCI inside the dock, reached over a PCIe tunnel,
+# security level `user` withholds that tunnel until something writes
 # `authorized`, and only boltd does -- after the encrypted root is mounted. So
-# the keyboard does not exist yet when the passphrase is asked for.
+# the keyboard does not exist yet when the passphrase is asked for. Where the
+# dock's USB 2 hub is wired to the host's own controller over the cable's USB 2
+# pair instead, the keyboard needs no authorization and nothing is installed.
 #
 # An initramfs hook spliced ahead of `encrypt` authorizes the dock; a watchdog
 # closes it again if nobody unlocks, so an unattended reboot does not leave a
@@ -14,16 +18,23 @@
 # credential the initramfs trusts pre-unlock. Captured from the attached dock
 # at apply time, kept out of this public repo. Model strings only locate it.
 #
-# Idempotent: files rewritten only when content differs, the UUID is preserved
-# when the dock is absent, and the initramfs is rebuilt only on change.
+# Runs every apply so plugging the dock in is enough for `auto` to decide; with
+# no dock attached it changes nothing. Idempotent: files are rewritten only
+# when content differs, sudo is used only for a change, and the initramfs is
+# rebuilt only when the installed hook changes.
 set -e
 
-# Per-host opt-in, staged: off until the host is assessed -- `domain0/boot_acl`
-# means firmware can authorize the dock pre-boot, making this redundant -- and
-# a reboot proves it. Disabling does not undo an apply; remove the /etc files
-# and rebuild.
-ENABLED="{{ if hasKey . "thunderbolt_keyboard_at_luks" }}{{ .thunderbolt_keyboard_at_luks }}{{ end }}"
-[[ "$ENABLED" == "true" ]] || exit 0
+# Per host: `auto` (default) installs the hook when the attached dock's
+# keyboard sits behind a PCIe tunnel, `on` always, `off` never. Pre-tristate
+# hosts stored a boolean: true means `on`, false `auto`.
+{{- $mode := "auto" -}}
+{{- if hasKey . "thunderbolt_keyboard_at_luks" -}}
+{{-   $v := toString .thunderbolt_keyboard_at_luks -}}
+{{-   if eq $v "true" "on" -}}{{- $mode = "on" -}}
+{{-   else if eq $v "off" -}}{{- $mode = "off" -}}
+{{-   end -}}
+{{- end }}
+MODE={{ $mode | quote }}
 
 DOCK_VENDOR='CalDigit, Inc.'
 DOCK_DEVICE='TS5'
@@ -34,16 +45,33 @@ MKINITCPIO_CONF=/etc/mkinitcpio.conf.d/zz-thunderbolt-keyboard.conf
 DOCK_CONF=/etc/thunderbolt-keyboard.conf
 # Superseded by MKINITCPIO_CONF, which carries the same MODULES line.
 LEGACY_CONF=/etc/mkinitcpio.conf.d/thunderbolt_module.conf
+STATE=$HOME/.local/state/thunderbolt-keyboard
+# DOCK_CONF is root-only; its hash and file metadata let an unchanged pin skip
+# sudo.
+DOCK_HASH=$STATE/dock.sha256
+# Set before any /etc change and cleared only after a rebuild succeeds, so a
+# failed rebuild is retried on the next apply.
+PENDING=$STATE/rebuild-pending
 
-changed=0
+mark_pending() {
+  mkdir -p "$STATE"
+  : >"$PENDING"
+}
 
+# The hook files are world-readable, so comparing them needs no sudo.
 install_file() {
   local path=$1 content=$2 mode=$3
-  if [ "$(sudo cat "$path" 2>/dev/null)" = "$content" ]; then
+  if [ "$(cat "$path" 2>/dev/null)" = "$content" ]; then
     return 0
   fi
+  mark_pending
   sudo install -Dm"$mode" /dev/stdin "$path" <<<"$content"
-  changed=1
+}
+
+remove_file() {
+  [ -e "$1" ] || return 0
+  mark_pending
+  sudo rm -f "$1"
 }
 
 read -r -d '' INSTALL_HOOK_CONTENT <<'EOF' || true
@@ -219,34 +247,126 @@ if [[ " ${HOOKS[*]} " != *" thunderbolt-keyboard "* ]]; then
 fi
 EOF
 
-install_file "$INSTALL_HOOK" "$INSTALL_HOOK_CONTENT" 644
-install_file "$RUNTIME_HOOK" "$RUNTIME_HOOK_CONTENT" 644
-install_file "$MKINITCPIO_CONF" "$MKINITCPIO_CONF_CONTENT" 644
+# --- What this host needs --------------------------------------------------
 
-# Pin the dock attached right now; when it is unplugged, keep what was captured
-# before rather than unpinning.
-dock_uuid=
+dock_dev=
 for dev in /sys/bus/thunderbolt/devices/*/; do
   [ -f "$dev/unique_id" ] || continue
   [ "$(cat "$dev/vendor_name" 2>/dev/null)" = "$DOCK_VENDOR" ] || continue
   [ "$(cat "$dev/device_name" 2>/dev/null)" = "$DOCK_DEVICE" ] || continue
-  dock_uuid=$(cat "$dev/unique_id")
+  dock_dev=${dev%/}
   break
 done
 
-if [ -n "$dock_uuid" ]; then
-  install_file "$DOCK_CONF" "$dock_uuid" 600
-elif ! sudo test -f "$DOCK_CONF"; then
-  echo "No $DOCK_VENDOR $DOCK_DEVICE attached and none pinned yet;" \
-    "the hook stays inert until this runs with the dock connected." >&2
+# Classify each keyboard reached through the dock by whether its USB
+# controller is a PCI device behind a Thunderbolt tunnel (`removable`). The
+# dock's USB 2 hub reports the dock's vendor, which tells its keyboards from
+# the host's own. Prints needed / not-needed / unknown.
+assess() {
+  local uuid domain kbd path dir via_dock tunnelled verdict=unknown
+  uuid=$(cat "$dock_dev/unique_id")
+  domain=/sys/bus/thunderbolt/devices/domain${dock_dev##*/}
+  domain=${domain%%-*}
+  if grep -qiF "$uuid" "$domain/boot_acl" 2>/dev/null; then
+    echo "not-needed (firmware authorizes the dock pre-boot via boot_acl)"
+    return
+  fi
+  for kbd in /sys/bus/usb/devices/*:*; do
+    [ "$(cat "$kbd/bInterfaceClass" 2>/dev/null)" = 03 ] || continue
+    [ "$(cat "$kbd/bInterfaceProtocol" 2>/dev/null)" = 01 ] || continue
+    # Skips an interface unplugged mid-scan.
+    path=$(readlink -e "$kbd") || continue
+    via_dock=0 tunnelled=0
+    dir=${path%/*}
+    while [[ $dir == /sys/devices/* ]]; do
+      [ "$(cat "$dir/manufacturer" 2>/dev/null)" = "$DOCK_VENDOR" ] && via_dock=1
+      if [[ ${dir##*/} =~ ^[0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\.[0-7]$ ]] &&
+        [ "$(cat "$dir/removable" 2>/dev/null)" = removable ]; then
+        tunnelled=1
+      fi
+      dir=${dir%/*}
+    done
+    (( via_dock )) || continue
+    if (( tunnelled )); then
+      verdict=needed
+      break
+    fi
+    verdict=not-needed
+  done
+  case $verdict in
+  needed) echo "needed (a dock keyboard sits behind the PCIe tunnel)" ;;
+  not-needed) echo "not-needed (the dock's keyboards reach the host's own USB controller)" ;;
+  *) echo "unknown (no keyboard attached through the dock)" ;;
+  esac
+}
+
+installed=0
+[ -e "$MKINITCPIO_CONF" ] && installed=1
+
+want=$installed
+case $MODE in
+on) want=1 ;;
+off) want=0 ;;
+esac
+
+if [ -n "$dock_dev" ]; then
+  verdict=$(assess)
+  if [ "$MODE" = auto ]; then
+    case $verdict in
+    needed*) want=1 ;;
+    not-needed*) want=0 ;;
+    esac
+    # Tunnelling PCIe pre-unlock is only safe while the IOMMU translates its DMA;
+    # the hook refuses otherwise, so installing it would do nothing.
+    domain=/sys/bus/thunderbolt/devices/domain${dock_dev##*/}
+    domain=${domain%%-*}
+    if (( want )) && [ "$(cat "$domain/iommu_dma_protection" 2>/dev/null)" != 1 ]; then
+      echo "thunderbolt-keyboard: needed, but IOMMU DMA protection is off; not installing" >&2
+      want=0
+    fi
+  fi
+  (( want == installed )) || echo "thunderbolt-keyboard: $MODE mode, dock assessed as $verdict"
 fi
 
-if [ "$(sudo cat "$LEGACY_CONF" 2>/dev/null)" = 'MODULES+=(thunderbolt)' ]; then
-  sudo rm -f "$LEGACY_CONF"
-  changed=1
+# --- Converge -----------------------------------------------------------------
+
+if (( want )); then
+  install_file "$INSTALL_HOOK" "$INSTALL_HOOK_CONTENT" 644
+  install_file "$RUNTIME_HOOK" "$RUNTIME_HOOK_CONTENT" 644
+  install_file "$MKINITCPIO_CONF" "$MKINITCPIO_CONF_CONTENT" 644
+
+  # Pin the dock attached right now; when it is unplugged, keep what was
+  # captured before rather than unpinning.
+  if [ -n "$dock_dev" ]; then
+    dock_uuid=$(cat "$dock_dev/unique_id")
+    hash=$(printf '%s' "$dock_uuid" | sha256sum | cut -d' ' -f1)
+    pin_state() { printf '%s %s\n' "$hash" "$(stat -c '%i:%Y:%s:%a:%U' "$DOCK_CONF" 2>/dev/null)"; }
+    if [ "$(cat "$DOCK_HASH" 2>/dev/null)" != "$(pin_state)" ]; then
+      if [ "$(sudo stat -c '%a:%U' "$DOCK_CONF" 2>/dev/null)" != 600:root ] ||
+        [ "$(sudo cat "$DOCK_CONF" 2>/dev/null)" != "$dock_uuid" ]; then
+        mark_pending
+        sudo install -Dm600 -o root -g root /dev/stdin "$DOCK_CONF" <<<"$dock_uuid"
+      fi
+      mkdir -p "$STATE"
+      pin_state >"$DOCK_HASH"
+    fi
+  elif [ ! -e "$DOCK_CONF" ]; then
+    echo "No $DOCK_VENDOR $DOCK_DEVICE attached and none pinned yet;" \
+      "the hook stays inert until this runs with the dock connected." >&2
+  fi
+
+  if [ "$(cat "$LEGACY_CONF" 2>/dev/null)" = 'MODULES+=(thunderbolt)' ]; then
+    remove_file "$LEGACY_CONF"
+  fi
+else
+  remove_file "$MKINITCPIO_CONF"
+  remove_file "$INSTALL_HOOK"
+  remove_file "$RUNTIME_HOOK"
+  remove_file "$DOCK_CONF"
+  rm -f "$DOCK_HASH"
 fi
 
-if [ "$changed" -eq 1 ]; then
+if [ -e "$PENDING" ]; then
   echo "Rebuilding initramfs..."
   # Where limine owns the UKI there are no presets, and the mkinitcpio wrapper
   # only offers this behind an interactive prompt.
@@ -255,4 +375,5 @@ if [ "$changed" -eq 1 ]; then
   else
     sudo mkinitcpio -P
   fi
+  rm -f "$PENDING"
 fi

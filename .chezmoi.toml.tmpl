@@ -3,7 +3,19 @@
        runs reuse the local file; no re-prompting. */ -}}
 {{- $personal_email := promptStringOnce . "personal_email" "Personal email" -}}
 {{- $controld_resolver_id := promptStringOnce . "controld_resolver_id" "ControlD resolver ID for this machine (endpoint's Show Resolvers screen; blank to leave DNS alone)" -}}
-{{- $thunderbolt_keyboard_at_luks := promptBoolOnce . "thunderbolt_keyboard_at_luks" "Authorize the Thunderbolt dock at the LUKS prompt (yes only if this host lacks a preboot ACL and a reboot has verified it)" false -}}
+{{- /* Hosts from before auto/on/off stored a boolean: true meant on, false
+       meant "not assessed", which auto now covers. */ -}}
+{{- $thunderbolt_keyboard_at_luks := "" -}}
+{{- if hasKey . "thunderbolt_keyboard_at_luks" -}}
+{{-   $tb := toString .thunderbolt_keyboard_at_luks -}}
+{{-   if eq $tb "true" -}}{{- $thunderbolt_keyboard_at_luks = "on" -}}
+{{-   else if eq $tb "false" -}}{{- $thunderbolt_keyboard_at_luks = "auto" -}}
+{{-   else if has $tb (list "auto" "on" "off") -}}{{- $thunderbolt_keyboard_at_luks = $tb -}}
+{{-   end -}}
+{{- end -}}
+{{- if not $thunderbolt_keyboard_at_luks -}}
+{{-   $thunderbolt_keyboard_at_luks = promptChoice "Authorize the Thunderbolt dock at the LUKS prompt (auto: only when the dock's keyboard needs it)" (list "auto" "on" "off") "auto" -}}
+{{- end -}}
 
 # Persist the clone location: `init --source` only applies to that one run.
 sourceDir = {{ .chezmoi.sourceDir | quote }}
@@ -11,4 +23,4 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
 [data]
     personal_email = {{ $personal_email | quote }}
     controld_resolver_id = {{ $controld_resolver_id | quote }}
-    thunderbolt_keyboard_at_luks = {{ $thunderbolt_keyboard_at_luks }}
+    thunderbolt_keyboard_at_luks = {{ $thunderbolt_keyboard_at_luks | quote }}

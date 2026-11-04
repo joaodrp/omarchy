@@ -61,11 +61,11 @@ Then open the agent and say: *bootstrap this machine from joaodrp/omarchy*.
    Prompts, asked once and stored in `~/.config/chezmoi/chezmoi.toml`:
    - personal email
    - ControlD resolver ID: blank leaves DNS to Omarchy; add it later and re-apply
-   - Thunderbolt dock at LUKS: no, unless the host was assessed for it
+   - Thunderbolt dock at LUKS: `auto`
 
    An agent has no TTY, so it asks the human and passes the answers. The flags
    match on the full prompt text from `.chezmoi.toml.tmpl`, not the data key:
-   `--promptString "Personal email=..." --promptString "<ControlD prompt>=..." --promptBool "<Thunderbolt prompt>=false"`.
+   `--promptString "Personal email=..." --promptString "<ControlD prompt>=..." --promptChoice "<Thunderbolt prompt>=auto"`.
 
 10. **Apply:** `chezmoi apply --keep-going`, so one failing installer is
     reported instead of aborting the rest; re-run until clean. Long on a first
@@ -98,4 +98,4 @@ Then open the agent and say: *bootstrap this machine from joaodrp/omarchy*.
 
 - ControlD: set `controld_resolver_id` in `~/.config/chezmoi/chezmoi.toml`, then `chezmoi apply`.
 - YubiKey: plug it in, `omarchy-yubikey-enroll`, `omarchy setup security fido2`, `chezmoi apply`.
-- Thunderbolt keyboard at LUKS: see `run_onchange_thunderbolt-keyboard-at-luks.sh.tmpl`.
+- Thunderbolt keyboard at LUKS: `auto` decides on the first apply with the dock attached; see `run_after_thunderbolt-keyboard-at-luks.sh.tmpl`.

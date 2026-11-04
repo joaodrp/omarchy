@@ -17,8 +17,9 @@ chezmoi apply
 ```
 
 `init` prompts for the personal email, this machine's ControlD resolver ID,
-and whether to authorize the Thunderbolt dock at the LUKS prompt. Any can be
-left blank. The clone lives under `~/Developer/<host>/<org>/<repo>` like any
+and whether to authorize the Thunderbolt dock at the LUKS prompt (`auto`
+installs that hook only where the dock's keyboard needs it). The first two can
+be left blank. The clone lives under `~/Developer/<host>/<org>/<repo>` like any
 other project; `sourceDir` is persisted so later commands find it.
 
 `chezmoi apply` is idempotent — re-run after any drift. `dotfiles-doctor`
