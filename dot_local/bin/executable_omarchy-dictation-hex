@@ -8,6 +8,9 @@
 # Adapted to Hex 3.3: `hex status` is text unless asked for JSON, and reports
 # a recording as the listener's status; `dictation start` is idempotent, and
 # `stop --print` refuses when nothing records, so neither needs a state check.
+# Temporary: types with wtype instead of the clipboard helper, which replaces
+# the user's last copy, until https://github.com/omacom/omarchy/pull/17400
+# ships. A packaged copy without it brings that bug back.
 not_running=3
 no_speech=4
 
@@ -26,14 +29,15 @@ start() {
 }
 
 # Hex pastes with a bare Ctrl+V, which terminals ignore, so take the transcript
-# and let Omarchy type it into whatever is focused.
+# and type it into whatever is focused. Typing leaves the clipboard and its
+# history alone, where a paste would replace the user's last copy.
 stop() {
   local text result
   omarchy-cmd-missing hex && return 0
   text=$(hex dictation stop --print 2>/dev/null)
   result=$?
   if (( result == 0 )); then
-    omarchy-clipboard-paste-text "$text"
+    wtype -- "$text"
   elif (( result != no_speech )) && [[ $(listener) == "Recording" ]]; then
     return "$result"
   fi
