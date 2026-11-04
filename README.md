@@ -41,6 +41,7 @@ Notable files:
 | Path | Purpose |
 | --- | --- |
 | `dot_config/hypr/modify_bindings.lua` | Maintains a fenced block of personal Hyprland bindings inside Omarchy's `bindings.lua`: drops unwanted preinstalled webapp keys, rebinds mail/calendar to the Google webapps, and corrects Picture-in-Picture placement. |
+| `dot_config/hypr/modify_input.lua` | Maintains a fenced block of personal input overrides inside Omarchy's `input.lua`: slower touchpad scrolling in Chromium-based browsers and their webapps. |
 | `dot_config/systemd/user/wayvnc-tailnet.service` | Supervised wayvnc on the Tailscale address, started with the graphical session. |
 | `dot_local/bin/clone-my-repos` | Clones every non-archived source repo of the account and its orgs, default branch only, under `~/Developer`. |
 | `dot_local/bin/dotfiles-doctor` | Read-only check of the state chezmoi cannot vendor (1Password toggles, logins, per-machine answers). |
@@ -56,7 +57,7 @@ Notable files:
 
 | Area | Details |
 | --- | --- |
-| Hyprland | Personal bindings block; PiP right-edge placement fix. |
+| Hyprland | Personal bindings block; PiP right-edge placement fix; slower touchpad scrolling in Chromium-based browsers. |
 | Desktop | Default agent (Claude Code, set only if unset); Obsidian Circuit theme installed from its repo (selectable, not applied); Hex dictation (anomalyco/hex, from the AUR, which tracks releases) on omarchy's dictation keys, through omarchy's own Hex backend scripts, vendored until a release ships them, with Parakeet v3 (English and Portuguese) pinned and the listener on at launch; Voxtype removed. |
 | Security | YubiKey Bio for `sudo` and polkit: Omarchy's `omarchy setup security fido2` owns the packages, authfile and PAM lines; this repo layers on a fixed `pam://omarchy` origin and `userverification=1` so a fingerprint match is required, not just a touch. |
 | Removed defaults | Basecamp, HEY, Google Photos, plus their keybindings. |
