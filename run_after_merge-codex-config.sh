@@ -3,6 +3,9 @@
 # mikefarah/yq). Preserves codex's runtime additions (trusted projects,
 # plugin toggles) and rewrites only the managed keys below.
 #
+# Qt tools run offscreen: the sandbox blocks Wayland, so e.g. `qml --help`
+# would otherwise abort and raise a crash notification.
+#
 # Idempotent. Skips quietly when yq isn't installed yet (first apply
 # on a fresh machine; its installer runs in the same apply, but order
 # isn't guaranteed).
@@ -32,5 +35,6 @@ yq -i -p toml -o toml '
     "command": "with-agent-secrets",
     "args": ["npx", "-y", "@upstash/context7-mcp"]
   } |
-  .plugins."github@openai-curated".enabled = true
+  .plugins."github@openai-curated".enabled = true |
+  .shell_environment_policy.set.QT_QPA_PLATFORM = "offscreen"
 ' "$config"
