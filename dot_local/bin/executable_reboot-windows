@@ -1,0 +1,40 @@
+#!/bin/bash
+# Reboot into Windows once, through its own boot manager rather than the
+# Limine menu: BitLocker without Secure Boot measures the boot chain, so a
+# Limine in it asks for the recovery key after every Limine update. Only the
+# next boot changes; later ones go back to Limine.
+set -euo pipefail
+
+usage="Usage: reboot-windows [-y|--yes]"
+yes=false
+for arg in "$@"; do
+  case $arg in
+    -y | --yes) yes=true ;;
+    -h | --help) echo "$usage"; exit 0 ;;
+    *) echo "$usage" >&2; exit 2 ;;
+  esac
+done
+
+# Windows can register duplicate entries for the same loader; take the first
+# in boot order.
+entries=$(efibootmgr)
+order=$(sed -n 's/^BootOrder: //p' <<<"$entries" | tr ',' ' ')
+entry=""
+for num in $order; do
+  if grep -q "^Boot$num\*\? Windows Boot Manager"$'\t' <<<"$entries"; then
+    entry=$num
+    break
+  fi
+done
+if [[ -z $entry ]]; then
+  echo "reboot-windows: no Windows Boot Manager entry in the boot order" >&2
+  exit 1
+fi
+
+if ! $yes; then
+  read -r -p "Reboot into Windows now? Open apps will close. [y/N] " answer || answer=""
+  [[ $answer == [yY] ]] || { echo "Cancelled."; exit 1; }
+fi
+
+sudo efibootmgr --bootnext "$entry" >/dev/null
+exec omarchy-system reboot

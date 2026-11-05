@@ -3,3 +3,8 @@ AGENTS.md
 CLAUDE.md
 LICENSE
 BOOTSTRAP.md
+
+{{/* reboot-windows only where the firmware boots a Windows install. */ -}}
+{{ if not (contains "Windows Boot Manager" (output "sh" "-c" "efibootmgr 2>/dev/null || true")) -}}
+.local/bin/reboot-windows
+{{ end -}}
