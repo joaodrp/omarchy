@@ -58,7 +58,7 @@ Notable files:
 | Area | Details |
 | --- | --- |
 | Hyprland | Personal bindings block; PiP right-edge placement fix; slower touchpad scrolling in Chromium-based browsers. |
-| Desktop | Default agent (Claude Code, set only if unset); Obsidian Circuit theme installed from its repo (selectable, not applied); Hex dictation (anomalyco/hex, from the AUR, which tracks releases) on omarchy's dictation keys, through omarchy's own Hex backend scripts, vendored until a release ships them and types the transcript (omacom/omarchy#17400), with Parakeet v3 (English and Portuguese) pinned and the listener on at launch. |
+| Desktop | Default agent (Claude Code, set only if unset); Obsidian Circuit theme installed from its repo (selectable, not applied); Superwhisper dictation from Omarchy 4.5, through omarchy's own installer and keys, pinned to its local Offline mode (Cohere Transcribe; English and Portuguese) and to restoring the clipboard after inserting text; Hex, the backend before it, is retired on the first apply after the upgrade. |
 | Security | YubiKey Bio for `sudo` and polkit: Omarchy's `omarchy setup security fido2` owns the packages, authfile and PAM lines; this repo layers on a fixed `pam://omarchy` origin and `userverification=1` so a fingerprint match is required, not just a touch. |
 | Removed defaults | Basecamp and HEY, plus their keybindings. |
 | Webapps | Gmail (`mailto:` default), Google Calendar, Google Sheets, Claude, Claude Design, Perplexity, YNAB, Home Assistant, GitHub — with explicit Dashboard Icons glyphs. |

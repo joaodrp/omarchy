@@ -50,14 +50,14 @@ o.window({ tag = "pip" }, {
 })
 
 -- Dictation keys. From Omarchy 4.5, `omarchy dictation` dispatches to the
--- selected backend (Hex, through omarchy-dictation-hex) and Omarchy binds
--- Alt + Space and Right Alt to it; Super + Ctrl + X stays mine there. Before
--- 4.5, call Hex directly on the keys 4.5 uses. The modifier's own mask
--- differs between press and release, so match the keysym whatever the mask.
--- Right Alt in a chord dictates too; use Left Alt for chords.
+-- selected backend (Superwhisper) and Omarchy binds Alt + Space and Right Alt
+-- to it; Super + Ctrl + X stays mine there. Before 4.5, the Hex install that
+-- the switch to Superwhisper retires still takes the keys 4.5 uses. The
+-- modifier's own mask differs between press and release, so match the keysym
+-- whatever the mask. Right Alt in a chord dictates too; use Left Alt for chords.
 if o.cmd_present("omarchy-dictation") then
   o.bind("SUPER + CTRL + X", "Toggle dictation", "omarchy-dictation toggle")
-else
+elseif o.cmd_present("omarchy-dictation-hex") then
   o.bind("SUPER + CTRL + X", "Toggle dictation", "omarchy-dictation-hex toggle")
   o.bind("ALT + Alt_R", "Start dictation (push-to-talk)", "omarchy-dictation-hex start", { ignore_mods = true })
   o.bind("ALT + Alt_R", "Stop dictation (push-to-talk)", "omarchy-dictation-hex stop", { ignore_mods = true, release = true })
