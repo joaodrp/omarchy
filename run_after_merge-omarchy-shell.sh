@@ -52,3 +52,12 @@ jq --argjson entries "$entries" '
       end
   )
 ' "$config" >"$tmpfile" && mv "$tmpfile" "$config"
+
+# Swap Nautilus's dock pin for Strata. The dock reads Omarchy's default pins
+# only while dock.pinned is absent, so seed it from them once; after that the
+# user's own order is kept.
+defaults="${OMARCHY_PATH:-/usr/share/omarchy}/config/omarchy/shell.json"
+jq --slurpfile defaults "$defaults" '
+  .dock.pinned = ((.dock.pinned // $defaults[0].dock.pinned // [])
+    | map(if . == "org.gnome.Nautilus" then "io.github.lgse.Strata" else . end))
+' "$config" >"$tmpfile" && mv "$tmpfile" "$config"

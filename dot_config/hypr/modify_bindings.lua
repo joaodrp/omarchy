@@ -42,6 +42,11 @@ rebind("SUPER + SHIFT + E", "Gmail",
 rebind("SUPER + SHIFT + C", "Google Calendar",
   o.launch_webapp_sole("Google Calendar", "https://calendar.google.com"))
 
+-- Strata replaces Nautilus as the file manager.
+rebind("SUPER + SHIFT + F", "File manager", { launch = "strata" })
+rebind("SUPER + ALT + SHIFT + F", "File manager (cwd)",
+  'uwsm-app -- strata "$(omarchy-cmd-terminal-cwd)"')
+
 -- Fix Picture-in-Picture clipping off the right screen edge: omarchy's pip
 -- rules compute X from window_w (Chromium's intrinsic ~512px PiP width) before
 -- `size = { 600, 338 }` widens the window. Recompute from the forced width:
