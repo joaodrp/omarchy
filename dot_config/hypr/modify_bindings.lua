@@ -19,21 +19,23 @@ awk '
 cat <<'EOF'
 
 -- >>> dotfiles: personal hyprland >>>
--- Drop the preinstalled webapp bindings I don't use. Unbound one by one
--- rather than via omarchy_preinstalled_bindings=false, which would also take
--- the preinstalled bindings I do want (herdr, Obsidian, 1Password, ChatGPT,
--- Google Photos).
-hl.unbind("SUPER + SHIFT + E") -- Hey email
-hl.unbind("SUPER + SHIFT + C") -- Hey calendar
+-- o.rebind arrived in Omarchy 4.5; before that, unbind and bind by hand.
+local rebind = o.rebind or function(keys, description, dispatcher, options)
+  hl.unbind(keys)
+  o.bind(keys, description, dispatcher, options)
+end
 
--- Reclaim the freed mail/calendar keys for the Google webapps.
+-- Move the preinstalled HEY mail/calendar keys to the Google webapps, one key
+-- at a time rather than via omarchy_preinstalled_bindings=false, which would
+-- also take the preinstalled bindings I do want (herdr, Obsidian, 1Password,
+-- ChatGPT, Google Photos).
 -- launch_webapp_sole matches its pattern as a word-boundary regex against the
 -- window class *or* title. The webapp class (chrome-mail.google.com__-Default)
 -- has no word boundary before the `__`, so the pattern only ever matches on
 -- the title.
-o.bind("SUPER + SHIFT + E", "Gmail",
+rebind("SUPER + SHIFT + E", "Gmail",
   o.launch_webapp_sole("Gmail", "https://mail.google.com"))
-o.bind("SUPER + SHIFT + C", "Google Calendar",
+rebind("SUPER + SHIFT + C", "Google Calendar",
   o.launch_webapp_sole("Google Calendar", "https://calendar.google.com"))
 
 -- Fix Picture-in-Picture clipping off the right screen edge: omarchy's pip
@@ -47,13 +49,15 @@ o.window({ tag = "pip" }, {
   move = { "(monitor_w-640)", "(monitor_h*0.04)" },
 })
 
--- Hex dictation on omarchy's dictation keys, until omarchy itself binds them:
--- from 4.5 its dictation layer binds Right Alt and Super + Ctrl + X to
--- `omarchy dictation`, which reaches Hex through omarchy-dictation-hex. Hold
--- Right Alt to talk. The modifier's own mask differs between press and
--- release, so match the keysym whatever the mask, as 4.5 does. Right Alt in a
--- chord dictates too; use Left Alt for chords.
-if not o.cmd_present("omarchy-dictation") then
+-- Dictation keys. From Omarchy 4.5, `omarchy dictation` dispatches to the
+-- selected backend (Hex, through omarchy-dictation-hex) and Omarchy binds
+-- Alt + Space and Right Alt to it; Super + Ctrl + X stays mine there. Before
+-- 4.5, call Hex directly on the keys 4.5 uses. The modifier's own mask
+-- differs between press and release, so match the keysym whatever the mask.
+-- Right Alt in a chord dictates too; use Left Alt for chords.
+if o.cmd_present("omarchy-dictation") then
+  o.bind("SUPER + CTRL + X", "Toggle dictation", "omarchy-dictation toggle")
+else
   o.bind("SUPER + CTRL + X", "Toggle dictation", "omarchy-dictation-hex toggle")
   o.bind("ALT + Alt_R", "Start dictation (push-to-talk)", "omarchy-dictation-hex start", { ignore_mods = true })
   o.bind("ALT + Alt_R", "Stop dictation (push-to-talk)", "omarchy-dictation-hex stop", { ignore_mods = true, release = true })
