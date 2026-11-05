@@ -8,7 +8,8 @@ log="${XDG_STATE_HOME:-$HOME/.local/state}/chezmoi-post-update.log"
 mkdir -p "$(dirname "$log")"
 
 # Keep the output: an apply that fails here, or that removes packages, would
-# otherwise leave no trace. A non-zero exit lets omarchy report the failure.
+# otherwise leave no trace. omarchy only prints "Hook failed" for a non-zero
+# exit and carries on, so the log is where a failure shows up.
 date -Is >"$log"
 chezmoi apply --force >>"$log" 2>&1 || {
     echo "chezmoi apply failed; see $log" >&2
