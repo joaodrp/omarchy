@@ -1,8 +1,8 @@
 #!/bin/bash
-# Reboot into Windows once, through its own boot manager rather than the
-# Limine menu: BitLocker without Secure Boot measures the boot chain, so a
-# Limine in it asks for the recovery key after every Limine update. Only the
-# next boot changes; later ones go back to Limine.
+# Reboot into Windows once, through Limine's Windows entry: BitLocker without
+# Secure Boot seals its key to the boot chain it was enabled on, which here
+# includes Limine, so Windows must always start that way. Only the next boot
+# changes; later ones fall back to Limine's default.
 set -euo pipefail
 
 usage="Usage: reboot-windows [-y|--yes]"
@@ -15,19 +15,16 @@ for arg in "$@"; do
   esac
 done
 
-# Windows can register duplicate entries for the same loader; take the first
-# in boot order.
-entries=$(efibootmgr)
-order=$(sed -n 's/^BootOrder: //p' <<<"$entries" | tr ',' ' ')
+# Limine publishes its entry IDs in LoaderEntries (UTF-16, NUL-separated, after
+# a 4-byte attribute header); the Windows entry's ID is its name.
+vars=/sys/firmware/efi/efivars
+loader_entries=$vars/LoaderEntries-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f
 entry=""
-for num in $order; do
-  if grep -q "^Boot$num\*\? Windows Boot Manager"$'\t' <<<"$entries"; then
-    entry=$num
-    break
-  fi
-done
+if [[ -r $loader_entries ]]; then
+  entry=$(tail -c +5 "$loader_entries" | iconv -f UTF-16LE -t UTF-8 | tr '\0' '\n' | grep -m1 '^Windows' || true)
+fi
 if [[ -z $entry ]]; then
-  echo "reboot-windows: no Windows Boot Manager entry in the boot order" >&2
+  echo "reboot-windows: Limine lists no Windows entry" >&2
   exit 1
 fi
 
@@ -36,5 +33,5 @@ if ! $yes; then
   [[ $answer == [yY] ]] || { echo "Cancelled."; exit 1; }
 fi
 
-sudo efibootmgr --bootnext "$entry" >/dev/null
+sudo bootctl set-oneshot "$entry"
 exec omarchy-system reboot

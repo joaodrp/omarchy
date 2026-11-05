@@ -45,7 +45,7 @@ Notable files:
 | `dot_config/systemd/user/wayvnc-tailnet.service` | Supervised wayvnc on the Tailscale address, started with the graphical session. |
 | `dot_local/bin/clone-my-repos` | Clones every non-archived source repo of the account and its orgs, default branch only, under `~/Developer`. |
 | `dot_local/bin/dotfiles-doctor` | Read-only check of the state chezmoi cannot vendor (1Password toggles, logins, per-machine answers). |
-| `dot_local/bin/reboot-windows` | Reboots once into Windows through its own boot manager, skipping Limine so BitLocker doesn't ask for the recovery key after Limine updates. Installed only where the firmware has a Windows Boot Manager entry. |
+| `dot_local/bin/reboot-windows` | Reboots once into Limine's Windows entry, the boot path BitLocker is sealed to. Installed only where Limine has a Windows entry. |
 | `dot_config/omarchy/hooks/post-update` | Re-runs `chezmoi apply` after every `omarchy update` so migrations can't clobber overrides. |
 | `dot_config/mise/config.toml.tmpl` | Declares the mise-managed toolchains and CLIs; `run_after_mise-install.sh` realizes it. Vendored so the tool list is versioned rather than living only in a file several installers mutate. From Omarchy 4.5 it leaves the stock agents and CLIs to Omarchy's own system-wide declarations. |
 | `.chezmoitemplates/install-webapp.sh` | Shared webapp install logic; per-webapp `.tmpl` scripts just pass parameters. |

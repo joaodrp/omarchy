@@ -4,7 +4,7 @@ CLAUDE.md
 LICENSE
 BOOTSTRAP.md
 
-{{/* reboot-windows only where the firmware boots a Windows install. */ -}}
-{{ if not (contains "Windows Boot Manager" (output "sh" "-c" "efibootmgr 2>/dev/null || true")) -}}
+{{/* reboot-windows only where Limine has a Windows entry. */ -}}
+{{ if not (output "sh" "-c" "tail -c +5 /sys/firmware/efi/efivars/LoaderEntries-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f 2>/dev/null | iconv -f UTF-16LE -t UTF-8 2>/dev/null | tr '\\0' '\\n' | grep -m1 '^Windows' || true") -}}
 .local/bin/reboot-windows
 {{ end -}}
