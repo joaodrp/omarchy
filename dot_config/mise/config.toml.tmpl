@@ -1,22 +1,37 @@
+# chezmoi:template:left-delimiter="[[" right-delimiter="]]"
+[[- /* From Omarchy 4.5, /etc/mise/conf.d/omarchy-tools.toml declares the stock
+       agents and CLIs (lazy, auto-updating) and omarchy.toml sets
+       upgrade.auto_prune, and its migrations strip the user-level copies.
+       Declare them here only before that, when Omarchy's wrappers would
+       otherwise add them on first use. */ -]]
+[[- $omarchy45 := stat "/etc/mise/conf.d/omarchy-tools.toml" -]]
 [tools]
 "cargo:cfspeedtest" = "latest"
 "cargo:controld-cli" = "latest"
+[[- if not $omarchy45 ]]
 claude = "latest"
 codex = "latest"
 copilot = "latest"
 gh = "latest"
+[[- end ]]
 go = "latest"
 java = "lts"
 just = "latest"
 node = "lts"
 "npm:@doist/todoist-cli" = "latest"
+[[- if not $omarchy45 ]]
 "npm:@xai-official/grok" = "latest"
+[[- end ]]
 "npm:agent-browser" = "latest"
 "npm:defuddle-cli" = "latest"
+[[- if not $omarchy45 ]]
 "npm:playwright" = "latest"
+[[- end ]]
 "npm:pnpm" = "latest"
+[[- if not $omarchy45 ]]
 opencode = "latest"
 pi = "latest"
+[[- end ]]
 ruby = "latest"
 shellcheck = "latest"
 zig = "latest"
@@ -31,10 +46,12 @@ _.path = [
 
 [settings]
 idiomatic_version_file_enable_tools = ["ruby"]
+[[- if not $omarchy45 ]]
 
 # omarchy's installer sets this in the file this one replaces.
 [settings.upgrade]
 auto_prune = false
+[[- end ]]
 
 [settings.ruby]
 compile = false
