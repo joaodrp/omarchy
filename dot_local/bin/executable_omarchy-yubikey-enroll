@@ -47,7 +47,9 @@ esac
 head -n1 "$tmp" | grep -q "^${me}:." \
     || { echo "omarchy-yubikey-enroll: unexpected pamu2fcfg output; nothing written" >&2; exit 1; }
 
-sudo install -D -m 600 -o root -g root "$tmp" "$AUTHFILE"
+# 644 root:root is the mode Omarchy's FIDO2 repair enforces: the file holds
+# only public credential mappings, which pam_u2f may read as the user.
+sudo install -D -m 644 -o root -g root "$tmp" "$AUTHFILE"
 echo "omarchy-yubikey-enroll: wrote $AUTHFILE"
 # Standalone: remind to wire up PAM. Invoked by the chezmoi enroller, the
 # hardener runs in the same apply, so the reminder would be misleading.
