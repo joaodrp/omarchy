@@ -81,6 +81,3 @@ watch_network_folders = true
 window_show_close = true
 window_show_maximize = false
 window_show_minimize = false
-
-[omarchy_variants]
-starship = "lighter"
