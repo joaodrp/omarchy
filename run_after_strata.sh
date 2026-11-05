@@ -1,8 +1,9 @@
 #!/bin/bash
-# Make Strata the file manager: folders, the portal file chooser and, via the
-# vendored FileManager1 service, "Show in folder". Each step runs only when its
-# check fails, so `omarchy refresh config` resetting the portal file is repaired
-# on the next apply and a converged apply changes nothing.
+# Make Strata the file manager: folders, the portal file chooser, unlocking
+# encrypted drives through udiskie and, via the vendored FileManager1 service,
+# "Show in folder". Each step runs only when its check fails, so a reset such
+# as `omarchy refresh config` rewriting the portal file is repaired on the next
+# apply, and a converged apply changes nothing.
 set -e
 
 bin="$HOME/.local/bin/strata"
@@ -24,4 +25,8 @@ fi
 if ! grep -qs '^org\.freedesktop\.impl\.portal\.FileChooser=strata;' \
     "$HOME/.config/xdg-desktop-portal/hyprland-portals.conf"; then
     "$bin" --install-portal
+fi
+
+if ! grep -qs -- "- $bin" "$HOME/.config/udiskie/config.yml"; then
+    "$bin" --install-udiskie-unlock
 fi
