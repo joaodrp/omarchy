@@ -1,0 +1,9 @@
+# Agent skills, installed into ~/.agents/skills, which Codex and OpenCode read,
+# and linked into ~/.claude/skills for Claude Code. Each pins the commit to
+# fetch: a skill is prose loaded into every agent, so an update is a reviewed
+# one-line bump. Removing one also needs its two paths in .chezmoiremove.
+
+[agent_skills.writing-clearly-and-concisely]
+repo = "obra/the-elements-of-style"
+path = "skills/writing-clearly-and-concisely"
+commit = "6099c505c2a8eb066f3777f83a97d9d828f7954c"

@@ -20,3 +20,16 @@
 
 {{   end -}}
 {{ end -}}
+
+{{/* Agent skills; the list and why each is pinned are in
+     .chezmoidata/agent-skills.toml. */ -}}
+
+{{ range $name, $s := .agent_skills -}}
+[{{ printf ".agents/skills/%s" $name | quote }}]
+    type = "archive"
+    url = "https://github.com/{{ $s.repo }}/archive/{{ $s.commit }}.tar.gz"
+    exact = true
+    stripComponents = {{ add 1 (len (splitList "/" $s.path)) }}
+    include = [{{ printf "*/%s/**" $s.path | quote }}]
+
+{{ end -}}

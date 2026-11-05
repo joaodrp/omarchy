@@ -1,0 +1,22 @@
+#!/bin/bash
+# Claude Code reads skills only from ~/.claude/skills, so link each shared
+# skill there, the way the skills CLI does. Idempotent; an entry that is not
+# already such a link is left alone.
+set -e
+
+dir="$HOME/.claude/skills"
+mkdir -p "$dir"
+
+link() {
+    local target="../../.agents/skills/$1" entry="$dir/$1"
+    [ "$(readlink "$entry" 2>/dev/null)" = "$target" ] && return
+    if [ -e "$entry" ] || [ -L "$entry" ]; then
+        echo "warning: $entry exists and is not a link to $target; leaving it" >&2
+        return
+    fi
+    ln -s "$target" "$entry"
+}
+
+{{ range $name, $_ := .agent_skills -}}
+link {{ $name | quote }}
+{{ end -}}
