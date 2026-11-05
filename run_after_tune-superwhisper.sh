@@ -1,7 +1,8 @@
 #!/bin/bash
 # Pin the Superwhisper settings below; the rest stay its Settings window's.
 # Applied through its CLI, which talks to the running daemon, so skipped until
-# Superwhisper is installed and running.
+# Superwhisper is installed and running. chezmoi runs after-scripts by name,
+# so this sorts after the switch to Superwhisper that installs it.
 #
 # - language "auto" follows the spoken language, for English and Portuguese.
 # - clipboardBehaviour "bypass" restores the clipboard after inserting a
