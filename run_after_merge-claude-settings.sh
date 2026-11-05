@@ -3,8 +3,11 @@
 # touching omarchy defaults, runtime-added keys (permission grants), or any
 # future omarchy/Claude Code additions. Idempotent.
 #
-# Currently the only managed key is the statusLine pointer, which activates
-# ~/.claude/statusline.sh.
+# Managed keys: the statusLine pointer, which activates
+# ~/.claude/statusline.sh, and attribution.sessionUrl, which keeps the
+# Claude-Session link to a private session out of public commits and PRs while
+# leaving the Co-Authored-By trailer. Other attribution keys, and an attribution
+# of false (no attribution at all), are kept.
 set -e
 
 SETTINGS="$HOME/.claude/settings.json"
@@ -17,4 +20,4 @@ jq '. + {
     "type": "command",
     "command": "$HOME/.claude/statusline.sh"
   }
-}' "$SETTINGS" > "$tmpfile" && mv "$tmpfile" "$SETTINGS"
+} | .attribution |= (if . == false then . else (. // {}) + {"sessionUrl": false} end)' "$SETTINGS" > "$tmpfile" && mv "$tmpfile" "$SETTINGS"
