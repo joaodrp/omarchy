@@ -21,10 +21,10 @@ cat <<'EOF'
 -- >>> dotfiles: personal hyprland >>>
 -- Drop the preinstalled webapp bindings I don't use. Unbound one by one
 -- rather than via omarchy_preinstalled_bindings=false, which would also take
--- the preinstalled bindings I do want (herdr, Obsidian, 1Password, ChatGPT).
+-- the preinstalled bindings I do want (herdr, Obsidian, 1Password, ChatGPT,
+-- Google Photos).
 hl.unbind("SUPER + SHIFT + E") -- Hey email
 hl.unbind("SUPER + SHIFT + C") -- Hey calendar
-hl.unbind("SUPER + SHIFT + P") -- Google Photos
 
 -- Reclaim the freed mail/calendar keys for the Google webapps.
 -- launch_webapp_sole matches its pattern as a word-boundary regex against the

@@ -12,7 +12,6 @@ APPS_DIR="$HOME/.local/share/applications"
 REMOVE_DESKTOP_FILES=(
     "Basecamp.desktop"
     "HEY.desktop"
-    "Google Photos.desktop"
 )
 
 # `omarchy webapp remove` also clears the icon and refreshes the desktop
