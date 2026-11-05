@@ -5,10 +5,10 @@
 #!/bin/bash
 # Superwhisper as the dictation backend, through Omarchy's own installer, which
 # also selects it and puts it on Omarchy's keys (Alt + Space toggles, Right Alt
-# holds). Then pin its Offline mode, Cohere Transcribe: local, English and
-# Portuguese among its 14 languages, and the most accurate of its local models.
-# It needs 12 GB of memory, which both hosts have. Finally retire Hex, the
-# previous backend.
+# holds). Then pin its Offline Lite mode, Parakeet TDT 0.6B v3: local, 25
+# European languages including English and Portuguese, and far lighter than
+# Offline's Cohere Transcribe (2B, plus a cleanup LLM, 12 GB) for about one
+# point of English WER. Finally retire Hex, the previous backend.
 {{ if not $omarchy45 -}}
 # Omarchy is older than 4.5, which ships no Superwhisper backend; Hex stays.
 exit 0
@@ -17,7 +17,7 @@ set -e
 
 omarchy-install-dictation-superwhisper --background
 # Selecting a mode doesn't download its models.
-superwhisper models select offline
+superwhisper models select offline_lite
 superwhisper models download
 
 # omarchy-dictation-use stopped Hex while switching; take its listener down
