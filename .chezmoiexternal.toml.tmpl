@@ -33,3 +33,10 @@
     include = [{{ printf "*/%s/**" $s.path | quote }}]
 
 {{ end -}}
+
+{{/* Strata's Taildrop provider, from its own repo at its latest release, so a
+     new release lands on the next apply; provider.json beside it is the
+     template in dot_config/strata/private_providers/taildrop/. */ -}}
+[".config/strata/providers/taildrop/provider.py"]
+    type = "file"
+    url = "https://raw.githubusercontent.com/joaodrp/strata-taildrop/{{ (gitHubLatestRelease "joaodrp/strata-taildrop").TagName }}/provider.py"
