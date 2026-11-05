@@ -1,0 +1,5 @@
+/* A little alpha drops GTK's opaque region, so Hyprland blurs behind Strata
+   as it does for Nautilus. @strata_bg follows the active theme. */
+window {
+    background: alpha(@strata_bg, 0.98);
+}

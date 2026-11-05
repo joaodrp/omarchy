@@ -58,5 +58,8 @@ o.window({ tag = "pip" }, {
   move = { "(monitor_w-640)", "(monitor_h*0.04)" },
 })
 
+-- Opt Strata in to Omarchy's window transparency, as Omarchy does for Nautilus.
+o.transparent_window("io\\.github\\.lgse\\.Strata")
+
 -- <<< dotfiles: personal hyprland <<<
 EOF
