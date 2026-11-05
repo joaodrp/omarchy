@@ -43,6 +43,11 @@ check "default agent set" "omarchy default agent claude" \
 check "hex dictation running" "omarchy-install-dictation-hex" systemctl --user is-active hex
 check "hex selected for dictation" "omarchy-install-dictation-hex" \
     bash -c '[ "$(cat "${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/defaults/dictation" 2>/dev/null)" = hex ]'
+# A packaged adapter comes first on PATH and pastes through the clipboard until
+# omacom/omarchy#17400 ships; then drop the vendored copy instead.
+check "hex types, not pastes (vendored adapter in use)" \
+    "packaged omarchy-dictation-hex shadows ours: check omacom/omarchy#17400" \
+    bash -c '[ "$(command -v omarchy-dictation-hex)" = "$HOME/.local/bin/omarchy-dictation-hex" ]'
 if omarchy-hw-fingerprint 2>/dev/null; then
     check "fingerprint enrolled" "omarchy-setup-security-fingerprint" \
         test -f /etc/pam.d/omarchy-lock-fingerprint
