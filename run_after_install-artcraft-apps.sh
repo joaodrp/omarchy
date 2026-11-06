@@ -10,6 +10,12 @@
 set -euo pipefail
 
 apps=(photocraft lightcraft)
+# Environment for an app's launcher. LightCraft runs through XWayland, for file
+# drag-and-drop, which Omarchy leaves unscaled, so it renders at half size on
+# HiDPI (https://github.com/storytold/lightcraft/issues/3598); native Wayland
+# scales. Drop it once Wayland drag-and-drop lands and upstream defaults to
+# Wayland (https://github.com/storytold/lightcraft/issues/639).
+declare -A app_env=([lightcraft]="LIGHTCRAFT_WAYLAND=1")
 root=$HOME/.local/share/artcraft
 arch=$(uname -m)
 
@@ -50,7 +56,8 @@ integrate_app() {
     ln -sfn "$current/bin/${bin##*/}" "$HOME/.local/bin/${bin##*/}"
   done
   # Absolute Exec, so the launcher finds it whatever its PATH.
-  sed "s|^Exec=$app |Exec=$HOME/.local/bin/$app |; s|^TryExec=$app\$|TryExec=$HOME/.local/bin/$app|" \
+  local env=${app_env[$app]:-}
+  sed "s|^Exec=$app |Exec=${env:+env $env }$HOME/.local/bin/$app |; s|^TryExec=$app\$|TryExec=$HOME/.local/bin/$app|" \
     "$current/share/applications/$id.desktop" >"$HOME/.local/share/applications/$id.desktop"
   for icon in "$current"/share/icons/hicolor/*/apps/"$id".*; do
     local dest=$HOME/.local/share/icons/hicolor/${icon#"$current"/share/icons/hicolor/}
