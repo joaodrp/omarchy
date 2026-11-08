@@ -1,0 +1,14 @@
+#!/bin/bash
+# Re-append my Hyprland input block, replacing any earlier copy.
+set -e
+
+{{ template "strip-dotfiles-blocks.sh" }}
+
+cat <<'EOF2'
+
+-- >>> dotfiles: personal input >>>
+-- Chromium-based browsers (and their webapps) add their own smooth-scroll
+-- acceleration, so the global touchpad scroll_factor feels far too fast there.
+o.window("(chromium|chrome-.*|brave-.*)", { scroll_touchpad = 0.25 })
+-- <<< dotfiles: personal input <<<
+EOF2

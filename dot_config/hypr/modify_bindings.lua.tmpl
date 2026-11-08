@@ -1,20 +1,8 @@
 #!/bin/bash
-# Maintain personal Hyprland bindings idempotently.
-# Strips any previously-applied block between markers, trims trailing blank
-# lines, then re-appends the canonical block -- so editing this file
-# propagates on the next `chezmoi apply`.
+# Re-append my Hyprland bindings block, replacing any earlier copy.
 set -e
 
-# Match the marker prefix (not an exact title) so renaming the block still
-# strips the previously-applied copy instead of leaving a duplicate behind.
-awk '
-  /^-- >>> dotfiles: .* >>>$/ { skip = 1; next }
-  skip && /^-- <<< dotfiles: .* <<<$/ { skip = 0; next }
-  !skip
-' | awk '
-  { lines[NR] = $0; if (NF) last = NR }
-  END { for (i = 1; i <= last; i++) print lines[i] }
-'
+{{ template "strip-dotfiles-blocks.sh" }}
 
 cat <<'EOF'
 
