@@ -1,7 +1,7 @@
 #!/bin/bash
 # Webapps, each installed once: an existing launcher is left alone. Home
-# Assistant's hostname is not public: ControlD rewrites it to the LAN proxy,
-# and off-LAN the tailnet subnet route reaches it.
+# Assistant's URL is private, so it comes from local chezmoi data
+# (`home_assistant_url`); without it the webapp is skipped.
 set -e
 {{- range list
     (dict "name" "Gmail" "url" "https://mail.google.com" "icon" "gmail.png"
@@ -12,8 +12,11 @@ set -e
     (dict "name" "Perplexity" "url" "https://www.perplexity.ai" "icon" "perplexity.png")
     (dict "name" "GitHub" "url" "https://github.com" "icon" "github.png")
     (dict "name" "YNAB" "url" "https://app.ynab.com" "icon" "ynab.png")
-    (dict "name" "Home Assistant" "url" "https://homeassistant.home.joaodrp.com" "icon" "home-assistant.png")
 }}
 
 {{ template "install-webapp.sh" . }}
+{{- end }}
+{{- if and (hasKey . "home_assistant_url") .home_assistant_url }}
+
+{{ template "install-webapp.sh" (dict "name" "Home Assistant" "url" .home_assistant_url "icon" "home-assistant.png") }}
 {{- end }}
