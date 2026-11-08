@@ -124,6 +124,13 @@ if [[ ${1:-} == --pause ]]; then
     exit 0
 fi
 
+# Without an endpoint, restoring would only cut DHCP and panel DNS.
+if [[ ! -f $DROPIN && ! -f $PAUSED ]]; then
+    echo "dns-controld: no ControlD endpoint; set controld_resolver_id, then chezmoi apply" >&2
+    notify_caller "DNS" "No ControlD endpoint configured on this machine"
+    exit 1
+fi
+
 changed=
 # The guards go down before the drop-in comes back: interrupted here, DNS is
 # simply still paused, rather than ControlD active with DHCP free to publish.
