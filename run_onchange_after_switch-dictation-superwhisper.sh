@@ -1,18 +1,10 @@
-{{- /* Renders differently once Omarchy 4.5's Superwhisper installer exists, so
-       chezmoi runs the switch exactly once: on the apply that follows the
-       upgrade (the post-update hook), or on a fresh 4.5 install. */ -}}
-{{- $omarchy45 := stat "/usr/share/omarchy/bin/omarchy-install-dictation-superwhisper" -}}
 #!/bin/bash
 # Superwhisper as the dictation backend, through Omarchy's own installer, which
 # also selects it and puts it on Omarchy's keys (Alt + Space toggles, Right Alt
 # holds). Then pin its Offline Lite mode, Parakeet TDT 0.6B v3: local, 25
 # European languages including English and Portuguese, and far lighter than
 # Offline's Cohere Transcribe (2B, plus a cleanup LLM, 12 GB) for about one
-# point of English WER. Finally retire Hex, the previous backend.
-{{ if not $omarchy45 -}}
-# Omarchy is older than 4.5, which ships no Superwhisper backend; Hex stays.
-exit 0
-{{- else -}}
+# point of English WER.
 set -e
 
 omarchy-install-dictation-superwhisper --background
@@ -35,13 +27,3 @@ for model in transcription vocabulary voice-detection; do
     sleep 2
   done
 done
-
-# omarchy-dictation-use stopped Hex while switching; take its listener down
-# with it so it holds no keys, and drop the vendored adapter it ran through.
-if omarchy-pkg-present hex-bin; then
-  systemctl --user disable --now hex.service 2>/dev/null || true
-  omarchy-pkg-drop hex-bin
-fi
-rm -f "$HOME/.local/bin/omarchy-dictation-hex" "$HOME/.local/bin/omarchy-install-dictation-hex"
-omarchy-restart-hyprctl
-{{- end }}

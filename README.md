@@ -47,7 +47,7 @@ Notable files:
 | `dot_local/bin/dotfiles-doctor` | Read-only check of the state chezmoi cannot vendor (1Password toggles, logins, per-machine answers). |
 | `dot_local/bin/reboot-windows` | Reboots once into Limine's Windows entry, the boot path BitLocker is sealed to. Installed only where Limine has a Windows entry. |
 | `dot_config/omarchy/hooks/post-update` | Re-runs `chezmoi apply` after every `omarchy update` so migrations can't clobber overrides. |
-| `dot_config/mise/config.toml.tmpl` | Declares the mise-managed toolchains and CLIs; `run_after_mise-install.sh` realizes it. Vendored so the tool list is versioned rather than living only in a file several installers mutate. From Omarchy 4.5 it leaves the stock agents and CLIs to Omarchy's own system-wide declarations. |
+| `dot_config/mise/config.toml` | Declares the mise-managed toolchains and CLIs; `run_after_mise-install.sh` realizes it. Vendored so the tool list is versioned rather than living only in a file several installers mutate. It leaves the stock agents and CLIs to Omarchy's own system-wide declarations. |
 | `.chezmoitemplates/install-webapp.sh` | Shared webapp install logic; `run_onchange_install-webapps.sh.tmpl` lists the webapps. |
 | `run_after_merge-*.sh` | Merge personal keys into agent/CLI configs (Claude, Codex, opencode) without touching each tool's runtime state. |
 | `run_after_yubikey-harden-pam.sh` | Adds the options Omarchy's FIDO2 setup omits, so the key verifies a fingerprint rather than mere presence. |
@@ -59,7 +59,7 @@ Notable files:
 | Area | Details |
 | --- | --- |
 | Hyprland | Personal bindings block; PiP right-edge placement fix; slower touchpad scrolling in Chromium-based browsers. |
-| Desktop | Default agent (Claude Code, set only if unset); Starship theme set once per machine, so a later switch sticks; Superwhisper dictation from Omarchy 4.5, through omarchy's own installer and keys, pinned to its local Offline Lite mode (Parakeet TDT 0.6B v3; English and Portuguese among 25 European languages), automatic language detection, balanced tone, vocabulary learned from corrections, and restoring the clipboard after inserting text; Hex, the backend before it, is retired on the first apply after the upgrade. |
+| Desktop | Default agent (Claude Code, set only if unset); Starship theme set once per machine, so a later switch sticks; Superwhisper dictation through omarchy's own installer and keys, pinned to its local Offline Lite mode (Parakeet TDT 0.6B v3; English and Portuguese among 25 European languages), automatic language detection, balanced tone, vocabulary learned from corrections, and restoring the clipboard after inserting text. |
 | Security | YubiKey Bio for `sudo` and polkit: Omarchy's `omarchy setup security fido2` owns the packages, authfile and PAM lines; this repo layers on a fixed `pam://omarchy` origin and `userverification=1` so a fingerprint match is required, not just a touch. |
 | Removed defaults | Basecamp and HEY, plus their keybindings. |
 | Webapps | Gmail (`mailto:` default), Google Calendar, Google Sheets, Claude Design, Perplexity, YNAB, Home Assistant, GitHub — with explicit Dashboard Icons glyphs. |

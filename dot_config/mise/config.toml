@@ -1,0 +1,29 @@
+# The stock agents and CLIs are Omarchy's, declared in /etc/mise/conf.d.
+[tools]
+"cargo:cfspeedtest" = "latest"
+"cargo:controld-cli" = "latest"
+go = "latest"
+java = "lts"
+just = "latest"
+node = "lts"
+"npm:@doist/todoist-cli" = "latest"
+"npm:agent-browser" = "latest"
+"npm:defuddle-cli" = "latest"
+"npm:pnpm" = "latest"
+ruby = "latest"
+shellcheck = "latest"
+zig = "latest"
+zls = "latest"
+
+[env]
+ANDROID_HOME = "{{ env.HOME }}/Android/Sdk"
+_.path = [
+    "{{ env.HOME }}/Android/Sdk/cmdline-tools/latest/bin",
+    "{{ env.HOME }}/Android/Sdk/platform-tools",
+]
+
+[settings]
+idiomatic_version_file_enable_tools = ["ruby"]
+
+[settings.ruby]
+compile = false

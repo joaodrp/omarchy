@@ -7,13 +7,9 @@ set -e
 
 # Match the marker prefix (not an exact title) so renaming the block still
 # strips the previously-applied copy instead of leaving a duplicate behind.
-# Also strip the pre-4.5 dictation keys (F9, Super + Ctrl + X) an Omarchy 4.5
-# migration appends, leaving dictation on Omarchy's Alt + Space and Right Alt.
 awk '
   /^-- >>> dotfiles: .* >>>$/ { skip = 1; next }
   skip && /^-- <<< dotfiles: .* <<<$/ { skip = 0; next }
-  /^-- Dictation keys from before Alt \+ Space and Right Alt became the defaults\.$/ { legacy = 1; next }
-  legacy { if ($0 == "end") legacy = 0; next }
   !skip
 ' | awk '
   { lines[NR] = $0; if (NF) last = NR }
@@ -23,12 +19,6 @@ awk '
 cat <<'EOF'
 
 -- >>> dotfiles: personal hyprland >>>
--- o.rebind arrived in Omarchy 4.5; before that, unbind and bind by hand.
-local rebind = o.rebind or function(keys, description, dispatcher, options)
-  hl.unbind(keys)
-  o.bind(keys, description, dispatcher, options)
-end
-
 -- Move the preinstalled HEY mail/calendar keys to the Google webapps, one key
 -- at a time rather than via omarchy_preinstalled_bindings=false, which would
 -- also take the preinstalled bindings I do want (herdr, Obsidian, 1Password,
@@ -37,14 +27,14 @@ end
 -- window class *or* title. The webapp class (chrome-mail.google.com__-Default)
 -- has no word boundary before the `__`, so the pattern only ever matches on
 -- the title.
-rebind("SUPER + SHIFT + E", "Gmail",
+o.rebind("SUPER + SHIFT + E", "Gmail",
   o.launch_webapp_sole("Gmail", "https://mail.google.com"))
-rebind("SUPER + SHIFT + C", "Google Calendar",
+o.rebind("SUPER + SHIFT + C", "Google Calendar",
   o.launch_webapp_sole("Google Calendar", "https://calendar.google.com"))
 
 -- Strata replaces Nautilus as the file manager.
-rebind("SUPER + SHIFT + F", "File manager", { launch = "strata" })
-rebind("SUPER + ALT + SHIFT + F", "File manager (cwd)",
+o.rebind("SUPER + SHIFT + F", "File manager", { launch = "strata" })
+o.rebind("SUPER + ALT + SHIFT + F", "File manager (cwd)",
   'uwsm-app -- strata "$(omarchy-cmd-terminal-cwd)"')
 
 -- Fix Picture-in-Picture clipping off the right screen edge: omarchy's pip
