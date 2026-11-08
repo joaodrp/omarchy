@@ -1,9 +1,20 @@
 #!/bin/bash
 # Clone every non-archived source repo I can see on GitHub -- my account and
-# each org I belong to, enumerated live -- into ~/Developer/github.com/<owner>/.
-# Default branch only, so neither this clone nor later fetches pull every
-# branch. Existing checkouts are left alone, so re-running only adds new repos.
+# each org I belong to, enumerated live -- into ~/Developer/github.com/<owner>/,
+# default branch only. Existing checkouts are fetched, and their default branch
+# is fast-forwarded only when that cannot disturb work: never a diverged
+# branch, and never a checked-out one unless --pull-checked-out is given and
+# its worktree is clean. Checked-out branches are never switched.
+# Run daily by clone-my-repos.timer; failures then raise a notification.
 set -o pipefail
+export GIT_TERMINAL_PROMPT=0 # fail instead of hanging on a credential prompt
+
+pull_checked_out=0
+case "${1:-}" in
+    "") ;;
+    --pull-checked-out) pull_checked_out=1 ;;
+    *) echo "usage: clone-my-repos [--pull-checked-out]" >&2; exit 2 ;;
+esac
 
 command -v gh >/dev/null || { echo "clone-my-repos: gh not found" >&2; exit 1; }
 gh auth status >/dev/null 2>&1 || { echo "clone-my-repos: run gh auth login first" >&2; exit 1; }
@@ -11,15 +22,57 @@ gh auth status >/dev/null 2>&1 || { echo "clone-my-repos: run gh auth login firs
 owners=$( { gh api user -q .login; gh org list --limit 1000; } ) ||
     { echo "clone-my-repos: cannot list owners" >&2; exit 1; }
 
+# Prints why the default branch was left alone, or nothing if it is current
+# or was fast-forwarded; returns 1 on a git failure.
+update() {
+    local dest=$1 def mine remote wt
+    git -C "$dest" fetch -q origin 2>/dev/null || { echo "fetch failed"; return 1; }
+    def=$(git -C "$dest" symbolic-ref -q --short refs/remotes/origin/HEAD) || { echo "no origin/HEAD"; return 0; }
+    def=${def#origin/}
+    mine=$(git -C "$dest" rev-parse -q --verify "refs/heads/$def") || return 0 # no local copy to update
+    remote=$(git -C "$dest" rev-parse "refs/remotes/origin/$def") || return 1
+    [ "$mine" = "$remote" ] && return 0
+    git -C "$dest" merge-base --is-ancestor "$mine" "$remote" || { echo "$def has local commits"; return 0; }
+
+    wt=$(git -C "$dest" worktree list --porcelain |
+        awk -v b="branch refs/heads/$def" '/^worktree /{p=substr($0,10)} $0==b{print p}')
+    if [ -z "$wt" ]; then
+        # Compare-and-swap on the old value, so a concurrent change wins.
+        git -C "$dest" update-ref "refs/heads/$def" "$remote" "$mine" || return 1
+        echo updated
+    elif [ "$pull_checked_out" -eq 0 ]; then
+        echo "$def is checked out"
+    elif [ -n "$(git -C "$wt" status --porcelain --untracked-files=no)" ]; then
+        echo "$def is checked out with uncommitted changes"
+    else
+        git -C "$wt" merge -q --ff-only "$remote" 2>/dev/null || return 1
+        echo updated
+    fi
+}
+
 base="$HOME/Developer/github.com"
-cloned=0 present=0 failed=0
+cloned=0 updated=0 current=0 skipped=0 failed=0
 for owner in $owners; do
     repos=$(gh repo list "$owner" --source --no-archived --limit 1000 \
         --json name -q '.[].name') || { echo "  ! $owner: cannot list repos" >&2; failed=$((failed + 1)); continue; }
     for repo in $repos; do
         dest="$base/$owner/$repo"
         if [ -e "$dest" ]; then
-            present=$((present + 1))
+            if ! git -C "$dest" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+                echo "  - $owner/$repo: not a git checkout"
+                skipped=$((skipped + 1))
+            elif ! why=$(update "$dest"); then
+                echo "  ! $owner/$repo: ${why:-update failed}" >&2
+                failed=$((failed + 1))
+            elif [ "$why" = updated ]; then
+                echo "  ~ $owner/$repo"
+                updated=$((updated + 1))
+            elif [ -n "$why" ]; then
+                echo "  - $owner/$repo: $why"
+                skipped=$((skipped + 1))
+            else
+                current=$((current + 1))
+            fi
             continue
         fi
         mkdir -p "$base/$owner"
@@ -34,5 +87,9 @@ for owner in $owners; do
     done
 done
 
-echo "clone-my-repos: $cloned cloned, $present already present, $failed failed"
+summary="$cloned cloned, $updated updated, $current current, $skipped skipped, $failed failed"
+echo "clone-my-repos: $summary"
+if [ "$failed" -ne 0 ] && [ ! -t 2 ] && command -v notify-send >/dev/null; then
+    notify-send -u critical "clone-my-repos" "$summary; see journalctl --user -u clone-my-repos"
+fi
 [ "$failed" -eq 0 ]
