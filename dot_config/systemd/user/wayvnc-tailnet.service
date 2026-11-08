@@ -8,15 +8,16 @@ Description=wayvnc on the Tailscale address
 ConditionEnvironment=WAYLAND_DISPLAY
 PartOf=graphical-session.target
 After=graphical-session.target
-# The wrapper's own wait for a Tailscale address paces the retry; this only
-# catches wayvnc failing fast, so it gives up rather than respinning forever.
-StartLimitIntervalSec=300
-StartLimitBurst=5
+# Never give up: a monitor can come back long after it went. The backoff keeps
+# a wayvnc that fails fast from respinning.
+StartLimitIntervalSec=0
 
 [Service]
 ExecStart=%h/.local/bin/wayvnc-tailnet
 Restart=always
 RestartSec=5
+RestartSteps=5
+RestartMaxDelaySec=2min
 
 [Install]
 WantedBy=graphical-session.target
