@@ -50,9 +50,13 @@ head -n1 "$tmp" | grep -q "^${me}:." \
 # only public credential mappings, which pam_u2f may read as the user.
 sudo install -D -m 644 -o root -g root "$tmp" "$AUTHFILE"
 echo "omarchy-yubikey-enroll: wrote $AUTHFILE"
-# Standalone: remind to wire up PAM. Invoked by the chezmoi enroller, the
-# hardener runs in the same apply, so the reminder would be misleading.
-[ -n "${OMARCHY_ENROLL_FROM_APPLY:-}" ] || cat >&2 <<'EOF'
-omarchy-yubikey-enroll: next, run `omarchy setup security fido2` to add the
-pam_u2f lines, then `chezmoi apply` to harden them.
-EOF
+# omarchy's setup adds the pam_u2f lines; with the authfile in place it skips
+# its own registration. Its closing sudo test asks for the password: the lines
+# carry no origin until the hardener runs, so this key cannot answer it yet.
+if ! grep -q pam_u2f.so /etc/pam.d/sudo; then
+    echo "omarchy-yubikey-enroll: adding the pam_u2f lines; enter your password at its test" >&2
+    omarchy setup security fido2
+fi
+# Invoked by the chezmoi enroller, the hardener runs in the same apply.
+[ -n "${OMARCHY_ENROLL_FROM_APPLY:-}" ] ||
+    echo "omarchy-yubikey-enroll: next, run chezmoi apply to harden the PAM lines" >&2
