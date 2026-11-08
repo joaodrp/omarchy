@@ -1,5 +1,5 @@
 #!/bin/bash
-# Merge personal MCP servers into ~/.claude.json (Claude Code's user-scope
+# Merge the MCP servers in .chezmoidata/mcp-servers.toml into ~/.claude.json (Claude Code's user-scope
 # config) without touching Claude's own state (auth, project history,
 # counters). Servers load their API keys via the agent-secrets wrapper.
 # Written only when it changes.
@@ -11,15 +11,11 @@ set -e
 CLAUDE_JSON="$HOME/.claude.json"
 [ -f "$CLAUDE_JSON" ] || echo '{}' > "$CLAUDE_JSON"
 
+servers={{ .mcp_servers | toJson | squote }}
 tmpfile=$(mktemp "$CLAUDE_JSON.XXXXXX")
 trap 'rm -f "$tmpfile"' EXIT
-jq '.mcpServers.perplexity = {
-  "type": "stdio",
-  "command": "with-agent-secrets",
-  "args": ["npx", "-y", "@perplexity-ai/mcp-server"]
-} | .mcpServers.context7 = {
-  "type": "stdio",
-  "command": "with-agent-secrets",
-  "args": ["npx", "-y", "@upstash/context7-mcp"]
-}' "$CLAUDE_JSON" > "$tmpfile"
+jq --argjson servers "$servers" '
+  .mcpServers += ($servers | map_values({
+    type: "stdio", command: "with-agent-secrets", args: ["npx", "-y", .package]
+  }))' "$CLAUDE_JSON" > "$tmpfile"
 cmp -s "$tmpfile" "$CLAUDE_JSON" || mv "$tmpfile" "$CLAUDE_JSON"

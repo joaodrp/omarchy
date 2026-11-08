@@ -1,0 +1,11 @@
+# MCP servers for every agent (Claude Code, Codex, OpenCode). Each runs as
+# `npx -y <package>` through with-agent-secrets, which loads its env from the
+# file refresh-agent-secrets fills from these 1Password references.
+
+[mcp_servers.perplexity]
+package = "@perplexity-ai/mcp-server"
+env = { PERPLEXITY_API_KEY = "op://Personal/Perplexity/api_key" }
+
+[mcp_servers.context7]
+package = "@upstash/context7-mcp"
+env = { CONTEXT7_API_KEY = "op://Personal/Context7/api_key" }

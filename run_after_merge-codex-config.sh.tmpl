@@ -20,6 +20,7 @@ mkdir -p "$(dirname "$config")"
 [ -f "$config" ] || : > "$config"
 chmod 600 "$config"
 
+export SERVERS={{ .mcp_servers | toJson | squote }}
 tmpfile=$(mktemp "$config.XXXXXX")
 trap 'rm -f "$tmpfile"' EXIT
 yq -p toml -o toml '
@@ -29,14 +30,9 @@ yq -p toml -o toml '
   .features.default_mode_request_user_input = true |
   del(.default_mode_request_user_input) |
   .mcp_servers.openaiDeveloperDocs = {"url": "https://developers.openai.com/mcp"} |
-  .mcp_servers.perplexity = {
-    "command": "with-agent-secrets",
-    "args": ["npx", "-y", "@perplexity-ai/mcp-server"]
-  } |
-  .mcp_servers.context7 = {
-    "command": "with-agent-secrets",
-    "args": ["npx", "-y", "@upstash/context7-mcp"]
-  } |
+  .mcp_servers += (env(SERVERS) | with_entries(.value = {
+    "command": "with-agent-secrets", "args": ["npx", "-y", .value.package]
+  })) |
   .plugins."github@openai-curated".enabled = true |
   .shell_environment_policy.set.QT_QPA_PLATFORM = "offscreen"
 ' "$config" >"$tmpfile"

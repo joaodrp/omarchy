@@ -1,5 +1,5 @@
 #!/bin/bash
-# Add the perplexity and context7 MCP servers to
+# Add the MCP servers in .chezmoidata/mcp-servers.toml to
 # ~/.config/opencode/opencode.json. Servers load their API keys via the
 # agent-secrets wrapper.
 #
@@ -11,20 +11,11 @@ config="$HOME/.config/opencode/opencode.json"
 mkdir -p "$(dirname "$config")"
 [ -f "$config" ] || echo '{}' > "$config"
 
+servers={{ .mcp_servers | toJson | squote }}
 tmpfile=$(mktemp "$config.XXXXXX")
 trap 'rm -f "$tmpfile"' EXIT
-jq '. + {
-  mcp: ((.mcp // {}) + {
-    perplexity: {
-      type: "local",
-      command: ["with-agent-secrets", "npx", "-y", "@perplexity-ai/mcp-server"],
-      enabled: true
-    },
-    context7: {
-      type: "local",
-      command: ["with-agent-secrets", "npx", "-y", "@upstash/context7-mcp"],
-      enabled: true
-    }
-  })
-}' "$config" > "$tmpfile"
+jq --argjson servers "$servers" '
+  .mcp += ($servers | map_values({
+    type: "local", command: ["with-agent-secrets", "npx", "-y", .package], enabled: true
+  }))' "$config" > "$tmpfile"
 cmp -s "$tmpfile" "$config" || mv "$tmpfile" "$config"
