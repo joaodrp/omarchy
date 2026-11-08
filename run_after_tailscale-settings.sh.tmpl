@@ -29,12 +29,25 @@ fi
 # tunnel.
 ssh_forwarding_disabled=1
 
-env_file=/etc/default/tailscaled
 key=TS_SSH_DISABLE_FORWARDING
+dropin=/etc/systemd/system/tailscaled.service.d/10-ssh-forwarding.conf
+restart=0
+changed() { restart=1; }
 
-wanted=$(sed "/^$key=/d" "$env_file")
-if [[ $ssh_forwarding_disabled == 1 ]]; then
-    wanted+=$'\n'"$key=1"
+if ((ssh_forwarding_disabled)); then
+    install_root_file "$dropin" 644 $'[Service]\n'"Environment=$key=1" changed
+elif [[ -e $dropin ]]; then
+    sudo rm -f "$dropin" && changed
 fi
 
-install_root_file "$env_file" 644 "$wanted" sudo systemctl restart tailscaled
+# A drop-in, not the package's /etc/default/tailscaled, so tailscale upgrades
+# never leave a .pacnew. Strips the key an earlier version wrote there.
+env_file=/etc/default/tailscaled
+if grep -q "^$key=" "$env_file" 2>/dev/null; then
+    install_root_file "$env_file" 644 "$(sed "/^$key=/d" "$env_file")" changed
+fi
+
+if ((restart)); then
+    sudo systemctl daemon-reload
+    sudo systemctl restart tailscaled
+fi
