@@ -16,6 +16,10 @@ case "${1:-}" in
     *) echo "usage: clone-my-repos [--pull-checked-out]" >&2; exit 2 ;;
 esac
 
+# One run at a time: the timer and a manual run would otherwise race on clones.
+exec 9>"${XDG_RUNTIME_DIR:-/tmp}/clone-my-repos.lock"
+flock -n 9 || { echo "clone-my-repos: already running" >&2; exit 0; }
+
 command -v gh >/dev/null || { echo "clone-my-repos: gh not found" >&2; exit 1; }
 gh auth status >/dev/null 2>&1 || { echo "clone-my-repos: run gh auth login first" >&2; exit 1; }
 
@@ -80,8 +84,7 @@ for owner in $owners; do
             echo "  + $owner/$repo"
             cloned=$((cloned + 1))
         else
-            echo "  ! $owner/$repo: clone failed" >&2
-            rm -rf "$dest"
+            echo "  ! $owner/$repo: clone failed" >&2 # git removes what it created
             failed=$((failed + 1))
         fi
     done
