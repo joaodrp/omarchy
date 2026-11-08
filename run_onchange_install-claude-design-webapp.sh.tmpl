@@ -1,7 +1,0 @@
-#!/bin/bash
-# Install Claude Design (claude.ai/design) as a webapp. Idempotent via the .desktop guard.
-set -e
-{{ template "install-webapp.sh" (dict
-    "name" "Claude Design"
-    "url" "https://claude.ai/design"
-    "icon" "claude-ai.png") }}

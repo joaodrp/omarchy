@@ -1,9 +1,0 @@
-#!/bin/bash
-# Install Home Assistant as a webapp. The hostname is not public (DNS-01 cert,
-# ControlD rewrite to the LAN reverse proxy); off-LAN it reaches the box via the
-# tailnet subnet route. Idempotent.
-set -e
-{{ template "install-webapp.sh" (dict
-    "name" "Home Assistant"
-    "url" "https://homeassistant.home.joaodrp.com"
-    "icon" "home-assistant.png") }}

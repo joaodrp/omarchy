@@ -1,7 +1,0 @@
-#!/bin/bash
-# Install Perplexity (perplexity.ai) as a webapp. Idempotent.
-set -e
-{{ template "install-webapp.sh" (dict
-    "name" "Perplexity"
-    "url" "https://www.perplexity.ai"
-    "icon" "perplexity.png") }}

@@ -48,7 +48,7 @@ Notable files:
 | `dot_local/bin/reboot-windows` | Reboots once into Limine's Windows entry, the boot path BitLocker is sealed to. Installed only where Limine has a Windows entry. |
 | `dot_config/omarchy/hooks/post-update` | Re-runs `chezmoi apply` after every `omarchy update` so migrations can't clobber overrides. |
 | `dot_config/mise/config.toml.tmpl` | Declares the mise-managed toolchains and CLIs; `run_after_mise-install.sh` realizes it. Vendored so the tool list is versioned rather than living only in a file several installers mutate. From Omarchy 4.5 it leaves the stock agents and CLIs to Omarchy's own system-wide declarations. |
-| `.chezmoitemplates/install-webapp.sh` | Shared webapp install logic; per-webapp `.tmpl` scripts just pass parameters. |
+| `.chezmoitemplates/install-webapp.sh` | Shared webapp install logic; `run_onchange_install-webapps.sh.tmpl` lists the webapps. |
 | `run_after_merge-*.sh` | Merge personal keys into agent/CLI configs (Claude, Codex, opencode) without touching each tool's runtime state. |
 | `run_after_yubikey-harden-pam.sh` | Adds the options Omarchy's FIDO2 setup omits, so the key verifies a fingerprint rather than mere presence. |
 | `run_remove-omarchy-apps.sh` | Strips unwanted webapp `.desktop` entries on every apply. Package orphans are left to `omarchy update`. |

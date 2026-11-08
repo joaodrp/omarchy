@@ -1,7 +1,0 @@
-#!/bin/bash
-# Install Google Sheets as a webapp. Idempotent.
-set -e
-{{ template "install-webapp.sh" (dict
-    "name" "Google Sheets"
-    "url" "https://sheets.google.com"
-    "icon" "google-sheets.png") }}
