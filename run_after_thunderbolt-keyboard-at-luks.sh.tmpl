@@ -255,6 +255,9 @@ for dev in /sys/bus/thunderbolt/devices/*/; do
   [ "$(cat "$dev/vendor_name" 2>/dev/null)" = "$DOCK_VENDOR" ] || continue
   [ "$(cat "$dev/device_name" 2>/dev/null)" = "$DOCK_DEVICE" ] || continue
   dock_dev=${dev%/}
+  # The dock's domain: device 0-2 sits in domain0.
+  dock_domain=/sys/bus/thunderbolt/devices/domain${dock_dev##*/}
+  dock_domain=${dock_domain%%-*}
   break
 done
 
@@ -263,11 +266,9 @@ done
 # dock's USB 2 hub reports the dock's vendor, which tells its keyboards from
 # the host's own. Prints needed / not-needed / unknown.
 assess() {
-  local uuid domain kbd path dir via_dock tunnelled verdict=unknown
+  local uuid kbd path dir via_dock tunnelled verdict=unknown
   uuid=$(cat "$dock_dev/unique_id")
-  domain=/sys/bus/thunderbolt/devices/domain${dock_dev##*/}
-  domain=${domain%%-*}
-  if grep -qiF "$uuid" "$domain/boot_acl" 2>/dev/null; then
+  if grep -qiF "$uuid" "$dock_domain/boot_acl" 2>/dev/null; then
     echo "not-needed (firmware authorizes the dock pre-boot via boot_acl)"
     return
   fi
@@ -318,9 +319,7 @@ if [ -n "$dock_dev" ]; then
     esac
     # Tunnelling PCIe pre-unlock is only safe while the IOMMU translates its DMA;
     # the hook refuses otherwise, so installing it would do nothing.
-    domain=/sys/bus/thunderbolt/devices/domain${dock_dev##*/}
-    domain=${domain%%-*}
-    if (( want )) && [ "$(cat "$domain/iommu_dma_protection" 2>/dev/null)" != 1 ]; then
+    if (( want )) && [ "$(cat "$dock_domain/iommu_dma_protection" 2>/dev/null)" != 1 ]; then
       echo "thunderbolt-keyboard: needed, but IOMMU DMA protection is off; not installing" >&2
       want=0
     fi
