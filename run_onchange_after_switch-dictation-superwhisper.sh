@@ -9,18 +9,23 @@ set -e
 
 omarchy-install-dictation-superwhisper --background
 # Selecting a mode doesn't download its models, and Superwhisper runs one
-# download at a time, returning before it ends: wait out each in turn.
+# model operation at a time, returning before it ends. Right after a select it
+# re-checks each model, so wait out work in progress and start a download only
+# for a model that is absent; one refused for overlapping is retried.
 superwhisper models select offline_lite
 model_state() {
   superwhisper models show | jq -r --arg id "$1" '.models[] | select(.id == $id) | .download.state'
 }
 for model in transcription vocabulary voice-detection; do
-  [[ $(model_state "$model") == installed ]] && continue
-  superwhisper models download "$model" >/dev/null
   for ((waited = 0; ; waited += 2)); do
     state=$(model_state "$model")
-    [[ $state == installed ]] && break
-    if [[ $state == paused ]] || ((waited >= 1800)); then
+    case $state in
+      installed) break ;;
+      checking | downloading | queued) ;;
+      paused) echo "Superwhisper model $model download is paused" >&2; exit 1 ;;
+      *) superwhisper models download "$model" >/dev/null 2>&1 || true ;;
+    esac
+    if ((waited >= 1800)); then
       echo "Superwhisper model $model did not download (state: $state)" >&2
       exit 1
     fi
