@@ -35,10 +35,16 @@ if ! command -v cdctl >/dev/null 2>&1; then
     entries=$(jq -c 'map(select(.id != "io.github.joaodrp.controld"))' <<<"$entries")
 fi
 
+# Swap Nautilus's dock pin for Strata. The dock reads Omarchy's default pins
+# only while dock.pinned is absent, so seed it from them once; after that the
+# user's own order is kept.
+defaults="${OMARCHY_PATH:-/usr/share/omarchy}/config/omarchy/shell.json"
+
+# The shell reloads on every write, so write only when something changed.
 # Sibling of the config so the mv is an atomic rename, not a cross-device copy.
 tmpfile=$(mktemp "$config.XXXXXX")
 trap 'rm -f "$tmpfile"' EXIT
-jq --argjson entries "$entries" '
+jq --argjson entries "$entries" --slurpfile defaults "$defaults" '
   reduce $entries[] as $entry (.;
     ($entry.id) as $id
     | if any(.bar.layout // {} | .[]? | arrays | .[]? | objects; .id == $id)
@@ -51,13 +57,7 @@ jq --argjson entries "$entries" '
                end)
       end
   )
-' "$config" >"$tmpfile" && mv "$tmpfile" "$config"
-
-# Swap Nautilus's dock pin for Strata. The dock reads Omarchy's default pins
-# only while dock.pinned is absent, so seed it from them once; after that the
-# user's own order is kept.
-defaults="${OMARCHY_PATH:-/usr/share/omarchy}/config/omarchy/shell.json"
-jq --slurpfile defaults "$defaults" '
-  .dock.pinned = ((.dock.pinned // $defaults[0].dock.pinned // [])
+  | .dock.pinned = ((.dock.pinned // $defaults[0].dock.pinned // [])
     | map(if . == "org.gnome.Nautilus" then "io.github.lgse.Strata" else . end))
-' "$config" >"$tmpfile" && mv "$tmpfile" "$config"
+' "$config" >"$tmpfile"
+cmp -s "$tmpfile" "$config" || mv "$tmpfile" "$config"

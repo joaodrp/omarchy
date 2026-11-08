@@ -6,7 +6,7 @@
 # Qt tools run offscreen: the sandbox blocks Wayland, so e.g. `qml --help`
 # would otherwise abort and raise a crash notification.
 #
-# Idempotent. Skips quietly when yq isn't installed yet (first apply
+# Skips quietly when yq isn't installed yet (first apply
 # on a fresh machine; its installer runs in the same apply, but order
 # isn't guaranteed).
 set -e
@@ -20,7 +20,9 @@ mkdir -p "$(dirname "$config")"
 [ -f "$config" ] || : > "$config"
 chmod 600 "$config"
 
-yq -i -p toml -o toml '
+tmpfile=$(mktemp "$config.XXXXXX")
+trap 'rm -f "$tmpfile"' EXIT
+yq -p toml -o toml '
   .model = "gpt-5.5" |
   .model_reasoning_effort = "high" |
   .personality = "pragmatic" |
@@ -37,4 +39,5 @@ yq -i -p toml -o toml '
   } |
   .plugins."github@openai-curated".enabled = true |
   .shell_environment_policy.set.QT_QPA_PLATFORM = "offscreen"
-' "$config"
+' "$config" >"$tmpfile"
+cmp -s "$tmpfile" "$config" || mv "$tmpfile" "$config"

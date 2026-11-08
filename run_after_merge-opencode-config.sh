@@ -3,14 +3,16 @@
 # ~/.config/opencode/opencode.json. Servers load their API keys via the
 # agent-secrets wrapper.
 #
-# Idempotent. Preserves omarchy defaults and opencode's runtime writes.
+# Preserves omarchy defaults and opencode's runtime writes; written only when
+# it changes.
 set -e
 
 config="$HOME/.config/opencode/opencode.json"
 mkdir -p "$(dirname "$config")"
 [ -f "$config" ] || echo '{}' > "$config"
 
-tmpfile=$(mktemp)
+tmpfile=$(mktemp "$config.XXXXXX")
+trap 'rm -f "$tmpfile"' EXIT
 jq '. + {
   mcp: ((.mcp // {}) + {
     perplexity: {
@@ -24,4 +26,5 @@ jq '. + {
       enabled: true
     }
   })
-}' "$config" > "$tmpfile" && mv "$tmpfile" "$config"
+}' "$config" > "$tmpfile"
+cmp -s "$tmpfile" "$config" || mv "$tmpfile" "$config"
