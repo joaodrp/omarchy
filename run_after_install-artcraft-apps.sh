@@ -22,7 +22,7 @@ arch=$(uname -m)
 latest_version() {
   # The /releases/latest page redirects to the tag, without the API's rate limit.
   local url
-  url=$(curl -fsSLI -o /dev/null -w '%{url_effective}' "https://github.com/storytold/$1/releases/latest") || return 1
+  url=$(curl -fsSLI --retry 3 --retry-delay 5 -o /dev/null -w '%{url_effective}' "https://github.com/storytold/$1/releases/latest") || return 1
   [[ $url =~ /releases/tag/v([0-9][0-9A-Za-z.+-]*)$ ]] || return 1
   echo "${BASH_REMATCH[1]}"
 }
@@ -35,8 +35,8 @@ install_app() (
   tmp=$(mktemp -d "$root/.tmp.XXXXXX") || exit 1
   trap 'rm -rf "$tmp"' EXIT
 
-  curl -fsSL -o "$tmp/$name.tar.gz" "$base/$name.tar.gz" || exit 1
-  curl -fsSL -o "$tmp/SHA256SUMS.txt" "$base/SHA256SUMS.txt" || exit 1
+  curl -fsSL --retry 3 --retry-delay 5 -o "$tmp/$name.tar.gz" "$base/$name.tar.gz" || exit 1
+  curl -fsSL --retry 3 --retry-delay 5 -o "$tmp/SHA256SUMS.txt" "$base/SHA256SUMS.txt" || exit 1
   grep -E "^[0-9a-f]{64}  $name\.tar\.gz\$" "$tmp/SHA256SUMS.txt" >"$tmp/sum" || exit 1
   (cd "$tmp" && sha256sum -c --quiet sum) || exit 1
 
