@@ -12,6 +12,7 @@ repo=(
     dmidecode             # hardware inventory from the DMI/SMBIOS tables
     git-delta             # syntax-highlighting pager for lazygit and git diff
     gitleaks              # the global pre-commit secret scan
+    github-cli            # gh; clone-my-repos and the agents use it
     glab                  # GitLab CLI
     go-yq                 # mikefarah/yq; the merge scripts edit TOML with it
     mosh                  # roaming-resilient shells over Tailscale
