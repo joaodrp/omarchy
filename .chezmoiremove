@@ -1,0 +1,2 @@
+# Superseded by hooks/post-update.d/chezmoi-apply; it would run apply twice.
+.config/omarchy/hooks/post-update
