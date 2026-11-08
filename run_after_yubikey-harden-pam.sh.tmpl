@@ -11,15 +11,14 @@
 # userverification=1 makes the key match an enrolled fingerprint on-device
 # instead (pinverification=0 keeps it from falling back to the key's PIN), and
 # origin/appid pin the credential to a fixed name rather than pam://$hostname,
-# so it survives a rename and works across machines. Keep ORIGIN in sync with
-# the enroller.
+# so it survives a rename and works across machines.
 #
 # Teardown belongs to `omarchy remove security fido2`, which strips any
 # pam_u2f line regardless of the options on it.
 set -e
 
-AUTHFILE=/etc/fido2/fido2
-ORIGIN=pam://omarchy
+AUTHFILE="{{ .yubikey.authfile }}"
+ORIGIN="{{ .yubikey.origin }}"
 OPTS="origin=$ORIGIN appid=$ORIGIN authfile=$AUTHFILE cue userverification=1 pinverification=0"
 
 # Only the rewrite needs root: /etc/fido2 and both PAM files are world-readable.

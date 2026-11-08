@@ -6,16 +6,15 @@
 # --add to append a backup key to the same authfile.
 #
 # The RP ID is a fixed, hostname-independent string so one credential works on
-# every omarchy machine, rather than pamu2fcfg's default `pam://$hostname`. It
-# MUST match origin=/appid= in the PAM hardener -- keep the two in sync.
+# every omarchy machine, rather than pamu2fcfg's default `pam://$hostname`.
 #
 # The authfile is omarchy's own path, where `omarchy setup security fido2`
 # points its pam_u2f lines. `-V` enrols a credential capable of on-device user
 # verification, which is what userverification=1 later demands.
 set -e
 
-ORIGIN="pam://omarchy"
-AUTHFILE="/etc/fido2/fido2"
+ORIGIN="{{ .yubikey.origin }}"
+AUTHFILE="{{ .yubikey.authfile }}"
 me="$(id -un)"
 
 command -v pamu2fcfg >/dev/null \

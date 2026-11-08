@@ -5,7 +5,7 @@
 # always safe -- password auth is unaffected.
 set -e
 
-AUTHFILE="/etc/fido2/fido2"
+AUTHFILE="{{ .yubikey.authfile }}"
 ENROLL="$HOME/.local/bin/omarchy-yubikey-enroll"
 
 [ -s "$AUTHFILE" ] && exit 0                             # already enrolled here

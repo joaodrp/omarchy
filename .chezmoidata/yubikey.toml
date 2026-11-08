@@ -1,0 +1,6 @@
+# The enroller and the PAM hardener must agree on both. The origin is fixed,
+# not pam://$hostname, so one credential works on every machine; the authfile
+# is where `omarchy setup security fido2` points pam_u2f.
+[yubikey]
+origin = "pam://omarchy"
+authfile = "/etc/fido2/fido2"
