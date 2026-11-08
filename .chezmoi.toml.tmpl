@@ -24,3 +24,8 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
     personal_email = {{ $personal_email | quote }}
     controld_resolver_id = {{ $controld_resolver_id | quote }}
     thunderbolt_keyboard_at_luks = {{ $thunderbolt_keyboard_at_luks | quote }}
+
+# Cache the latest-release lookups in .chezmoiexternal, which every chezmoi
+# command renders; the default minute makes most of them call GitHub.
+[github]
+    refreshPeriod = "1h"
