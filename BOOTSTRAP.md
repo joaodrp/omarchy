@@ -83,7 +83,9 @@ Then open the agent and say: *bootstrap this machine from joaodrp/omarchy*.
 
     Then `clone-my-repos`: every non-archived source repo of the account and
     its orgs, default branch only, into `~/Developer/github.com/<owner>/<repo>`.
-    Re-runnable; existing checkouts are skipped. To develop a vendored bar
+    From then on a daily timer clones new repos and fast-forwards default
+    branches that aren't checked out; `clone-my-repos --pull-checked-out` also
+    fast-forwards clean checked-out ones. To develop a vendored bar
     widget, symlink its plugin path to the checkout; a checkout alone leaves
     the plugin managed.
 

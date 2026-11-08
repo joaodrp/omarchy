@@ -1,0 +1,8 @@
+[Unit]
+Description=Clone new GitHub repos and fast-forward idle default branches
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/clone-my-repos
+Nice=10
+IOSchedulingClass=idle

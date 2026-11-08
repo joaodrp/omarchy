@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily clone-my-repos
+
+[Timer]
+OnCalendar=daily
+# Catch up on a run missed while the machine was off.
+Persistent=true
+RandomizedDelaySec=1h
+
+[Install]
+WantedBy=timers.target
