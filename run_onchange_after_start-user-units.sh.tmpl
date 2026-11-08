@@ -1,0 +1,12 @@
+#!/bin/bash
+# Load and start the user units in the running session: enabling them only
+# takes effect at the next login. Re-runs when a unit changes.
+# {{ include "dot_config/systemd/user/clone-my-repos.timer" | sha256sum }}
+# {{ include "dot_config/systemd/user/clone-my-repos.service" | sha256sum }}
+# {{ include "dot_config/systemd/user/wayvnc-tailnet.service" | sha256sum }}
+set -e
+
+systemctl --user daemon-reload
+systemctl --user start clone-my-repos.timer
+# Needs a Wayland session; outside one its condition skips it.
+systemctl --user start wayvnc-tailnet.service || true
