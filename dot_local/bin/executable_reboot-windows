@@ -15,14 +15,9 @@ for arg in "$@"; do
   esac
 done
 
-# Limine publishes its entry IDs in LoaderEntries (UTF-16, NUL-separated, after
-# a 4-byte attribute header); the Windows entry's ID is its name.
-vars=/sys/firmware/efi/efivars
-loader_entries=$vars/LoaderEntries-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f
-entry=""
-if [[ -r $loader_entries ]]; then
-  entry=$(tail -c +5 "$loader_entries" | iconv -f UTF-16LE -t UTF-8 | tr '\0' '\n' | grep -m1 '^Windows' || true)
-fi
+# Limine reports its entries to bootctl; the Windows entry's ID is its name.
+entry=$(bootctl list --json=short 2>/dev/null |
+  jq -r 'first(.[].id | select(startswith("Windows"))) // empty') || entry=""
 if [[ -z $entry ]]; then
   echo "reboot-windows: Limine lists no Windows entry" >&2
   exit 1
