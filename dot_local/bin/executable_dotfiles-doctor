@@ -54,7 +54,8 @@ if ls -l /sys/bus/platform/drivers/hid_sensor_als/ 2>/dev/null | grep -q FRMW000
 fi
 
 check "web system fonts resolve to Inter / JetBrains Mono" "chezmoi apply" \
-    bash -c '[ "$(fc-match -f "%{family[0]}" "\-apple\-system")" = Inter ] &&
+    bash -c '[ "$(fc-match -f "%{family[0]}" "system\-ui")" = Inter ] &&
+        [ "$(fc-match -f "%{family[0]}" "\-apple\-system")" = Inter ] &&
         [ "$(fc-match -f "%{family[0]}" "ui\-monospace")" = "JetBrainsMono Nerd Font" ]'
 
 echo "Per machine (optional)"

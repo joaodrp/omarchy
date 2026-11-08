@@ -1,2 +1,4 @@
 # Superseded by hooks/post-update.d/chezmoi-apply; it would run apply twice.
 .config/omarchy/hooks/post-update
+# omarchy-font-set owns this; the web font aliases live in conf.d.
+.config/fontconfig/fonts.conf
