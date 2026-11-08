@@ -37,31 +37,23 @@ if [[ -f "$todo" ]]; then
     task=$(jq -r '.[] | select(.status=="in_progress") | .activeForm' "$todo" 2>/dev/null | head -1)
 fi
 
-# Git branch and dirty indicators (skip optional locks)
+# Branch, dirty (staged, unstaged or untracked), ahead/behind and stash, from
+# one status call; detached HEAD shows no branch.
 branch=""
 git_indicators=""
-# rev-parse, not a .git directory check: also matches subdirectories and
-# linked worktrees (where .git is a file).
-if [[ -n "$dir" ]] && git -C "$dir" --no-optional-locks rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    branch=$(cd "$dir" && git --no-optional-locks branch --show-current 2>/dev/null)
-    # Dirty: staged, unstaged, or untracked
-    if ! (cd "$dir" && git diff-index --ignore-submodules --cached --quiet HEAD -- 2>/dev/null) \
-       || ! (cd "$dir" && git diff --ignore-submodules --no-ext-diff --quiet --exit-code 2>/dev/null) \
-       || (cd "$dir" && git ls-files --others --exclude-standard --directory --no-empty-directory --error-unmatch -- ':/*' 2>/dev/null) >/dev/null 2>&1; then
-        git_indicators+="* "
-    fi
-    # Unpushed/unpulled commits
-    upstream=$(cd "$dir" && git rev-parse --abbrev-ref '@{upstream}' 2>/dev/null)
-    if [[ -n "$upstream" ]]; then
-        counts=$(cd "$dir" && git rev-list --left-right --count 'HEAD...@{upstream}' 2>/dev/null)
-        to_push=$(echo "$counts" | cut -f1)
-        to_pull=$(echo "$counts" | cut -f2)
-        [[ "$to_push" -gt 0 ]] 2>/dev/null && git_indicators+="⇡"
-        [[ "$to_pull" -gt 0 ]] 2>/dev/null && git_indicators+="⇣"
-    fi
-    # Stash
-    stash_count=$(cd "$dir" && git rev-list --walk-reflogs --count refs/stash 2>/dev/null || echo "0")
-    [[ "$stash_count" -gt 0 ]] 2>/dev/null && git_indicators+="≡"
+if [[ -n "$dir" ]] && st=$(git -C "$dir" --no-optional-locks status --porcelain=v2 \
+        --branch --show-stash --ignore-submodules 2>/dev/null); then
+    read -r branch ahead behind stash dirty < <(awk '
+        /^# branch.head / { b = $3 }
+        /^# branch.ab / { a = substr($3, 2); z = substr($4, 2) }
+        /^# stash / { s = $3 }
+        !/^#/ { d = 1 }
+        END { print (b == "(detached)" ? "-" : b), a + 0, z + 0, s + 0, d + 0 }' <<<"$st")
+    [[ $branch == - ]] && branch=""
+    ((dirty)) && git_indicators+="* "
+    ((ahead)) && git_indicators+="⇡"
+    ((behind)) && git_indicators+="⇣"
+    ((stash)) && git_indicators+="≡"
 fi
 
 # Directory path (last 2 segments)
