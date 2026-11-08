@@ -78,10 +78,10 @@ if [[ ${1:-} == --status ]]; then
     exit $?
 fi
 
-# Same escalation omarchy-dns uses, so this works from a terminal and from the
-# menu, where there is no tty to take a password.
+# sudo when it needs no password or a tty can take one; otherwise pkexec, so
+# this also works from the menu.
 if ((EUID != 0)); then
-    [[ -t 0 ]] && escalate=sudo || escalate=pkexec
+    if sudo -n true 2>/dev/null || [[ -t 0 ]]; then escalate=sudo; else escalate=pkexec; fi
     exec "$escalate" "$(readlink -f "${BASH_SOURCE[0]}")" "$@"
 fi
 
