@@ -1,7 +1,0 @@
-#!/bin/bash
-# Install Claude (claude.ai) as a webapp. Idempotent.
-set -e
-{{ template "install-webapp.sh" (dict
-    "name" "Claude"
-    "url" "https://claude.ai"
-    "icon" "claude-ai.png") }}

@@ -74,7 +74,7 @@ Then open the agent and say: *bootstrap this machine from joaodrp/omarchy*.
     - Tailscale: open the login URL `tailscale up` prints; approve the device
       in the admin console if the tailnet requires it
     - Dropbox: tray icon > sign in
-    - ChatGPT desktop launches once; close it
+    - ChatGPT and Claude desktop each launch once; close them
 
 11. **GitHub (human):** `gh auth login` (browser, one code). It covers both
     the `gh` CLI and git over HTTPS: `~/.gitconfig` routes GitHub credentials
