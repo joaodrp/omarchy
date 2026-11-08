@@ -52,7 +52,6 @@ Notable files:
 | `run_after_merge-*.sh` | Merge personal keys into agent/CLI configs (Claude, Codex, opencode) without touching each tool's runtime state. |
 | `run_after_yubikey-harden-pam.sh` | Adds the options Omarchy's FIDO2 setup omits, so the key verifies a fingerprint rather than mere presence. |
 | `run_remove-omarchy-apps.sh` | Strips unwanted webapp `.desktop` entries on every apply. Package orphans are left to `omarchy update`. |
-| `run_after_retire-polkit-plugin-clone.sh` | Self-retiring carrier for an upstream polkit fix; deletes itself once Omarchy ships it. |
 
 ## What's managed
 

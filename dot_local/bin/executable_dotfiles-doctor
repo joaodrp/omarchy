@@ -69,6 +69,16 @@ if [ -s /etc/fido2/fido2 ]; then
 else
     opt "YubiKey not enrolled" "plug it in, omarchy-yubikey-enroll"
 fi
+# A clone of omarchy's polkit plugin with pam_u2f support (basecamp/omarchy#6515)
+# shadows the packaged one, so drop it once the package has the fix.
+if [ -d "$HOME/.config/omarchy/plugins/joaodrp.polkit" ]; then
+    if grep -q pam_u2f /usr/share/omarchy/shell/plugins/polkit/PolkitModel.js 2>/dev/null; then
+        opt "polkit plugin clone no longer needed" \
+            "omarchy plugin enable omarchy.polkit && omarchy plugin remove joaodrp.polkit --yes && omarchy restart shell"
+    else
+        ok "polkit plugin clone (pam_u2f) still needed"
+    fi
+fi
 
 echo
 [ "$fails" -eq 0 ] && echo "All required checks pass." || echo "$fails required check(s) failing."
