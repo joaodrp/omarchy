@@ -11,9 +11,10 @@
 # Persists via modprobe.d (read whenever hid_apple loads; the module is not in
 # initramfs here, so no initramfs rebuild needed) and also pokes the live sysfs
 # param so it takes effect now. Harmless when no hid_apple keyboard is attached
-# (the sysfs param exists only while the module is loaded). Idempotent: only
-# writes when content differs.
+# (the sysfs param exists only while the module is loaded).
 set -e
+
+{{ template "install-root-file.sh" }}
 
 # omarchy writes /etc/modprobe.d/hid_apple.conf with fnmode=2. modprobe reads
 # the directory in lexical order and the last value for a duplicate option
@@ -21,10 +22,7 @@ set -e
 CONF=/etc/modprobe.d/keyboard-fnmode.conf
 CONF_CONTENT='options hid_apple fnmode=1'
 
-# Install the conf (skip if unchanged).
-if [ "$(cat "$CONF" 2>/dev/null)" != "$CONF_CONTENT" ]; then
-    printf '%s\n' "$CONF_CONTENT" | sudo tee "$CONF" >/dev/null
-fi
+install_root_file "$CONF" 644 "$CONF_CONTENT"
 
 # Apply now (the modprobe.d conf covers future boots / module reloads).
 param=/sys/module/hid_apple/parameters/fnmode

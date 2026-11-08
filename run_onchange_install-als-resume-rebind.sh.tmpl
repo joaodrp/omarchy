@@ -15,6 +15,8 @@
 # writes, reloads and enables only on a real change.
 set -e
 
+{{ template "install-root-file.sh" }}
+
 SCRIPT=/usr/local/lib/als-rebind
 UNIT=/etc/systemd/system/als-rebind.service
 OLD_HOOK=/etc/systemd/system-sleep/als-rebind
@@ -83,11 +85,6 @@ if ! framework_als; then
     exit 0
 fi
 
-if [ "$(cat "$SCRIPT" 2>/dev/null)" != "$SCRIPT_CONTENT" ] || [ ! -x "$SCRIPT" ]; then
-    printf '%s\n' "$SCRIPT_CONTENT" | sudo install -D -m 755 /dev/stdin "$SCRIPT"
-fi
-if [ "$(cat "$UNIT" 2>/dev/null)" != "$UNIT_CONTENT" ]; then
-    printf '%s\n' "$UNIT_CONTENT" | sudo install -D -m 644 /dev/stdin "$UNIT"
-    sudo systemctl daemon-reload
-fi
+install_root_file "$SCRIPT" 755 "$SCRIPT_CONTENT"
+install_root_file "$UNIT" 644 "$UNIT_CONTENT" sudo systemctl daemon-reload
 systemctl is-enabled --quiet als-rebind.service 2>/dev/null || sudo systemctl enable --quiet als-rebind.service

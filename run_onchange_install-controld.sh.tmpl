@@ -21,6 +21,8 @@
 #          sudo systemctl restart systemd-resolved NetworkManager
 set -euo pipefail
 
+{{ template "install-root-file.sh" }}
+
 RESOLVER_ID="{{ if hasKey . "controld_resolver_id" }}{{ .controld_resolver_id }}{{ end }}"
 [[ -z "$RESOLVER_ID" ]] && exit 0
 
@@ -52,9 +54,7 @@ sudo rm -f /etc/systemd/resolved.conf.d/50-magicdns-search.conf \
 target=$DROPIN
 [[ -f $PAUSED ]] && target=$PAUSED
 
-if [[ "$(sudo cat "$target" 2>/dev/null)" != "$DROPIN_CONTENT" ]]; then
-    printf '%s\n' "$DROPIN_CONTENT" | sudo install -Dm644 /dev/stdin "$target"
-fi
+install_root_file "$target" 644 "$DROPIN_CONTENT"
 
 if [[ -f $PAUSED ]]; then
     echo "ControlD is paused; endpoint updated but not applied. Restore with: dns-controld"

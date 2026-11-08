@@ -15,6 +15,8 @@
 # Inert on machines with no USB Wi-Fi dongle: the bus check matches nothing.
 set -e
 
+{{ template "install-root-file.sh" }}
+
 target=/etc/NetworkManager/dispatcher.d/10-prefer-wifi-dongle
 
 content=$(cat <<'DISPATCHER'
@@ -41,13 +43,9 @@ nmcli device reapply "$iface"
 DISPATCHER
 )
 
-if [ "$(sudo cat "$target" 2>/dev/null)" != "$content" ]; then
-    printf '%s\n' "$content" | sudo tee "$target" >/dev/null
-    # NetworkManager silently skips dispatcher scripts that are not owned by
-    # root or are group/other-writable.
-    sudo chown root:root "$target"
-    sudo chmod 0755 "$target"
-fi
+# NetworkManager silently skips dispatcher scripts that are not owned by root
+# or are group/other-writable.
+install_root_file "$target" 755 "$content"
 
 # networkd is unused under omarchy 4; clear its rule.
 sudo rm -f /etc/systemd/network/10-wifi-dongle.network

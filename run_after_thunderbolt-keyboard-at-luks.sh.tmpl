@@ -24,6 +24,8 @@
 # rebuilt only when the installed hook changes.
 set -e
 
+{{ template "install-root-file.sh" }}
+
 # Per host: `auto` (default) installs the hook when the attached dock's
 # keyboard sits behind a PCIe tunnel, `on` always, `off` never. Pre-tristate
 # hosts stored a boolean: true means `on`, false `auto`.
@@ -58,15 +60,6 @@ mark_pending() {
   : >"$PENDING"
 }
 
-# The hook files are world-readable, so comparing them needs no sudo.
-install_file() {
-  local path=$1 content=$2 mode=$3
-  if [ "$(cat "$path" 2>/dev/null)" = "$content" ]; then
-    return 0
-  fi
-  mark_pending
-  sudo install -Dm"$mode" /dev/stdin "$path" <<<"$content"
-}
 
 remove_file() {
   [ -e "$1" ] || return 0
@@ -330,9 +323,9 @@ fi
 # --- Converge -----------------------------------------------------------------
 
 if (( want )); then
-  install_file "$INSTALL_HOOK" "$INSTALL_HOOK_CONTENT" 644
-  install_file "$RUNTIME_HOOK" "$RUNTIME_HOOK_CONTENT" 644
-  install_file "$MKINITCPIO_CONF" "$MKINITCPIO_CONF_CONTENT" 644
+  install_root_file "$INSTALL_HOOK" 644 "$INSTALL_HOOK_CONTENT" mark_pending
+  install_root_file "$RUNTIME_HOOK" 644 "$RUNTIME_HOOK_CONTENT" mark_pending
+  install_root_file "$MKINITCPIO_CONF" 644 "$MKINITCPIO_CONF_CONTENT" mark_pending
 
   # Pin the dock attached right now; when it is unplugged, keep what was
   # captured before rather than unpinning.
