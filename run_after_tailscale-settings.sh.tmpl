@@ -16,10 +16,15 @@ command -v tailscale >/dev/null || exit 0
 tailscale status >/dev/null 2>&1 || exit 0
 
 # Prefs are readable unprivileged, so sudo is asked only for a real change and
-# a converged apply (the post-update hook included) needs none.
-if ! tailscale debug prefs 2>/dev/null | jq -e '.RunSSH and .CorpDNS' >/dev/null; then
-    sudo tailscale set --ssh --accept-dns=true
+# a converged apply (the post-update hook included) needs none. The operator
+# and Taildrop receiving repeat omarchy's post-login install steps, which an
+# interrupted login skips for good: its installer never runs again.
+if ! tailscale debug prefs 2>/dev/null |
+    jq -e --arg me "$USER" '.RunSSH and .CorpDNS and .OperatorUser == $me' >/dev/null; then
+    sudo tailscale set --ssh --accept-dns=true --operator="$USER"
 fi
+systemctl --user is-enabled --quiet omarchy-tailscale-receive.service ||
+    systemctl --user enable --now omarchy-tailscale-receive.service
 
 # Tailscale SSH services Unix-socket forwarding from the root tailscaled
 # process, so an unprivileged session can reach root-only sockets. Unpatched as
