@@ -98,7 +98,7 @@ read -r -d '' RUNTIME_HOOK_CONTENT <<'EOF' || true
 # unlock is harmless: boltd re-authorizes moments later.
 tb_window=300
 
-tb_domain=/sys/bus/thunderbolt/devices/domain0
+tb_devices=/sys/bus/thunderbolt/devices
 tb_conf=/etc/thunderbolt-keyboard.conf
 
 tb_attr() {
@@ -163,14 +163,10 @@ run_hook() {
 
     # The controller probes asynchronously.
     _tb_i=0
-    while [ ! -d "$tb_domain" ] && [ "$_tb_i" -lt 50 ]; do
+    while ! ls -d "$tb_devices"/domain* >/dev/null 2>&1 && [ "$_tb_i" -lt 50 ]; do
         sleep 0.1
         _tb_i=$((_tb_i + 1))
     done
-    [ -d "$tb_domain" ] || return 0
-
-    # Only tunnel PCIe while the IOMMU is translating DMA for it.
-    [ "$(tb_attr "$tb_domain/iommu_dma_protection")" = '1' ] || return 0
 
     # Snapshot so the wait below can tell the dock's keyboard from one that was
     # already attached to the host.
@@ -179,10 +175,14 @@ run_hook() {
     # The pinned dock only. Anything chained behind it stays closed until boltd
     # runs, keeping one fewer endpoint open while the passphrase is typed.
     _tb_docks=''
-    for _tb_dev in /sys/bus/thunderbolt/devices/*; do
+    for _tb_dev in "$tb_devices"/*; do
         [ -f "$_tb_dev/authorized" ] || continue
         [ "$(tb_attr "$_tb_dev/unique_id")" = "$tb_uuid" ] || continue
         [ "$(tb_attr "$_tb_dev/authorized")" = '0' ] || continue
+        # Only tunnel PCIe while the IOMMU translates DMA on the dock's own
+        # domain: device 0-2 sits in domain0.
+        _tb_name=${_tb_dev##*/}
+        [ "$(tb_attr "$tb_devices/domain${_tb_name%%-*}/iommu_dma_protection")" = '1' ] || continue
         tb_write 1 "$_tb_dev/authorized" || continue
         _tb_docks="$_tb_docks $_tb_dev"
     done
@@ -208,7 +208,6 @@ $_tb_kb
         _tb_i=$((_tb_i + 1))
     done
 
-    [ "$(tb_attr "$tb_domain/deauthorization")" = '1' ] || return 0
     tb_mapper_name=$(tb_mapper) || tb_mapper_name=''
     (
         _tb_i=0
@@ -218,7 +217,9 @@ $_tb_kb
             _tb_i=$((_tb_i + 1))
         done
         for _tb_dev in $_tb_docks; do
-            tb_write 0 "$_tb_dev/authorized"
+            _tb_name=${_tb_dev##*/}
+            [ "$(tb_attr "$tb_devices/domain${_tb_name%%-*}/deauthorization")" = '1' ] &&
+                tb_write 0 "$_tb_dev/authorized"
         done
     ) &
 }
