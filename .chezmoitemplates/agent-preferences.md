@@ -99,6 +99,6 @@ In a codebase with a test suite:
 - Never edit this preferences file on your own initiative. When something reads like a
   general preference or working pattern rather than a project fact, raise it and get my
   explicit confirmation before it goes in here.
-- Portable rules go in the shared source,
-  `~/.local/share/chezmoi/.chezmoitemplates/agent-preferences.md`. Agent-specific rules go
-  in that agent's own file, which is what `chezmoi source-path` reports.
+- Portable rules go in the shared source, `.chezmoitemplates/agent-preferences.md` under
+  `chezmoi source-path`. Agent-specific rules go in that agent's own file, which is what
+  `chezmoi source-path <file>` reports.
