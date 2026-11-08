@@ -48,7 +48,7 @@ if omarchy-hw-fingerprint 2>/dev/null; then
     check "fingerprint enrolled" "omarchy-setup-security-fingerprint" \
         test -f /etc/pam.d/omarchy-lock-fingerprint
 fi
-if ls -l /sys/bus/platform/drivers/hid_sensor_als/ 2>/dev/null | grep -q FRMW0005; then
+if readlink -f /sys/bus/platform/drivers/hid_sensor_als/* 2>/dev/null | grep -q FRMW0005; then
     check "light sensor rebinds after resume" "chezmoi apply" \
         systemctl is-enabled --quiet als-rebind.service
 fi
