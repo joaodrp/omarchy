@@ -1,0 +1,85 @@
+#!/bin/bash
+# Blink the Framework power-button LED while fprintd waits for a finger: the
+# reader sits in the button, and nothing else shows when it wants a touch.
+# Adapted from github.com/alejandroqh/framework-fingerprint-led-blink.
+#
+# Installed only where a fingerprint reader and the EC power LED exist;
+# elsewhere it is removed. Idempotent: writes, reloads and enables only on a
+# real change.
+set -e
+
+{{ template "install-root-file.sh" }}
+
+SCRIPT=/usr/local/lib/fingerprint-led
+UNIT=/etc/systemd/system/fingerprint-led.service
+LED=/sys/class/leds/chromeos:white:power
+
+read -r -d '' SCRIPT_CONTENT <<'SCRIPT' || true
+#!/bin/bash
+# Managed by chezmoi (joaodrp/omarchy). Blinks the power-button LED from
+# VerifyStart/EnrollStart until a stop call or a final status (done = true),
+# for at most 60s, then hands the LED back to the EC.
+led=${LED:-/sys/class/leds/chromeos:white:power}
+guard=
+off() {
+    [ -n "$guard" ] && kill "$guard" 2>/dev/null
+    guard=
+    echo chromeos-auto > "$led/trigger"
+}
+on() {
+    [ -n "$guard" ] && kill -0 "$guard" 2>/dev/null && return
+    echo timer > "$led/trigger"
+    echo 250 > "$led/delay_on"
+    echo 250 > "$led/delay_off"
+    { sleep 60; echo chromeos-auto > "$led/trigger"; } &
+    guard=$!
+}
+off
+status=0
+while read -r line; do
+    case $line in
+        "method call "*member=VerifyStart | "method call "*member=EnrollStart) on ;;
+        "method call "*member=VerifyStop | "method call "*member=EnrollStop | \
+        "method call "*member=Release) off ;;
+        *member=VerifyStatus | *member=EnrollStatus) status=1 ;;
+        "boolean true") [ "$status" = 1 ] && off; status=0 ;;
+        "boolean false") status=0 ;;
+    esac
+done < <(dbus-monitor --system "interface='net.reactivated.Fprint.Device'")
+off
+SCRIPT
+
+read -r -d '' UNIT_CONTENT <<UNIT || true
+# Managed by chezmoi (joaodrp/omarchy).
+[Unit]
+Description=Blink the power-button LED while fprintd waits for a finger
+After=dbus.service
+
+[Service]
+ExecStartPre=/usr/bin/modprobe ledtrig-timer
+ExecStart=$SCRIPT
+ExecStopPost=/bin/sh -c 'echo chromeos-auto > $LED/trigger'
+Restart=always
+RestartSec=2
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+if [ ! -e "$LED" ] || ! omarchy-hw-fingerprint; then
+    if [ -e "$UNIT" ]; then
+        sudo systemctl disable --now fingerprint-led.service >/dev/null 2>&1 || true
+        sudo rm -f "$UNIT" "$SCRIPT"
+        sudo systemctl daemon-reload
+    fi
+    exit 0
+fi
+
+install_root_file "$SCRIPT" 755 "$SCRIPT_CONTENT" sudo systemctl try-restart fingerprint-led.service
+install_root_file "$UNIT" 644 "$UNIT_CONTENT" sudo systemctl daemon-reload
+systemctl is-enabled --quiet fingerprint-led.service 2>/dev/null ||
+    sudo systemctl enable --now --quiet fingerprint-led.service

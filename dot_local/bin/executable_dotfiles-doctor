@@ -53,6 +53,11 @@ if readlink -f /sys/bus/platform/drivers/hid_sensor_als/* 2>/dev/null | grep -q 
         systemctl is-enabled --quiet als-rebind.service
 fi
 
+if [ -e /sys/class/leds/chromeos:white:power ] && omarchy-hw-fingerprint 2>/dev/null; then
+    check "power button blinks for fingerprint" "chezmoi apply" \
+        systemctl is-active --quiet fingerprint-led.service
+fi
+
 check "web system fonts resolve to Inter / JetBrains Mono" "chezmoi apply" \
     bash -c '[ "$(fc-match -f "%{family[0]}" "system\-ui")" = Inter ] &&
         [ "$(fc-match -f "%{family[0]}" "\-apple\-system")" = Inter ] &&
