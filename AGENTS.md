@@ -26,6 +26,12 @@ is Quickshell — no waybar, walker, mako, hyprlock or hypridle.
   `omarchy install` over raw pacman, and omarchy's own extension points
   (`~/.config/omarchy/hooks/<event>.d/`, shell plugins,
   `~/.config/omarchy/backgrounds/<theme>/`) over hand-rolled equivalents.
+- Keep it general-purpose: everything applies to every machine, so add only
+  tools and config useful beyond one project. A project's own dependencies
+  (runtimes, libraries, kernel modules) belong in that project's README or
+  packaging, even when a general tool would also cover them. Hardware-specific
+  setup goes in a `.tmpl` script that detects the hardware and does nothing
+  elsewhere.
 - Do not re-assert configuration pacman already preserves. Files that produce
   a `.pacnew` are protected by that mechanism; vendoring them here just fights
   the package manager.
