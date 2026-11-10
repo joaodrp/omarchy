@@ -18,10 +18,12 @@ repo=(
     git-filter-repo       # history rewrites (scrubbing secrets and identifiers)
     glab                  # GitLab CLI
     go-yq                 # mikefarah/yq; the merge scripts edit TOML with it
+    just                  # command runner for project justfiles
     mosh                  # roaming-resilient shells over Tailscale
     radare2               # disassembler, Windows PE files included
     release-plz           # release automation for Rust crates
     ruff                  # Python linter and formatter
+    shellcheck            # shell script linter
     squashfs-tools        # unsquashfs reads AppImage icons for thumbnails
     telegram-desktop      # native client, better integrated than the webapp
     usb_modeswitch        # flips the TP-Link TX20U Wi-Fi dongle out of CD-ROM mode

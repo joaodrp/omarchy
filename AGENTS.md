@@ -26,6 +26,8 @@ is Quickshell — no waybar, walker, mako, hyprlock or hypridle.
   `omarchy install` over raw pacman, and omarchy's own extension points
   (`~/.config/omarchy/hooks/<event>.d/`, shell plugins,
   `~/.config/omarchy/backgrounds/<theme>/`) over hand-rolled equivalents.
+- mise holds only language toolchains and tools from language registries
+  (`cargo:`, `npm:`); everything else is a pacman package.
 - Keep it general-purpose: no project dependencies, and hardware-specific
   setup must detect its hardware.
 - Do not re-assert configuration pacman already preserves. Files that produce
