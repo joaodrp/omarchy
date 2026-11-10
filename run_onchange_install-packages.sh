@@ -18,6 +18,7 @@ repo=(
     git-filter-repo       # history rewrites (scrubbing secrets and identifiers)
     xorg-server-xvfb      # Xvfb; off-screen X display for agent browser tests
     glab                  # GitLab CLI
+    herdr-core            # hc; agent terminals that outlive the window and login
     go-yq                 # mikefarah/yq; the merge scripts edit TOML with it
     just                  # command runner for project justfiles
     mosh                  # roaming-resilient shells over Tailscale
