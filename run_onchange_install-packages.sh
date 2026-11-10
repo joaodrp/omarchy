@@ -8,6 +8,8 @@ repo=(
     ansible               # ansible-core plus the community collections
     calibre               # e-book manager, GUI and CLI tools
     caligula              # TUI disk-image writer that verifies the write
+    clang                 # also clang-format and clang-tidy for C and C++
+    cmake                 # C and C++ builds
     dcraw                 # camera RAW decoder for image previews
     dmidecode             # hardware inventory from the DMI/SMBIOS tables
     git-delta             # syntax-highlighting pager for lazygit and git diff
@@ -19,6 +21,7 @@ repo=(
     mosh                  # roaming-resilient shells over Tailscale
     radare2               # disassembler, Windows PE files included
     release-plz           # release automation for Rust crates
+    ruff                  # Python linter and formatter
     squashfs-tools        # unsquashfs reads AppImage icons for thumbnails
     telegram-desktop      # native client, better integrated than the webapp
     usb_modeswitch        # flips the TP-Link TX20U Wi-Fi dongle out of CD-ROM mode
