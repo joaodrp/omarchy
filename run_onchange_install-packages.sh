@@ -16,6 +16,7 @@ repo=(
     gitleaks              # the global pre-commit secret scan
     github-cli            # gh; clone-my-repos and the agents use it
     git-filter-repo       # history rewrites (scrubbing secrets and identifiers)
+    xorg-server-xvfb      # Xvfb; off-screen X display for agent browser tests
     glab                  # GitLab CLI
     go-yq                 # mikefarah/yq; the merge scripts edit TOML with it
     just                  # command runner for project justfiles
