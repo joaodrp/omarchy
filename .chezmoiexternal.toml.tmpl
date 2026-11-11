@@ -33,20 +33,3 @@
     include = [{{ printf "*/%s/**" $s.path | quote }}]
 
 {{ end -}}
-
-{{/* Strata's Taildrop provider, from its own repo at its latest release, so a
-     new release lands on the next apply; provider.json beside it is the
-     template in dot_config/strata/private_providers/taildrop/. */ -}}
-[".config/strata/providers/taildrop/provider.py"]
-    type = "file"
-    url = "https://raw.githubusercontent.com/joaodrp/strata-taildrop/{{ (gitHubLatestRelease "joaodrp/strata-taildrop").TagName }}/provider.py"
-
-{{/* Strata's Dropbox provider and its badges, from its own repo at its latest
-     release; Strata loads icons only from beside provider.json, the template in
-     dot_config/strata/private_providers/dropbox/. */ -}}
-{{ $dropbox := (gitHubLatestRelease "joaodrp/strata-dropbox").TagName -}}
-{{ range list "provider.py" "icons/synced.png" "icons/syncing.png" "icons/error.png" "icons/excluded.png" "icons/LICENSE-lucide" -}}
-[".config/strata/providers/dropbox/{{ base . }}"]
-    type = "file"
-    url = "https://raw.githubusercontent.com/joaodrp/strata-dropbox/{{ $dropbox }}/{{ . }}"
-{{ end -}}

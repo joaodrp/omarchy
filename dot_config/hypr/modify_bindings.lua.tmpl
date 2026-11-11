@@ -20,11 +20,6 @@ o.rebind("SUPER + SHIFT + E", "Gmail",
 o.rebind("SUPER + SHIFT + C", "Google Calendar",
   o.launch_webapp_sole("Google Calendar", "https://calendar.google.com"))
 
--- Strata replaces Nautilus as the file manager.
-o.rebind("SUPER + SHIFT + F", "File manager", { launch = "strata" })
-o.rebind("SUPER + ALT + SHIFT + F", "File manager (cwd)",
-  'uwsm-app -- strata "$(omarchy-cmd-terminal-cwd)"')
-
 -- Fix Picture-in-Picture clipping off the right screen edge: omarchy's pip
 -- rules compute X from window_w (Chromium's intrinsic ~512px PiP width) before
 -- `size = { 600, 338 }` widens the window. Recompute from the forced width:
@@ -35,9 +30,6 @@ o.rebind("SUPER + ALT + SHIFT + F", "File manager (cwd)",
 o.window({ tag = "pip" }, {
   move = { "(monitor_w-640)", "(monitor_h*0.04)" },
 })
-
--- Opt Strata in to Omarchy's window transparency, as Omarchy does for Nautilus.
-o.transparent_window("io\\.github\\.lgse\\.Strata")
 
 -- <<< dotfiles: personal hyprland <<<
 EOF
