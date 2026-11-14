@@ -19,6 +19,7 @@ repo=(
     xorg-server-xvfb      # Xvfb; off-screen X display for agent browser tests
     glab                  # GitLab CLI
     herdr-core            # hc; Herdr core runtime
+    python-huggingface-hub   # hf; Hugging Face model downloads
     go-yq                 # mikefarah/yq; the merge scripts edit TOML with it
     just                  # command runner for project justfiles
     mosh                  # roaming-resilient shells over Tailscale
