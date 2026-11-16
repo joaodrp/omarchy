@@ -18,21 +18,54 @@ read -r -d '' SCRIPT_CONTENT <<'SCRIPT' || true
 #!/bin/bash
 # Managed by chezmoi (joaodrp/omarchy). Blinks the power-button LED from
 # VerifyStart/EnrollStart until a stop call or a final status (done = true),
-# for at most 60s, then hands the LED back to the EC.
+# for at most 60s, then hands the LED back to the EC. While every display is
+# off it hands the LED back too, and blinks again on wake: the lock lets an
+# attempt run on after blanking, and a wake may resume that same attempt.
 led=${LED:-/sys/class/leds/chromeos:white:power}
-guard=
+worker=
+
+# Dark only when every connected display reports DPMS Off; an unreadable state
+# counts as lit, so a prompt never loses its cue.
+dark() {
+    local c lit=1
+    for c in /sys/class/drm/card*-*; do
+        [ "$(cat "$c/status" 2>/dev/null)" = connected ] || continue
+        [ "$(cat "$c/dpms" 2>/dev/null)" = Off ] || return 1
+        lit=0
+    done
+    return $lit
+}
+blink() {
+    local i state='' want
+    for ((i = 0; i < 60; i++)); do
+        if dark; then want=dark; else want=lit; fi
+        if [ "$want" != "$state" ]; then
+            if [ "$want" = lit ]; then
+                echo timer > "$led/trigger"
+                echo 250 > "$led/delay_on"
+                echo 250 > "$led/delay_off"
+            else
+                echo chromeos-auto > "$led/trigger"
+            fi
+            state=$want
+        fi
+        sleep 1
+    done
+    echo chromeos-auto > "$led/trigger"
+}
+# Waits for the worker, so a stopped one never writes over what follows.
 off() {
-    [ -n "$guard" ] && kill "$guard" 2>/dev/null
-    guard=
+    if [ -n "$worker" ]; then
+        kill "$worker" 2>/dev/null
+        wait "$worker" 2>/dev/null
+    fi
+    worker=
     echo chromeos-auto > "$led/trigger"
 }
 on() {
-    [ -n "$guard" ] && kill -0 "$guard" 2>/dev/null && return
-    echo timer > "$led/trigger"
-    echo 250 > "$led/delay_on"
-    echo 250 > "$led/delay_off"
-    { sleep 60; echo chromeos-auto > "$led/trigger"; } &
-    guard=$!
+    [ -n "$worker" ] && kill -0 "$worker" 2>/dev/null && return
+    blink &
+    worker=$!
 }
 off
 status=0
