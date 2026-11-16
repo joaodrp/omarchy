@@ -1,0 +1,130 @@
+{{ if eq (include "/sys/class/dmi/id/product_name" | trim) .speaker_tuning.product -}}
+#!/bin/bash
+# Run the speaker tuning from Framework's Windows driver (Dolby's correction,
+# EQ and limiting) as a PipeWire filter-chain on the internal speakers. Built
+# here from the latest driver bundle and converter release, because the tuning
+# is Dolby's data and this repo is public.
+#
+# Converged applies only compare versions. A new bundle or converter, or a
+# missing output, rebuilds into a fresh directory and swaps the conf in last,
+# so a failure keeps the working tuning. PipeWire is never restarted here: a
+# new tuning takes effect at the next login. Problems warn instead of failing
+# the apply.
+set -euo pipefail
+
+release={{ (gitHubLatestRelease .speaker_tuning.converter).TagName | quote }}
+# The internal-speaker sink, named explicitly so the build never depends on a
+# running audio session; the same on every unit of this model.
+sink=alsa_output.pci-0000_00_1f.3.analog-stereo
+index=https://resources.frame.work/downloads/laptop-13-pro/
+
+data=$HOME/.local/share/speaker-tuning
+converter=$data/converter
+cache=${XDG_CACHE_HOME:-$HOME/.cache}/speaker-tuning
+state_dir=${XDG_STATE_HOME:-$HOME/.local/state}/speaker-tuning
+state=$state_dir/installed
+confdir=${XDG_CONFIG_HOME:-$HOME/.config}/pipewire/pipewire.conf.d
+
+notify() {
+    echo "speaker tuning: $1. $2" >&2
+    omarchy notification send "$1" "$2" >/dev/null 2>&1 || true
+}
+
+# installed holds: release, bundle SHA256, conf name, build directory.
+installed=()
+[ -r "$state" ] && mapfile -t installed <"$state"
+
+remove_ours() {
+    [ -n "${installed[2]:-}" ] && rm -f "$confdir/${installed[2]}"
+    rm -rf "$data/builds" "$state"
+}
+
+if omarchy-audio-tuning match >/dev/null 2>&1; then
+    if [ -n "${installed[*]}" ]; then
+        remove_ours
+        notify "Speaker tuning replaced" "Omarchy now ships one for this laptop; it takes effect at the next login."
+    fi
+    exit 0
+fi
+
+# Framework's release pages list each download with its SHA256 in one row.
+latest_bundle() {
+    local page version
+    page=$(curl -fsSL --retry 2 "$index") || return 1
+    version=$(grep -oE 'intel-core-ultra-3/[0-9][0-9.]*' <<<"$page" | sort -uV | tail -1)
+    [ -n "$version" ] || return 1
+    page=$(curl -fsSL --retry 2 "$index$version") || return 1
+    printf '%s\n' "${page//bios-download-row/$'\n'}" |
+        grep -m1 'downloads\.frame\.work/driver/' |
+        grep -oE 'href="https://downloads\.frame\.work/driver/[^"]+\.exe"|SHA256 · [0-9A-Fa-f]{64}' |
+        sed -E 's/^href="(.*)"$/\1/; s/^SHA256 · //' | paste -sd' '
+}
+
+if ! read -r url sha < <(latest_bundle) || [ -z "${sha:-}" ]; then
+    notify "Speaker tuning not checked" "Could not read Framework's latest driver bundle; the current tuning stays."
+    exit 0
+fi
+sha=${sha,,}
+
+conf_ok() {
+    local conf=$confdir/${installed[2]:-.none} irs
+    [ -r "$conf" ] || return 1
+    irs=$(grep -oE '"/[^"]+\.irs"' "$conf" | head -1 | tr -d '"')
+    [ -z "$irs" ] || [ -r "$irs" ]
+}
+
+if [ "${installed[0]:-}" = "$release" ] && [ "${installed[1]:-}" = "$sha" ] && conf_ok; then
+    exit 0
+fi
+
+need=()
+for pkg in lsp-plugins-lv2 calf lilv-tools python-numpy python-scipy 7zip; do
+    pacman -Qq "$pkg" >/dev/null 2>&1 || need+=("$pkg")
+done
+[ ${#need[@]} -eq 0 ] || omarchy pkg add "${need[@]}"
+
+mkdir -p "$cache" "$state_dir" "$confdir"
+exe=$cache/$sha.exe
+verified() { echo "$sha  $exe.part" | sha256sum -c --quiet >/dev/null 2>&1; }
+if [ ! -r "$exe" ]; then
+    # Resumes a partial download; a corrupt one is dropped, to be fetched again
+    # on the next apply.
+    if ! verified; then
+        curl -fL --retry 3 --retry-delay 5 -C - -o "$exe.part" "$url" || true
+        if ! verified; then
+            rm -f "$exe.part"
+            notify "Speaker tuning not updated" "The driver bundle failed to download or verify; the current tuning stays."
+            exit 0
+        fi
+    fi
+    mv "$exe.part" "$exe"
+fi
+
+# The conf names its impulse file by absolute path, so each build gets its own
+# final directory rather than a staging one.
+build=$data/builds/$release-${sha:0:12}
+rm -rf "$build"
+mkdir -p "$build"
+fail() {
+    rm -rf "$build"
+    notify "Speaker tuning not updated" "$1; the current tuning stays."
+    exit 0
+}
+ATMOS_DRIVER_CACHE=$cache/driver-cache python3 "$converter/dolby_to_pipewire.py" "$exe" \
+    --variant balanced --target-sink "$sink" --output-dir "$build" --no-activate --no-color \
+    >"$build/build.log" 2>&1 || fail "The converter failed (see $build/build.log)"
+
+mapfile -t confs < <(find "$build" -maxdepth 1 -name '*.conf' -printf '%f\n')
+[ ${#confs[@]} -eq 1 ] || fail "The converter wrote ${#confs[@]} confs"
+name=${confs[0]}
+grep -q "$sink" "$build/$name" || fail "The conf does not target the internal speakers"
+
+cp "$build/$name" "$confdir/.$name.new"
+mv -f "$confdir/.$name.new" "$confdir/$name"
+[ -n "${installed[2]:-}" ] && [ "${installed[2]}" != "$name" ] && rm -f "$confdir/${installed[2]}"
+find "$data/builds" -mindepth 1 -maxdepth 1 ! -path "$build" -exec rm -rf {} +
+printf '%s\n' "$release" "$sha" "$name" "$build" >"$state"
+rm -f "$exe"
+
+notify "Speaker tuning updated" "Converter $release, Framework bundle ${url##*/}; it takes effect at the next login."
+{{ end -}}

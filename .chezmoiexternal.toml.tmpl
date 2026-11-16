@@ -50,3 +50,13 @@
     type = "file"
     url = "https://raw.githubusercontent.com/joaodrp/strata-dropbox/{{ $dropbox }}/{{ . }}"
 {{ end -}}
+
+{{/* The speaker-tuning converter at its latest release, only on the laptop it
+     converts for. */ -}}
+{{ if eq (include "/sys/class/dmi/id/product_name" | trim) .speaker_tuning.product -}}
+[".local/share/speaker-tuning/converter"]
+    type = "archive"
+    url = "https://github.com/{{ .speaker_tuning.converter }}/archive/refs/tags/{{ (gitHubLatestRelease .speaker_tuning.converter).TagName }}.tar.gz"
+    exact = true
+    stripComponents = 1
+{{ end -}}

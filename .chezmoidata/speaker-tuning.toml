@@ -1,0 +1,5 @@
+# The laptop whose Windows speaker tuning is converted for PipeWire, and the
+# converter; see run_after_speaker-tuning.sh.tmpl.
+[speaker_tuning]
+product = "Laptop 13 Pro (Intel Core Ultra Series 3)"
+converter = "antoinecellerier/speaker-tuning-to-easyeffects"
