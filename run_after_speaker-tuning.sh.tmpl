@@ -12,6 +12,8 @@
 # the apply.
 set -euo pipefail
 
+{{ template "install-root-file.sh" }}
+
 release={{ (gitHubLatestRelease .speaker_tuning.converter).TagName | quote }}
 # The internal-speaker sink, named explicitly so the build never depends on a
 # running audio session; the same on every unit of this model.
@@ -39,12 +41,41 @@ remove_ours() {
     rm -rf "$data/builds" "$state"
 }
 
+# The shell lists the filter as an output device and its playback as an app,
+# but the speakers already play through it, so the shell's platform audio
+# hints hide both. The path belongs to platform packages: only a file of ours
+# is written or removed.
+hints=/usr/share/omarchy-platform/audio.json
+read -r -d '' hints_content <<'JSON' || true
+{
+  "managed_by": "joaodrp/omarchy speaker tuning",
+  "hidden": ["effect_(input|output)\\.Dolby_Balanced"]
+}
+JSON
+hints_ours_or_absent() {
+    [ ! -L "$hints" ] || return 1
+    [ -e "$hints" ] || return 0
+    ! pacman -Qqo "$hints" >/dev/null 2>&1 &&
+        grep -q '"managed_by": "joaodrp/omarchy speaker tuning"' "$hints"
+}
+
 if omarchy-audio-tuning match >/dev/null 2>&1; then
     if [ -n "${installed[*]}" ]; then
         remove_ours
         notify "Speaker tuning replaced" "Omarchy now ships one for this laptop; it takes effect at the next login."
     fi
+    if [ -e "$hints" ] && hints_ours_or_absent; then
+        sudo rm -f "$hints"
+        sudo rmdir --ignore-fail-on-non-empty "${hints%/*}"
+    fi
     exit 0
+fi
+
+hints_ours_or_absent && install_root_file "$hints" 644 "$hints_content"
+# Selecting the hidden filter would bring it back as the current output;
+# the speakers sound the same, as they play through it.
+if [ "$(pactl get-default-sink 2>/dev/null)" = "effect_input.Dolby_Balanced" ]; then
+    pactl set-default-sink "$sink" || true
 fi
 
 # Framework's release pages list each download with its SHA256 in one row.
