@@ -44,7 +44,8 @@ remove_ours() {
 # The shell lists the filter as an output device and its playback as an app,
 # but the speakers already play through it, so the shell's platform audio
 # hints hide both. The path belongs to platform packages: only a file of ours
-# is written or removed.
+# is written or removed. Move to user hints once Omarchy reads them:
+# https://github.com/omacom/omarchy/discussions/19263
 hints=/usr/share/omarchy-platform/audio.json
 read -r -d '' hints_content <<'JSON' || true
 {

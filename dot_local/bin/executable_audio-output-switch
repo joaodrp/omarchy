@@ -1,6 +1,7 @@
 #!/bin/bash
 # Omarchy's output switch, stepping past the speaker-tuning filter: the
 # speakers already play through it, and the switch ignores the panel's hints.
+# Drop once Omarchy's switch reads user hints: https://github.com/omacom/omarchy/discussions/19263
 omarchy-audio-output-switch || exit
 [ "$(pactl get-default-sink 2>/dev/null)" = effect_input.Dolby_Balanced ] || exit 0
 exec omarchy-audio-output-switch
