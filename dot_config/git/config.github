@@ -1,7 +1,5 @@
-; Loaded via includeIf in ~/.gitconfig when the current repo has a
-; remote pointing at github.com (https:// or git@). Overrides
-; user.email to the GitHub noreply so the personal email is never
-; leaked to public github commits.
+; GitHub noreply email in repos with a GitHub remote, so the personal one stays
+; out of their commits.
 
 [user]
 	email = 484633+joaodrp@users.noreply.github.com

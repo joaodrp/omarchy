@@ -2,16 +2,14 @@
   // Extends the Quickshell menu. Field reference and defaults:
   // /usr/share/omarchy/default/omarchy/omarchy-menu.jsonc
   //
-  // Why ControlD needs a row of its own: see ~/.local/bin/dns-controld.
+  // ControlD is not one of Omarchy's DNS presets, so it gets its own row.
   //
   // Rows merge per key, so Custom only restates `checked`. It has to: omarchy
   // reports ControlD as Custom, and both rows keying off that would tick at
   // once. Both defer to `dns-controld --status` so one definition decides.
   //
-  // ControlD sorts last because rows keep the position of their first
-  // declaration and the defaults load first. Reordering would mean hiding the
-  // stock rows with `when` and redeclaring them under fresh ids -- possible,
-  // but it trades ordering for restating rows that would then drift.
+  // ControlD sorts last: rows keep the position of their first declaration,
+  // and the defaults load first.
   "setup.network.dns.controld": {"icon":"󰇧","label":"ControlD","checked":"dns-controld --status","action":"dns-controld"},
   "setup.network.dns.custom": {"checked":"[[ \"$(omarchy-dns)\" == \"Custom\" ]] && ! dns-controld --status"},
 }

@@ -1,8 +1,6 @@
-{{/* Vendor my own bar widgets -- except one being developed on this machine,
-     whose plugin path is a symlink to its working checkout. An external would
-     replace that symlink with a clone, silently ending the dev loop: edits
-     would stop reaching the shell with nothing to indicate why. A checkout
-     merely present under ~/Developer does not count. */ -}}
+{{/* Vendor my bar widgets. Skip one whose plugin path is a symlink to a dev
+     checkout: the external would replace the link and cut the checkout off
+     from the shell. */ -}}
 
 {{ range $id, $repo := dict
     "controld" "omarchy-controld-panel"

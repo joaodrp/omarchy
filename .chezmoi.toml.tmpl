@@ -1,6 +1,3 @@
-{{- /* Onboarding template. chezmoi renders this once on `chezmoi init`
-       and writes the output to ~/.config/chezmoi/chezmoi.toml. Subsequent
-       runs reuse the local file; no re-prompting. */ -}}
 {{- $personal_email := promptStringOnce . "personal_email" "Personal email" -}}
 {{- $home_assistant_url := promptStringOnce . "home_assistant_url" "Home Assistant URL for its webapp (blank to skip)" -}}
 {{- $controld_resolver_id := promptStringOnce . "controld_resolver_id" "ControlD resolver ID for this machine (endpoint's Show Resolvers screen; blank to leave DNS alone)" -}}
