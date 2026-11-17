@@ -1,5 +1,4 @@
 #!/bin/bash
-#
 # DNS goes to this machine's dedicated ControlD endpoint over DoT, spoken by
 # systemd-resolved directly -- no forwarding daemon. Resolver ID comes from the
 # `controld_resolver_id` chezmoi field (per-machine, local, never committed).
@@ -15,10 +14,6 @@
 # tailscaled, so don't.
 #
 # Captive portals: `dns-controld --pause`, sign in, then `dns-controld`.
-#
-# Reverse: sudo rm -f /etc/systemd/resolved.conf.d/50-controld.conf
-#          sudo rm -f /etc/NetworkManager/conf.d/{99-dns-none,20-omarchy-dns}.conf
-#          sudo systemctl restart systemd-resolved NetworkManager
 set -euo pipefail
 
 {{ template "install-root-file.sh" }}
@@ -43,10 +38,10 @@ DNS=76.76.2.22#$DOT_HOST 76.76.10.22#$DOT_HOST
 DNSOverTLS=yes
 FallbackDNS="
 
-# Left by the ctrld-era setup. `50-magicdns-search.conf` set a global
-# `Domains=`, which would make the global scope authoritative for tailnet
-# names and route them to ControlD instead of tailscale0; the dispatcher
-# re-pins profiles to a listener that no longer exists.
+# Stale ctrld files: `50-magicdns-search.conf` sets a global `Domains=`, which
+# would make the global scope authoritative for tailnet names and route them
+# to ControlD instead of tailscale0; the dispatcher re-pins profiles to a
+# listener that no longer exists.
 sudo rm -f /etc/systemd/resolved.conf.d/50-magicdns-search.conf \
     /etc/NetworkManager/dispatcher.d/05-ctrld-dns
 

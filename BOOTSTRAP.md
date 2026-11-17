@@ -99,7 +99,13 @@ Then open the agent and say: *bootstrap this machine from joaodrp/omarchy*.
 
 ## Later, per machine
 
-- ControlD: set `controld_resolver_id` in `~/.config/chezmoi/chezmoi.toml`, then `chezmoi apply`.
+- ControlD: set `controld_resolver_id` in `~/.config/chezmoi/chezmoi.toml`, then `chezmoi apply`. To remove it, clear the ID and `chezmoi apply` (so setting the same ID later re-runs the installer), then:
+
+  ```bash
+  sudo rm -f /etc/systemd/resolved.conf.d/50-controld.conf{,.disabled}
+  sudo rm -f /etc/NetworkManager/conf.d/{99-dns-none,20-omarchy-dns}.conf
+  sudo systemctl restart systemd-resolved NetworkManager
+  ```
 - YubiKey: plug it in, `omarchy-yubikey-enroll`, `chezmoi apply`.
 - Thunderbolt keyboard at LUKS: `auto` decides on the first apply with the dock attached; see `run_after_thunderbolt-keyboard-at-luks.sh.tmpl`.
 - Windows dual boot with BitLocker: with Secure Boot off, BitLocker seals to the boot chain it was enabled on, and Windows' own restarts go through Limine. Enable it after booting Windows from Limine's menu (or `reboot-windows`), keep starting Windows that way, and expect a recovery-key prompt after each Limine update. Move to Secure Boot (`sbctl enroll-keys -m`) once https://github.com/omacom/omarchy/pull/12246 lands, fixing https://github.com/omacom/omarchy/issues/10945: suspend BitLocker in Windows first, then re-add its TPM protector and confirm PCR profile 7, 11.
