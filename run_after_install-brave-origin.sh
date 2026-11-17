@@ -1,7 +1,5 @@
 #!/bin/bash
-# Brave Origin, used only for the YouTube web app, which keeps YouTube in its
-# own browser profile. Installing a browser does not change the default, which
-# stays Chromium.
+# Brave Origin, the default browser, also runs the YouTube web app.
 set -e
 
 if omarchy-pkg-missing brave-origin-bin; then

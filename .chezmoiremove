@@ -2,3 +2,5 @@
 .config/omarchy/hooks/post-update
 # omarchy-font-set owns this; the web font aliases live in conf.d.
 .config/fontconfig/fonts.conf
+# Zen is no longer installed; Omarchy rendered this template into its theme.
+.config/omarchy/themed/zen.css.tpl
