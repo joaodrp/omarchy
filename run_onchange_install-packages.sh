@@ -14,7 +14,6 @@ repo=(
     dmidecode             # hardware inventory from the DMI/SMBIOS tables
     git-delta             # syntax-highlighting pager for lazygit and git diff
     gitleaks              # the global pre-commit secret scan
-    github-cli            # gh; clone-my-repos and the agents use it
     git-filter-repo       # history rewrites (scrubbing secrets and identifiers)
     xorg-server-xvfb      # Xvfb; off-screen X display for agent browser tests
     glab                  # GitLab CLI
@@ -32,8 +31,7 @@ repo=(
     telegram-desktop      # native client, better integrated than the webapp
     usb_modeswitch        # flips the TP-Link TX20U Wi-Fi dongle out of CD-ROM mode
     wayvnc                # VNC over Tailscale; see wayvnc-tailnet.service
-    wtype                 # types keystrokes into the Wayland session
-    pam-u2f yubikey-manager libfido2   # YubiKey Bio unlock via polkit/PAM
+    pam-u2f yubikey-manager   # YubiKey Bio unlock via polkit/PAM
     # LaTeX to PDF: pdf/xe/lua-latex, latexmk, latexindent, chktex; skips the
     # multi-GB texlive-meta group.
     texlive-basic texlive-latex texlive-latexrecommended texlive-latexextra
