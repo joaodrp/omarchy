@@ -1,7 +1,9 @@
 #!/bin/bash
 # Blink the Framework power-button LED while fprintd waits for a finger: the
 # reader sits in the button, and nothing else shows when it wants a touch.
-# Adapted from github.com/alejandroqh/framework-fingerprint-led-blink.
+# Ported to bash and modified from
+# https://github.com/alejandroqh/framework-fingerprint-led-blink, under the
+# Apache License 2.0 (LICENSES/Apache-2.0.txt in this repo).
 #
 # Installed only where a fingerprint reader and the EC power LED exist;
 # elsewhere it is removed. Idempotent: writes, reloads and enables only on a
@@ -16,11 +18,14 @@ LED=/sys/class/leds/chromeos:white:power
 
 read -r -d '' SCRIPT_CONTENT <<'SCRIPT' || true
 #!/bin/bash
-# Managed by chezmoi (joaodrp/omarchy). Blinks the power-button LED from
-# VerifyStart/EnrollStart until a stop call or a final status (done = true),
-# for at most 60s, then hands the LED back to the EC. While every display is
-# off it hands the LED back too, and blinks again on wake: the lock lets an
-# attempt run on after blanking, and a wake may resume that same attempt.
+# Managed by chezmoi (joaodrp/omarchy). Ported to bash and modified from
+# https://github.com/alejandroqh/framework-fingerprint-led-blink, under the
+# Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+# Blinks the power-button LED from VerifyStart/EnrollStart until a stop call or
+# a final status (done = true), for at most 60s, then hands the LED back to the
+# EC. While every display is off it hands the LED back too, and blinks again on
+# wake: the lock lets an attempt run on after blanking, and a wake may resume
+# that same attempt.
 led=${LED:-/sys/class/leds/chromeos:white:power}
 worker=
 

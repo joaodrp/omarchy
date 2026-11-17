@@ -2,6 +2,7 @@ README.md
 AGENTS.md
 CLAUDE.md
 LICENSE
+LICENSES
 BOOTSTRAP.md
 
 {{/* reboot-windows only where Limine has a Windows entry. */ -}}
