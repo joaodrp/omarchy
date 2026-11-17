@@ -30,6 +30,8 @@ yq -p toml -o toml '
   .features.default_mode_request_user_input = true |
   del(.default_mode_request_user_input) |
   .mcp_servers.openaiDeveloperDocs = {"url": "https://developers.openai.com/mcp"} |
+  .mcp_servers |= with_entries(select(.value.command != "with-agent-secrets"
+    or (.key as $k | env(SERVERS) | has($k)))) |
   .mcp_servers += (env(SERVERS) | with_entries(.value = {
     "command": "with-agent-secrets", "args": ["npx", "-y", .value.package]
   })) |

@@ -14,7 +14,10 @@ CLAUDE_JSON="$HOME/.claude.json"
 servers={{ .mcp_servers | toJson | squote }}
 tmpfile=$(mktemp "$CLAUDE_JSON.XXXXXX")
 trap 'rm -f "$tmpfile"' EXIT
+# Ours are the ones run through with-agent-secrets: drop those no longer listed.
 jq --argjson servers "$servers" '
+  .mcpServers = ((.mcpServers // {}) | with_entries(select(.value.command != "with-agent-secrets"
+    or (.key as $k | $servers | has($k))))) |
   .mcpServers += ($servers | map_values({
     type: "stdio", command: "with-agent-secrets", args: ["npx", "-y", .package]
   }))' "$CLAUDE_JSON" > "$tmpfile"
