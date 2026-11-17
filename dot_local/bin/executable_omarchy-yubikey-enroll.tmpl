@@ -2,7 +2,7 @@
 # Enroll a YubiKey (FIDO) credential for pam_u2f unlock of polkit -- 1Password's
 # "system authentication" and every other polkit action. Interactive (needs a
 # fingerprint touch) and non-idempotent (mints a fresh credential each run), so
-# it is a manual helper, never a run_ script. Run once per machine; re-run with
+# it never runs unattended. Run once per machine; re-run with
 # --add to append a backup key to this user's line. Other users' lines are kept.
 #
 # The RP ID is a fixed, hostname-independent string so one credential works on
