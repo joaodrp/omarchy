@@ -13,8 +13,9 @@ SDK="$HOME/Android/Sdk"
 CMDLINE="$SDK/cmdline-tools/latest"
 ZIP=commandlinetools-linux-16111833_latest.zip
 
-# sdkmanager needs only the JDK the vendored mise config declares. Installing
-# every tool here fails on a fresh machine: cargo-backed ones precede rustup.
+# sdkmanager needs only the JDK the vendored mise config declares, run through
+# mise exec since this can precede mise's shell activation. Installing every
+# tool here fails on a fresh machine: cargo-backed ones precede rustup.
 mise install java >/dev/null
 
 if [ ! -x "$CMDLINE/bin/sdkmanager" ]; then
@@ -30,9 +31,9 @@ export ANDROID_HOME="$SDK"
 
 # Licences accepted non-interactively, with explicit authorisation. sdkmanager
 # refuses to install anything until they are.
-yes | "$CMDLINE/bin/sdkmanager" --licenses >/dev/null
+yes | mise exec java -- "$CMDLINE/bin/sdkmanager" --licenses >/dev/null
 
-"$CMDLINE/bin/sdkmanager" --install \
+mise exec java -- "$CMDLINE/bin/sdkmanager" --install \
     "platform-tools" \
     "platforms;android-36" \
     "build-tools;36.0.0"
