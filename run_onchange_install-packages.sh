@@ -22,6 +22,7 @@ repo=(
     python-huggingface-hub   # hf; Hugging Face model downloads
     go-yq                 # mikefarah/yq; the merge scripts edit TOML with it
     just                  # command runner for project justfiles
+    libyaml               # Ruby's psych extension, for mise's precompiled Ruby
     mosh                  # roaming-resilient shells over Tailscale
     radare2               # disassembler, Windows PE files included
     release-plz           # release automation for Rust crates
