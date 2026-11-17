@@ -3,7 +3,7 @@
 # "system authentication" and every other polkit action. Interactive (needs a
 # fingerprint touch) and non-idempotent (mints a fresh credential each run), so
 # it is a manual helper, never a run_ script. Run once per machine; re-run with
-# --add to append a backup key to the same authfile.
+# --add to append a backup key to this user's line. Other users' lines are kept.
 #
 # The RP ID is a fixed, hostname-independent string so one credential works on
 # every omarchy machine, rather than pamu2fcfg's default `pam://$hostname`.
@@ -23,28 +23,41 @@ command -v pamu2fcfg >/dev/null \
 tmp="$(mktemp)"
 trap 'rm -f "$tmp"' EXIT
 
+# Read the authfile once, failing closed: it is rewritten whole, so an
+# unreadable one would lose other users' lines. Usernames compare literally.
+existing=
+if sudo test -e "$AUTHFILE"; then
+    existing="$(sudo cat "$AUTHFILE")" \
+        || { echo "omarchy-yubikey-enroll: cannot read $AUTHFILE; nothing written" >&2; exit 1; }
+fi
+mine() { awk -F: -v u="$me" '$1 == u' <<<"$existing"; }
+others() { awk -F: -v u="$me" '$1 != u && NF' <<<"$existing"; }
+
 case "${1:-}" in
     --add)
-        [ -s "$AUTHFILE" ] \
-            || { echo "omarchy-yubikey-enroll: no $AUTHFILE yet -- run without --add first" >&2; exit 1; }
-        line="$(sudo sed -n '1p' "$AUTHFILE")"
+        line="$(mine | head -n1)"
+        [ -n "$line" ] \
+            || { echo "omarchy-yubikey-enroll: no line for $me in $AUTHFILE -- run without --add first" >&2; exit 1; }
         echo "omarchy-yubikey-enroll: touch the BACKUP key now..." >&2
+        # -n prints only ":<credential>", ready to append.
         cred="$(pamu2fcfg -o "$ORIGIN" -i "$ORIGIN" -V -n)"
-        printf '%s:%s\n' "$line" "$cred" > "$tmp"
+        printf '%s%s\n' "$line" "$cred" > "$tmp"
         ;;
     "")
         echo "omarchy-yubikey-enroll: touch the key now..." >&2
-        pamu2fcfg -o "$ORIGIN" -i "$ORIGIN" -V > "$tmp"
+        # pamu2fcfg ends its line without a newline.
+        printf '%s\n' "$(pamu2fcfg -o "$ORIGIN" -i "$ORIGIN" -V)" > "$tmp"
         ;;
     *)
         echo "usage: omarchy-yubikey-enroll [--add]" >&2; exit 2
         ;;
 esac
 
-# Guard against a truncated/garbled ceremony reaching /etc: the line must start
-# with this user and carry at least one credential field.
-head -n1 "$tmp" | grep -q "^${me}:." \
+# Guard against a truncated/garbled ceremony reaching /etc: the line must be
+# this user's and carry at least one credential field.
+head -n1 "$tmp" | awk -F: -v u="$me" '$1 == u && $2 != "" { ok = 1 } END { exit !ok }' \
     || { echo "omarchy-yubikey-enroll: unexpected pamu2fcfg output; nothing written" >&2; exit 1; }
+others >> "$tmp"
 
 # 644 root:root is the mode Omarchy's FIDO2 repair enforces: the file holds
 # only public credential mappings, which pam_u2f may read as the user.
