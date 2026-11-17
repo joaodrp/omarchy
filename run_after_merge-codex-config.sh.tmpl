@@ -27,7 +27,6 @@ merge_file "$config" '' yq -p toml -o toml '
   .model_reasoning_effort = "high" |
   .personality = "pragmatic" |
   .features.default_mode_request_user_input = true |
-  del(.default_mode_request_user_input) |
   .mcp_servers.openaiDeveloperDocs = {"url": "https://developers.openai.com/mcp"} |
   .mcp_servers |= with_entries(select(.value.command != "with-agent-secrets"
     or (.key as $k | env(SERVERS) | has($k)))) |

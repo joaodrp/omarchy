@@ -27,16 +27,8 @@ set -e
 {{ template "install-root-file.sh" }}
 
 # Per host: `auto` (default) installs the hook when the attached dock's
-# keyboard sits behind a PCIe tunnel, `on` always, `off` never. Pre-tristate
-# hosts stored a boolean: true means `on`, false `auto`.
-{{- $mode := "auto" -}}
-{{- if hasKey . "thunderbolt_keyboard_at_luks" -}}
-{{-   $v := toString .thunderbolt_keyboard_at_luks -}}
-{{-   if eq $v "true" "on" -}}{{- $mode = "on" -}}
-{{-   else if eq $v "off" -}}{{- $mode = "off" -}}
-{{-   end -}}
-{{- end }}
-MODE={{ $mode | quote }}
+# keyboard sits behind a PCIe tunnel, `on` always, `off` never.
+MODE={{ .thunderbolt_keyboard_at_luks | default "auto" | quote }}
 
 DOCK_VENDOR='CalDigit, Inc.'
 DOCK_DEVICE='TS5'

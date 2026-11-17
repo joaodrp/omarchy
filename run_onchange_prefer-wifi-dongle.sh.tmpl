@@ -37,6 +37,3 @@ DISPATCHER
 # NetworkManager silently skips dispatcher scripts that are not owned by root
 # or are group/other-writable.
 install_root_file "$target" 755 "$content"
-
-# networkd is unused under omarchy 4; clear its rule.
-sudo rm -f /etc/systemd/network/10-wifi-dongle.network

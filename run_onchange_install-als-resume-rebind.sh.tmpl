@@ -19,7 +19,6 @@ set -e
 
 SCRIPT=/usr/local/lib/als-rebind
 UNIT=/etc/systemd/system/als-rebind.service
-OLD_HOOK=/etc/systemd/system-sleep/als-rebind
 TARGETS="suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target"
 
 read -r -d '' SCRIPT_CONTENT <<'SCRIPT' || true
@@ -65,8 +64,6 @@ ExecStart=$SCRIPT
 [Install]
 WantedBy=$TARGETS
 UNIT
-
-[ -e "$OLD_HOOK" ] && sudo rm -f "$OLD_HOOK"
 
 # The hub's ACPI device stays put, unlike the driver binding, which the rebind
 # drops briefly; an apply at that moment must not uninstall the fix.
