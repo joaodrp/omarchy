@@ -1,17 +1,11 @@
 #!/bin/bash
-# Make the top-row media keys primary (no Fn needed) on hid_apple keyboards.
+# Media keys primary (no Fn needed) on every hid_apple keyboard: fnmode is a
+# module-wide option, so it cannot target one keyboard. Wanted for the Lofree
+# Flow84, which the kernel drives through hid_apple, leaving its own Fn + Lock
+# toggle dead; fnmode=1 makes media primary, F1-F12 via Fn.
 #
-# Why: the Lofree Flow84 doesn't enumerate cleanly on Linux, so the kernel
-# drives it through hid_apple and the keyboard's own `Fn + Lock` toggle is dead.
-# hid_apple's `fnmode` is the OS-side equivalent:
-#   fnmode=2 (kernel default here) -> F1-F12 primary, media via Fn
-#   fnmode=1                       -> media primary, F1-F12 via Fn
-# We want volume/brightness on a bare press, so fnmode=1.
-#
-# Persists via modprobe.d (read whenever hid_apple loads; the module is not in
-# initramfs here, so no initramfs rebuild needed) and also pokes the live sysfs
-# param so it takes effect now. Harmless when no hid_apple keyboard is attached
-# (the sysfs param exists only while the module is loaded).
+# modprobe.d covers future loads, the initramfs's from its next rebuild; the
+# live parameter is set too, and exists only while the module is loaded.
 set -e
 
 {{ template "install-root-file.sh" }}
