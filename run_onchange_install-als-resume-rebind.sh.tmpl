@@ -68,15 +68,9 @@ UNIT
 
 [ -e "$OLD_HOOK" ] && sudo rm -f "$OLD_HOOK"
 
-framework_als() {
-    local dev
-    for dev in /sys/bus/platform/drivers/hid_sensor_als/HID-SENSOR-*; do
-        [[ $(readlink -f "$dev") == *FRMW0005* ]] && return 0
-    done
-    return 1
-}
-
-if ! framework_als; then
+# The hub's ACPI device stays put, unlike the driver binding, which the rebind
+# drops briefly; an apply at that moment must not uninstall the fix.
+if ! compgen -G '/sys/bus/acpi/devices/FRMW0005:*' >/dev/null; then
     if [ -e "$UNIT" ]; then
         sudo systemctl disable als-rebind.service >/dev/null 2>&1 || true
         sudo rm -f "$UNIT" "$SCRIPT"
