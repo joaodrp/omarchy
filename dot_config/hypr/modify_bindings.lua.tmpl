@@ -39,5 +39,9 @@ o.window({ tag = "pip" }, {
 -- Opt Strata in to Omarchy's window transparency, as Omarchy does for Nautilus.
 o.transparent_window("io\\.github\\.lgse\\.Strata")
 
+-- Switch outputs past the speaker-tuning filter.
+o.rebind("SHIFT + XF86AudioMute", "Switch audio output",
+  "{{ .chezmoi.homeDir }}/.local/bin/audio-output-switch", { locked = true })
+
 -- <<< dotfiles: personal hyprland <<<
 EOF
