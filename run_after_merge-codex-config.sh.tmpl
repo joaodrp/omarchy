@@ -23,7 +23,7 @@ chmod 600 "$config"
 
 export SERVERS={{ .mcp_servers | toJson | squote }}
 merge_file "$config" '' yq -p toml -o toml '
-  .model = "gpt-5.5" |
+  .model = "gpt-6.2-sol" |
   .model_reasoning_effort = "high" |
   .personality = "pragmatic" |
   .features.default_mode_request_user_input = true |
