@@ -4,7 +4,7 @@
 # it too. Zen, the previous default, is dropped; its profile data stays.
 set -e
 
-if omarchy-pkg-missing brave-origin-bin; then
+if omarchy pkg missing brave-origin-bin; then
     omarchy install browser brave-origin
 fi
 

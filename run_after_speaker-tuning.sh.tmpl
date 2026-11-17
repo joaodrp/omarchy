@@ -121,11 +121,7 @@ if [ "${installed[0]:-}" = "$release" ] && [ "${installed[1]:-}" = "$sha" ] && c
     exit 0
 fi
 
-need=()
-for pkg in lsp-plugins-lv2 calf lilv-tools python-numpy python-scipy 7zip; do
-    pacman -Qq "$pkg" >/dev/null 2>&1 || need+=("$pkg")
-done
-[ ${#need[@]} -eq 0 ] || omarchy pkg add "${need[@]}"
+omarchy pkg add lsp-plugins-lv2 calf lilv-tools python-numpy python-scipy 7zip
 
 mkdir -p "$cache" "$state_dir" "$confdir"
 exe=$cache/$sha.exe
