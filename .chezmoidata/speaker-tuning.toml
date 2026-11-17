@@ -1,5 +1,8 @@
 # The laptop whose Windows speaker tuning is converted for PipeWire, and the
-# converter; see run_after_speaker-tuning.sh.tmpl.
+# converter (MIT), pinned to a release by its commit, which fixes the source a
+# tag could move under. An apply notifies once per newer release; bump both.
 [speaker_tuning]
 product = "Laptop 13 Pro (Intel Core Ultra Series 3)"
 converter = "antoinecellerier/speaker-tuning-to-easyeffects"
+converter_tag = "v2026.10.1"
+converter_commit = "2838efda3e5bcac4002ec91c78a43a66f8ada878"

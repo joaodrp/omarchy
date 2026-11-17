@@ -2,8 +2,8 @@
 #!/bin/bash
 # Run the speaker tuning from Framework's Windows driver (Dolby's correction,
 # EQ and limiting) as a PipeWire filter-chain on the internal speakers. Built
-# here from the latest driver bundle and converter release, because the tuning
-# is Dolby's data and this repo is public.
+# here from the latest driver bundle and the pinned converter, because the
+# tuning is Dolby's data and this repo is public.
 #
 # Converged applies only compare versions. A new bundle or converter, or a
 # missing output, rebuilds into a fresh directory and swaps the conf in last,
@@ -14,7 +14,8 @@ set -euo pipefail
 
 {{ template "install-root-file.sh" }}
 
-release={{ (gitHubLatestRelease .speaker_tuning.converter).TagName | quote }}
+release={{ .speaker_tuning.converter_tag | quote }}
+repo={{ .speaker_tuning.converter | quote }}
 # The internal-speaker sink, named explicitly so the build never depends on a
 # running audio session; the same on every unit of this model.
 sink=alsa_output.pci-0000_00_1f.3.analog-stereo
@@ -77,6 +78,17 @@ hints_ours_or_absent && install_root_file "$hints" 644 "$hints_content"
 # the speakers sound the same, as they play through it.
 if [ "$(pactl get-default-sink 2>/dev/null)" = "effect_input.Dolby_Balanced" ]; then
     pactl set-default-sink "$sink" || true
+fi
+
+# The converter is pinned; say once when a newer release is out.
+latest=$(curl -fsSL --max-time 10 "https://api.github.com/repos/$repo/releases/latest" 2>/dev/null |
+    jq -r '.tag_name // empty' 2>/dev/null) || latest=
+if [ -n "$latest" ] && [ "$latest" != "$release" ] &&
+    [ "$(printf '%s\n' "$release" "$latest" | sort -V | tail -n1)" = "$latest" ] &&
+    [ "$(cat "$state_dir/announced" 2>/dev/null)" != "$latest" ]; then
+    notify "Speaker tuning converter $latest is out" "Pinned at $release; bump converter_tag and converter_commit in the dotfiles."
+    mkdir -p "$state_dir"
+    echo "$latest" >"$state_dir/announced"
 fi
 
 # Framework's release pages list each download with its SHA256 in one row.
