@@ -10,6 +10,8 @@
 # nothing without them, so cloning the plugin alone only does half the job.
 set -e
 
+{{ template "merge-file.sh" }}
+
 config="$HOME/.config/omarchy/shell.json"
 [ -f "$config" ] || exit 0
 command -v jq >/dev/null 2>&1 || exit 0
@@ -40,11 +42,7 @@ fi
 # user's own order is kept.
 defaults="${OMARCHY_PATH:-/usr/share/omarchy}/config/omarchy/shell.json"
 
-# The shell reloads on every write, so write only when something changed.
-# Sibling of the config so the mv is an atomic rename, not a cross-device copy.
-tmpfile=$(mktemp "$config.XXXXXX")
-trap 'rm -f "$tmpfile"' EXIT
-jq --argjson entries "$entries" --slurpfile defaults "$defaults" '
+merge_file "$config" '{}' jq --argjson entries "$entries" --slurpfile defaults "$defaults" '
   reduce $entries[] as $entry (.;
     ($entry.id) as $id
     | if any(.bar.layout // {} | .[]? | arrays | .[]? | objects; .id == $id)
@@ -59,5 +57,4 @@ jq --argjson entries "$entries" --slurpfile defaults "$defaults" '
   )
   | .dock.pinned = ((.dock.pinned // $defaults[0].dock.pinned // [])
     | map(if . == "org.gnome.Nautilus" then "io.github.lgse.Strata" else . end))
-' "$config" >"$tmpfile"
-cmp -s "$tmpfile" "$config" || mv "$tmpfile" "$config"
+'

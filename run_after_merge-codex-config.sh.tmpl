@@ -9,19 +9,20 @@
 # Skips when yq is missing.
 set -e
 
+{{ template "merge-file.sh" }}
+
 if ! command -v yq >/dev/null 2>&1; then
     exit 0
 fi
 
 config="$HOME/.codex/config.toml"
-mkdir -p "$(dirname "$config")"
-[ -f "$config" ] || : > "$config"
+# Private before parsing, so a merge that fails still leaves it 600.
+mkdir -p "${config%/*}"
+[ -f "$config" ] || : >"$config"
 chmod 600 "$config"
 
 export SERVERS={{ .mcp_servers | toJson | squote }}
-tmpfile=$(mktemp "$config.XXXXXX")
-trap 'rm -f "$tmpfile"' EXIT
-yq -p toml -o toml '
+merge_file "$config" '' yq -p toml -o toml '
   .model = "gpt-5.5" |
   .model_reasoning_effort = "high" |
   .personality = "pragmatic" |
@@ -35,5 +36,4 @@ yq -p toml -o toml '
   })) |
   .plugins."github@openai-curated".enabled = true |
   .shell_environment_policy.set.QT_QPA_PLATFORM = "offscreen"
-' "$config" >"$tmpfile"
-cmp -s "$tmpfile" "$config" || mv "$tmpfile" "$config"
+' -

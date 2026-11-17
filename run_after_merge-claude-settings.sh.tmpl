@@ -8,17 +8,12 @@
 # or attribution=false, are kept.
 set -e
 
-SETTINGS="$HOME/.claude/settings.json"
-mkdir -p "$(dirname "$SETTINGS")"
-[ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"
+{{ template "merge-file.sh" }}
 
-tmpfile=$(mktemp "$SETTINGS.XXXXXX")
-trap 'rm -f "$tmpfile"' EXIT
-jq '. + {
+SETTINGS="$HOME/.claude/settings.json"
+merge_file "$SETTINGS" '{}' jq '. + {
   "statusLine": {
     "type": "command",
     "command": "$HOME/.claude/statusline.sh"
   }
-} | .attribution |= (if . == false then . else (. // {}) + {"sessionUrl": false} end)' "$SETTINGS" > "$tmpfile"
-# Claude Code hot-reloads this file, so leave it alone when nothing changed.
-cmp -s "$tmpfile" "$SETTINGS" || mv "$tmpfile" "$SETTINGS"
+} | .attribution |= (if . == false then . else (. // {}) + {"sessionUrl": false} end)'
