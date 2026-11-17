@@ -1,18 +1,7 @@
 #!/bin/bash
-# Manage HDA audio codec power save per machine, keyed on chassis type.
-#
-# Why: snd_hda_intel power save lets the codec sleep when idle, which on a
-# desktop causes an audible pop and a clipped first ~0.5s of playback after
-# silence. On battery-class machines the idle saving is worth keeping, so this
-# only acts on AC-powered chassis.
-#
-# Selection is automatic via `hostnamectl chassis` — no per-machine config:
-#   laptop/tablet/handset/convertible/watch -> keep power save (remove our conf)
-#   everything else (desktop/server/vm/...)  -> disable power save
-#
-# Persists via modprobe.d (read whenever snd_hda_intel loads) and also pokes the
-# live sysfs param so it takes effect now. Reversible: on a laptop the conf is
-# removed and the kernel default restored on next boot.
+# Disable HDA codec power save on AC-powered chassis, where the sleeping codec
+# pops and clips the first ~0.5s of playback after silence. Battery-class
+# chassis keep it: the conf is removed and the kernel default returns at boot.
 set -e
 
 {{ template "install-root-file.sh" }}

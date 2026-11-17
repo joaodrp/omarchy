@@ -58,7 +58,6 @@ mark_pending() {
   : >"$PENDING"
 }
 
-
 remove_file() {
   [ -e "$1" ] || return 0
   mark_pending

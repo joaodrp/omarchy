@@ -1,18 +1,9 @@
 #!/bin/bash
-# Prefer a USB Wi-Fi dongle over the built-in Wi-Fi card.
-#
-# NetworkManager gives every Wi-Fi connection the same default route metric
-# (600), so when a dongle and the built-in card are both connected the default
-# route is a tie and the kernel may pick either. If a dongle is plugged in, it
-# should win.
-#
-# The metric lives on the connection profile, which is keyed by SSID -- and the
-# same SSID roams across both radios, so it cannot encode which radio is
-# preferred. The choice has to be made when a link comes up, hence a dispatcher:
+# Prefer a USB Wi-Fi dongle over the built-in card. Every Wi-Fi profile gets
+# metric 600 and is keyed by SSID, which roams across both radios, so a
+# dispatcher sets the metric per link as it comes up:
 #   Ethernet (100) > USB Wi-Fi dongle (300) > built-in Wi-Fi (600).
-# The built-in card stays connected as an automatic fallback.
-#
-# Inert on machines with no USB Wi-Fi dongle: the bus check matches nothing.
+# The built-in card stays connected as a fallback. Inert without a dongle.
 set -e
 
 {{ template "install-root-file.sh" }}

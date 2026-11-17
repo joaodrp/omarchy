@@ -84,7 +84,7 @@ for owner in $owners; do
             echo "  + $owner/$repo"
             cloned=$((cloned + 1))
         else
-            echo "  ! $owner/$repo: clone failed" >&2 # git removes what it created
+            echo "  ! $owner/$repo: clone failed" >&2
             failed=$((failed + 1))
         fi
     done

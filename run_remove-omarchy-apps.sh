@@ -1,9 +1,6 @@
 #!/bin/bash
-# Remove webapps I don't use, Omarchy's defaults and ones superseded by a
-# desktop app. Idempotent — skips
-# items that are already gone. Runs on every `chezmoi apply`, including
-# the post-update hook, so anything omarchy re-creates after an update
-# gets re-removed automatically.
+# Remove webapps I don't use: Omarchy's defaults and ones superseded by a
+# desktop app. Idempotent; runs on every apply, so re-created ones go again.
 set -e
 
 APPS_DIR="$HOME/.local/share/applications"

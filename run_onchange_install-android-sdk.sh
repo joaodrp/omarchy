@@ -32,8 +32,7 @@ fi
 
 export ANDROID_HOME="$SDK"
 
-# Licences accepted non-interactively, with explicit authorisation. sdkmanager
-# refuses to install anything until they are.
+# Licences accepted non-interactively, with explicit authorisation.
 yes | mise exec java -- "$CMDLINE/bin/sdkmanager" --licenses >/dev/null
 
 mise exec java -- "$CMDLINE/bin/sdkmanager" --install \

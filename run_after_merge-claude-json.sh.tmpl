@@ -1,11 +1,10 @@
 #!/bin/bash
-# Merge the MCP servers in .chezmoidata/mcp-servers.toml into ~/.claude.json (Claude Code's user-scope
-# config) without touching Claude's own state (auth, project history,
-# counters). Servers load their API keys via the agent-secrets wrapper.
-# Written only when it changes.
+# Merge the MCP servers in .chezmoidata/mcp-servers.toml into ~/.claude.json,
+# leaving Claude's own state (auth, project history, counters). Servers load
+# their API keys via the agent-secrets wrapper.
 #
-# NOTE: a running Claude rewrites ~/.claude.json on exit, so apply with Claude
-# closed (and restart it) for the change to stick and load.
+# A running Claude rewrites ~/.claude.json on exit: apply with it closed, then
+# restart it.
 set -e
 
 CLAUDE_JSON="$HOME/.claude.json"

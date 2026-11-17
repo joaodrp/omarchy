@@ -1,10 +1,9 @@
 #!/bin/bash
 # Superwhisper as the dictation backend, through Omarchy's own installer, which
 # also selects it and puts it on Omarchy's keys (Alt + Space toggles, Right Alt
-# holds). Then pin its Offline Lite mode, Parakeet TDT 0.6B v3: local, 25
-# European languages including English and Portuguese, and far lighter than
-# Offline's Cohere Transcribe (2B, plus a cleanup LLM, 12 GB) for about one
-# point of English WER.
+# holds). Then pin its Offline Lite mode: local, multilingual (English and
+# Portuguese included), and much lighter than Offline mode, reportedly at a
+# small accuracy cost.
 set -e
 
 omarchy-install-dictation-superwhisper --background

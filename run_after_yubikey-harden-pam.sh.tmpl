@@ -1,20 +1,9 @@
 #!/bin/bash
-# Add the options omarchy's FIDO2 setup leaves off its pam_u2f lines.
-#
-# `omarchy setup security fido2` installs pam-u2f and prepends a bare
-# `pam_u2f.so cue authfile=...` line to /etc/pam.d/{sudo,polkit-1}. That
-# authenticates on *presence* -- any touch by any finger satisfies it, so the
-# Bio's sensor is reduced to a button. The rule is `sufficient`, so presence
-# alone then approves every polkit action, 1Password's "system authentication"
-# included.
-#
-# userverification=1 makes the key match an enrolled fingerprint on-device
-# instead (pinverification=0 keeps it from falling back to the key's PIN), and
-# origin/appid pin the credential to a fixed name rather than pam://$hostname,
-# so it survives a rename and works across machines.
-#
-# Teardown belongs to `omarchy remove security fido2`, which strips any
-# pam_u2f line regardless of the options on it.
+# Harden the bare, `sufficient` pam_u2f lines omarchy's FIDO2 setup adds to
+# sudo and polkit-1: as shipped, any touch passes. userverification=1 requires
+# an enrolled fingerprint on-device (pinverification=0: no PIN fallback), and
+# origin/appid pin the credential to a fixed name rather than pam://$hostname.
+# `omarchy remove security fido2` still strips these lines.
 set -e
 
 AUTHFILE="{{ .yubikey.authfile }}"

@@ -1,13 +1,11 @@
 #!/bin/bash
-# Merge personal Claude Code settings into ~/.claude/settings.json without
-# touching omarchy defaults, runtime-added keys (permission grants), or any
-# future omarchy/Claude Code additions.
+# Merge personal Claude Code settings into ~/.claude/settings.json, keeping
+# every other key (omarchy defaults, permission grants).
 #
-# Managed keys: the statusLine pointer, which activates
-# ~/.claude/statusline.sh, and attribution.sessionUrl, which keeps the
-# Claude-Session link to a private session out of public commits and PRs while
-# leaving the Co-Authored-By trailer. Other attribution keys, and an attribution
-# of false (no attribution at all), are kept.
+# Managed: statusLine, pointing at ~/.claude/statusline.sh, and
+# attribution.sessionUrl=false, which keeps private session links out of public
+# commits and PRs but leaves the Co-Authored-By trailer. Other attribution keys,
+# or attribution=false, are kept.
 set -e
 
 SETTINGS="$HOME/.claude/settings.json"

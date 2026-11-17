@@ -3,7 +3,7 @@
 #
 # Built from a pinned source tarball. go.mod declares the bare module path
 # `ghealth`, so `go install <repo>@<rev>` cannot resolve it and no mise backend
-# applies; upstream publishes no tag or release either. Bumping COMMIT rebuilds.
+# applies; upstream publishes no tag or release either.
 #
 # TODO: drop this for a mise `go:` entry once the module path is fixed upstream:
 # https://github.com/Google-Health-API/google-health-cli/pull/16

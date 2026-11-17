@@ -1,7 +1,6 @@
 #!/bin/bash
 # Realize the tools declared in the vendored mise config, then the per-tool
-# post-install steps. run_after because the declarations live in another file:
-# a run_onchange hash tracks this script's text, not the config's.
+# post-install steps. Runs every apply, so edits to that config take effect.
 set -e
 
 # mise's cargo backend shells out to cargo, and rustup's bin dir is absent from
