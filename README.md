@@ -1,7 +1,7 @@
 # dotfiles
 
 Personal config managed with [chezmoi](https://chezmoi.io), targeting
-[Omarchy](https://omarchy.org/) 4 (`quattro`) — Arch + Hyprland, with Hyprland
+[Omarchy](https://omarchy.org/) 4.5 and later — Arch + Hyprland, with Hyprland
 configured in Lua and the desktop provided by Quickshell.
 
 ## Bootstrap on a new machine

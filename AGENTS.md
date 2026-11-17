@@ -12,7 +12,7 @@ change.
 
 ## Target
 
-omarchy 4 (`quattro`) and later. It ships as pacman packages, so
+omarchy 4.5 and later. It ships as pacman packages, so
 `/usr/share/omarchy` is package-owned and `~/.local/share/omarchy` is a symlink
 to it. Hyprland is configured in Lua (`~/.config/hypr/*.lua`), and the desktop
 is Quickshell — no waybar, walker, mako, hyprlock or hypridle.
