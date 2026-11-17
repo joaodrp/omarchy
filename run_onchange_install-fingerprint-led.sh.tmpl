@@ -112,7 +112,11 @@ if [ ! -e "$LED" ] || ! omarchy-hw-fingerprint; then
     exit 0
 fi
 
-install_root_file "$UNIT" 644 "$UNIT_CONTENT" sudo systemctl daemon-reload
+reload_unit() {
+    sudo systemctl daemon-reload
+    sudo systemctl try-restart fingerprint-led.service
+}
+install_root_file "$UNIT" 644 "$UNIT_CONTENT" reload_unit
 install_root_file "$SCRIPT" 755 "$SCRIPT_CONTENT" sudo systemctl try-restart fingerprint-led.service
 systemctl is-enabled --quiet fingerprint-led.service 2>/dev/null ||
     sudo systemctl enable --now --quiet fingerprint-led.service
