@@ -1,10 +1,9 @@
 #!/bin/bash
-# Cleanup mode: hypr-cleanup-mode, built as an Arch package from a release
-# tag, and its Omarchy bar plugin.
+# Cleanup mode: hypr-cleanup-mode, from the Arch package attached to its
+# release, and its Omarchy bar plugin.
 #
-# Both repos are private, so this fetches through gh rather than the
-# PKGBUILD's anonymous URL; on a new machine it fails until `gh auth login`.
-# TODO: `omarchy pkg aur add hypr-cleanup-mode` once it is public.
+# Both repos are private, so this fetches through gh; on a new machine it
+# fails until `gh auth login`.
 set -eo pipefail
 
 VERSION=0.1.0
@@ -15,11 +14,11 @@ PLUGIN_URL=https://github.com/joaodrp/omarchy-cleanup-mode.git
 gh auth status >/dev/null 2>&1 || { echo "cleanup-mode: run gh auth login first" >&2; exit 1; }
 
 if [[ $(pacman -Q hypr-cleanup-mode 2>/dev/null) != "hypr-cleanup-mode $VERSION-"* ]]; then
-  build=$(mktemp -d)
-  trap 'rm -rf "$build"' EXIT
-  gh release download "v$VERSION" -R "$CORE" --archive tar.gz -O "$build/hypr-cleanup-mode-$VERSION.tar.gz"
-  gh api -H 'Accept: application/vnd.github.raw' "repos/$CORE/contents/packaging/PKGBUILD?ref=v$VERSION" >"$build/PKGBUILD"
-  (cd "$build" && makepkg -si --noconfirm)
+  dl=$(mktemp -d)
+  trap 'rm -rf "$dl"' EXIT
+  gh release download "v$VERSION" -R "$CORE" -D "$dl" -p 'hypr-cleanup-mode.pkg.tar.zst*'
+  (cd "$dl" && sha256sum -c --quiet hypr-cleanup-mode.pkg.tar.zst.sha256)
+  sudo pacman -U --noconfirm "$dl/hypr-cleanup-mode.pkg.tar.zst"
 fi
 
 # The plugin follows its main branch, as `omarchy plugin update` does.
