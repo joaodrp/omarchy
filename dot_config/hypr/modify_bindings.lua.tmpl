@@ -43,5 +43,14 @@ o.transparent_window("io\\.github\\.lgse\\.Strata")
 o.rebind("SHIFT + XF86AudioMute", "Switch audio output",
   "{{ .chezmoi.homeDir }}/.local/bin/audio-output-switch", { locked = true })
 
+-- Cleanup mode: input blocked while wiping the keyboard and screen. Skipped
+-- until the package is installed, which on a new machine waits for gh auth.
+local cleanup = "/usr/share/hypr-cleanup-mode/init.lua"
+local cleanup_file = io.open(cleanup)
+if cleanup_file then
+  cleanup_file:close()
+  require(cleanup).setup({ key = "SUPER + SHIFT + K", seconds = 20 })
+end
+
 -- <<< dotfiles: personal hyprland <<<
 EOF
