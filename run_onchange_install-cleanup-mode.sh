@@ -6,7 +6,7 @@
 # fails until `gh auth login`.
 set -eo pipefail
 
-VERSION=0.1.0
+VERSION=0.1.1
 CORE=joaodrp/hypr-cleanup-mode
 PLUGIN_ID=io.github.joaodrp.cleanup-mode
 PLUGIN_URL=https://github.com/joaodrp/omarchy-cleanup-mode.git
