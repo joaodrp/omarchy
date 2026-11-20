@@ -7,17 +7,23 @@
 # from ~/.dropbox-dist and downloads its own copy there when it is missing,
 # while login autostart runs the package. Two daemons on one account stall
 # syncing, so point ~/.dropbox-dist at the package: one binary, updated only
-# by pacman. Idempotent: a downloaded copy is replaced only while not running.
+# by pacman. Idempotent: a downloaded copy is replaced only while none of its
+# processes run; otherwise the script fails so the next apply retries.
 set -e
 
 dist="$HOME/.dropbox-dist"
 if [ "$(readlink "$dist")" != /opt/dropbox ]; then
     if [ -e "$dist/dropboxd" ] && [ ! -L "$dist" ]; then
-        if pgrep -f "^$dist/" >/dev/null; then
-            echo "Dropbox runs from $dist; quit it and re-apply to link the package." >&2
-        else
-            rm -rf "$dist"
-        fi
+        real=$(realpath "$dist")
+        for exe in /proc/[0-9]*/exe; do
+            case $(readlink "$exe" 2>/dev/null) in
+            "$real"/*)
+                echo "Dropbox runs from $dist; quit it, then re-apply." >&2
+                exit 1
+                ;;
+            esac
+        done
+        rm -rf "$dist"
     fi
     [ -e "$dist" ] || ln -s /opt/dropbox "$dist"
 fi
