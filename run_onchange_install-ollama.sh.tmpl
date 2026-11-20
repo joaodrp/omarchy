@@ -1,8 +1,8 @@
 #!/bin/bash
 # Local models: Ollama built for this machine's GPU (CUDA on NVIDIA, ROCm where
 # it is set up, Vulkan on any other GPU, CPU only otherwise), running at boot
-# on 127.0.0.1, llmfit to find the models that fit, and LM Studio (closed
-# source) as a desktop app.
+# on 127.0.0.1, llmfit to find the models that fit, and two desktop apps: LM
+# Studio (closed source) and Jan (open source, with agent tools).
 # Ollama skips integrated GPUs unless told otherwise, so the Vulkan build gets
 # that switch when the machine has a single GPU; beside a dedicated card it
 # would split models onto the slower one.
@@ -35,7 +35,7 @@ else
     pkg=ollama
 fi
 omarchy pkg add "$pkg" llmfit
-omarchy pkg aur add lmstudio-bin
+omarchy pkg aur add lmstudio-bin jan-bin
 
 if [ "$pkg" = ollama-vulkan ] && ! omarchy-hw-hybrid-gpu; then
     install_root_file "$OVERRIDE" 644 "# Managed by chezmoi (joaodrp/omarchy).
