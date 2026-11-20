@@ -4,8 +4,9 @@
 # rearrangements), so only these entries are managed: each is merged over in
 # whichever section it already sits, so per-widget state and a bar section the
 # user moved it to both survive, and inserted only when absent everywhere: in
-# place of the widget it "replaces" (taking its center anchor too), else at the
-# end of its "section", else after the tray. Both hints are not written.
+# place of the widget it "replaces", else at the end of its "section", else
+# after the tray. Both hints are not written. A managed "hidden" list (the
+# tray's) is added to the user's own rather than replacing it.
 #
 # $layout then fixes the order of the widgets it lists, on every apply: each
 # goes to its listed section and slot, keeping its own settings. A listed
@@ -93,31 +94,38 @@ defaults="${OMARCHY_PATH:-/usr/share/omarchy}/config/omarchy/shell.json"
 
 merge_file "$config" '{}' jq --argjson entries "$entries" --argjson layout "$layout" \
     --slurpfile defaults "$defaults" '
-  reduce $entries[] as $e (.;
-    ($e.id) as $id
-    | ($e | del(.section, .replaces)) as $entry
-    | if any(.bar.layout // {} | .[]? | arrays | .[]? | objects; .id == $id)
-      then (.bar.layout[] | arrays | .[] | objects | select(.id == $id)) |= . * $entry
-      elif $e.replaces and any(.bar.layout // {} | .[]? | arrays | .[]? | objects; .id == $e.replaces)
-      then (.bar.layout[] | arrays | .[] | objects | select(.id == $e.replaces)) |= $entry
-        | if (.bar.centerAnchor // "omarchy.clock") == $e.replaces then .bar.centerAnchor = $id else . end
-      elif $e.section then .bar.layout[$e.section] = ((.bar.layout[$e.section] // []) + [$entry])
-      else .bar.layout.right = (
-             (.bar.layout.right // []) as $r
-             | ($r | map(if type == "object" then .id else null end) | index("omarchy.tray")) as $i
-             | if $i == null then $r + [$entry]
-               else $r[0:$i+1] + [$entry] + $r[$i+1:]
-               end)
-      end
-  )
-  | def wid: if type == "object" then .id else . end;
-    ([$layout[][]]) as $listed
-    | (.bar.layout // {}) as $cur
-    | [$cur[] | arrays | .[]] as $all
-    | .bar.layout = (
-        ($cur | map_values(if type == "array" then map(select(wid as $w | $listed | index($w) | not)) else . end))
-        | reduce ($layout | keys_unsorted[]) as $k (.;
-            .[$k] = ([$layout[$k][] as $id | $all[] | select(wid == $id)] + (.[$k] // []))))
+  def wid: if type == "object" then .id else . end;
+  def placed($id): any(.bar.layout[][]; wid == $id);
+  # A config without a layout shows the default bar from Omarchy, and a section
+  # that is not a list shows as empty; make both explicit before editing.
+  (if (.bar.layout | type) == "object" then . else .bar.layout = $defaults[0].bar.layout end)
+  | .bar.layout |= map_values(if type == "array" then . else [] end)
+  | reduce $entries[] as $e (.;
+      ($e.id) as $id
+      | ($e | del(.section, .replaces)) as $entry
+      | if placed($id)
+        then (.bar.layout[][] | select(wid == $id)) |= (
+               (if type == "object" then . else {id: .} end) as $old
+               | $old * $entry
+               | if $entry.hidden then .hidden = ((($old.hidden // []) + $entry.hidden) | unique) else . end)
+        elif $e.replaces and placed($e.replaces)
+        then (.bar.layout[][] | select(wid == $e.replaces)) |= $entry
+        elif $e.section then .bar.layout[$e.section] += [$entry]
+        else .bar.layout.right = (
+               .bar.layout.right as $r
+               | ($r | map(wid) | index("omarchy.tray")) as $i
+               | if $i == null then $r + [$entry]
+                 else $r[0:$i+1] + [$entry] + $r[$i+1:]
+                 end)
+        end
+    )
+  | ([$layout[][]]) as $listed
+  | .bar.layout as $cur
+  | [$cur[][]] as $all
+  | .bar.layout = (
+      ($cur | map_values(map(select(wid as $w | $listed | index($w) | not))))
+      | reduce ($layout | keys_unsorted[]) as $k (.;
+          .[$k] = ([$layout[$k][] as $id | $all[] | select(wid == $id)] + (.[$k] // []))))
   | .dock.pinned = ((.dock.pinned // $defaults[0].dock.pinned // [])
     | map(if . == "org.gnome.Nautilus" then "io.github.lgse.Strata" else . end))
 '
