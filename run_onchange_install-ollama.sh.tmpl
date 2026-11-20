@@ -2,9 +2,10 @@
 # Local models: Ollama built for this machine's GPU (CUDA on NVIDIA, Vulkan on
 # any other GPU, CPU only otherwise), running at boot on 127.0.0.1, and llmfit
 # to find the models that fit. Ollama skips integrated GPUs unless told
-# otherwise, so the Vulkan build gets that switch. Idempotent: packages are
-# added only when missing, and the unit override changes only on a real
-# difference.
+# otherwise, so the Vulkan build gets that switch when the machine has a single
+# GPU; beside a dedicated card it would split models onto the slower one.
+# Idempotent: packages are added only when missing, and the unit override
+# changes only on a real difference.
 set -e
 
 {{ template "install-root-file.sh" }}
@@ -21,7 +22,7 @@ else
 fi
 omarchy pkg add "$pkg" llmfit
 
-if [ "$pkg" = ollama-vulkan ]; then
+if [ "$pkg" = ollama-vulkan ] && ! omarchy-hw-hybrid-gpu; then
     install_root_file "$OVERRIDE" 644 "# Managed by chezmoi (joaodrp/omarchy).
 [Service]
 Environment=OLLAMA_IGPU_ENABLE=1" reload
