@@ -1,7 +1,8 @@
 #!/bin/bash
-# Local models: Ollama built for this machine's GPU (CUDA on NVIDIA, Vulkan on
-# any other GPU, CPU only otherwise), running at boot on 127.0.0.1, llmfit to
-# find the models that fit, and LM Studio (closed source) as a desktop app.
+# Local models: Ollama built for this machine's GPU (CUDA on NVIDIA, ROCm where
+# it is set up, Vulkan on any other GPU, CPU only otherwise), running at boot
+# on 127.0.0.1, llmfit to find the models that fit, and LM Studio (closed
+# source) as a desktop app.
 # Ollama skips integrated GPUs unless told otherwise, so the Vulkan build gets
 # that switch when the machine has a single GPU; beside a dedicated card it
 # would split models onto the slower one.
@@ -26,6 +27,8 @@ hw_gpu() {
 
 if omarchy-hw-nvidia; then
     pkg=ollama-cuda
+elif omarchy-cmd-present rocminfo; then
+    pkg=ollama-rocm
 elif hw_gpu && omarchy-hw-vulkan; then
     pkg=ollama-vulkan
 else
