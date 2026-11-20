@@ -24,7 +24,9 @@ The clone lives under `~/Developer/<host>/<org>/<repo>` like any other
 project; `sourceDir` is persisted so later commands find it.
 
 `chezmoi apply` is idempotent — re-run after any drift. `dotfiles-doctor`
-reports what is still missing.
+reports what is still missing; `dotfiles-doctor --upstream` checks only the
+pinned plugins and the upstream issues behind temporary workarounds, and an
+apply runs it quietly once a day, speaking only when something needs action.
 
 ## Layout
 
@@ -45,7 +47,7 @@ Notable files:
 | `dot_config/hypr/modify_input.lua.tmpl` | Fenced block inside Omarchy's `input.lua`: slower touchpad scrolling in Chromium-based browsers and their webapps. |
 | `dot_config/systemd/user/wayvnc-tailnet.service` | Supervised wayvnc on the Tailscale address, started with the graphical session. |
 | `dot_local/bin/executable_clone-my-repos` | Clones every non-archived source repo of the account and its orgs under `~/Developer`, and fast-forwards default branches that aren't checked out. Run daily by `clone-my-repos.timer`. |
-| `dot_local/bin/executable_dotfiles-doctor` | Read-only check of the state chezmoi cannot vendor (1Password toggles, logins, per-machine answers). |
+| `dot_local/bin/executable_dotfiles-doctor` | Read-only check of the state chezmoi cannot vendor (1Password toggles, logins, per-machine answers), plus pinned-plugin and tracked-issue status. |
 | `dot_local/bin/executable_reboot-windows` | Reboots once into Limine's Windows entry, the boot path BitLocker is sealed to. Installed only where Limine has a Windows entry. |
 | `dot_config/omarchy/hooks/post-update.d/executable_chezmoi-apply` | Re-runs `chezmoi apply` after every `omarchy update` so migrations can't clobber overrides. |
 | `dot_config/mise/config.toml` | The mise-managed toolchains and CLIs, realized by `run_after_mise-install.sh`. |
@@ -70,7 +72,7 @@ Notable files:
 | CLI tooling | Highlights: `agent-browser`, `defuddle`, `td` (Todoist), `glab`, `gws` (Google Workspace), `gitleaks`. Main declarations in `run_onchange_install-packages.sh` and `dot_config/mise/config.toml`. |
 | AI agents | `.chezmoitemplates/agent-preferences.md` is the single source of global prefs, rendered into `~/.claude/CLAUDE.md` and the Codex/OpenCode `AGENTS.md`. MCP servers load keys from a `chmod 600` env file materialized from 1Password (`refresh-agent-secrets`), so they start without an `op` prompt over SSH. ChatGPT and Claude desktop via `omarchy install`; Claude desktop's keyring flag in `claude-desktop-flags.conf`. A pinned writing skill (`.chezmoidata/agent-skills.toml`) and the Todoist CLI skill for every agent. |
 | Fonts | Inter and JetBrains Mono mapped over the CSS `system-ui`/`-apple-system`/`ui-monospace` stack, so macOS-styled pages (GitHub, etc.) get open-source look-alikes; Apple's SF fonts are licensed for Apple platforms only. |
-| Apps | Dropbox, Telegram, Calibre, LaTeX (TeX Live), PhotoCraft and LightCraft (latest upstream release, checksum-verified), Chromium Google OAuth flags; Brave Origin as the default browser (set once, so a later switch sticks), Firefox alongside it. Local models: Ollama in the build for the machine's GPU (CUDA on NVIDIA, Vulkan elsewhere, integrated GPUs included), at boot on 127.0.0.1, with llmfit to find models that fit; LM Studio and Jan as desktop apps. Obsidian runs with `--force-device-scale-factor=1` until omacom/omarchy#8574 is fixed. |
+| Apps | Dropbox (run from the package only, never a self-downloaded copy), Telegram, Calibre, LaTeX (TeX Live), PhotoCraft and LightCraft (latest upstream release, checksum-verified), Chromium Google OAuth flags; Brave Origin as the default browser (set once, so a later switch sticks), Firefox alongside it. Local models: Ollama in the build for the machine's GPU (CUDA on NVIDIA, ROCm where set up, Vulkan elsewhere, integrated GPUs included), at boot on 127.0.0.1, with llmfit to find models that fit; LM Studio and Jan as desktop apps on x86-64. Obsidian and 1Password (at login) run with `--force-device-scale-factor=1` until omacom/omarchy#8574 is fixed. |
 | Audio | HDA codec power save disabled on AC machines (by chassis) to stop idle pops; AirPlay receivers as PipeWire outputs via `pipewire-zeroconf`. |
 | Speaker tuning | Laptop 13 Pro only: Framework's Windows (Dolby) tuning as a PipeWire filter-chain, rebuilt from the latest driver bundle and a pinned converter (an apply flags newer releases). Until omacom/omarchy discussion 19263 lands, the filter is hidden from the audio panel via platform hints, and Shift+Mute runs an `audio-output-switch` wrapper that steps past it. |
 | Hardware | `hid_apple` fnmode override; `usb_modeswitch` for the Wi-Fi dongle; the Framework light sensor rebound after resume, where it reads 0 until then; the Framework power button blinks while the fingerprint reader waits for a touch, pausing while every display is off. |
