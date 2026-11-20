@@ -32,6 +32,14 @@
 
 {{ end -}}
 
+{{/* The Stocks bar widget, at its latest release: releases are what the plugin
+     marketplace verifies. */ -}}
+[".config/omarchy/plugins/io.github.alvmarrod.stocks"]
+    type = "archive"
+    url = "https://github.com/alvmarrod/omarchy-stocks/archive/refs/tags/{{ (gitHubLatestRelease "alvmarrod/omarchy-stocks").TagName }}.tar.gz"
+    exact = true
+    stripComponents = 1
+
 {{/* Strata's Taildrop provider, from its own repo at its latest release, so a
      new release lands on the next apply; provider.json beside it is the
      template in dot_config/strata/private_providers/taildrop/. */ -}}
