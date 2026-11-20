@@ -17,7 +17,13 @@ config="$HOME/.config/omarchy/shell.json"
 [ -f "$config" ] || exit 0
 command -v jq >/dev/null 2>&1 || exit 0
 
+# Electron and Chromium tray icons only answer a right-click; Brave and LM
+# Studio share the generic Chromium id.
 entries='[
+  {
+    "id": "omarchy.tray",
+    "hidden": ["chrome_status_icon_1", "Claude_status_icon_1", "1Password_status_icon_1"]
+  },
   {
     "id": "io.github.joaodrp.controld",
     "statusCommand": "dns-controld --status",
