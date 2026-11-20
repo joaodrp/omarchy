@@ -40,6 +40,15 @@
     exact = true
     stripComponents = 1
 
+{{/* The System Monitor bar widget, following its main branch: it publishes no
+     releases. */ -}}
+[".config/omarchy/plugins/harshith.system-monitor"]
+    type = "git-repo"
+    url = "https://github.com/Harshith292002/omarchy-system-monitor.git"
+    refreshPeriod = "168h"
+    [".config/omarchy/plugins/harshith.system-monitor".pull]
+        args = ["--ff-only"]
+
 {{/* Strata's Taildrop provider, from its own repo at its latest release, so a
      new release lands on the next apply; provider.json beside it is the
      template in dot_config/strata/private_providers/taildrop/. */ -}}
