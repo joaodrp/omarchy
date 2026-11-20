@@ -7,6 +7,11 @@
 # place of the widget it "replaces" (taking its center anchor too), else at the
 # end of its "section", else after the tray. Both hints are not written.
 #
+# $layout then fixes the order of the widgets it lists, on every apply: each
+# goes to its listed section and slot, keeping its own settings. A listed
+# widget this machine lacks is skipped; an unlisted one stays where it is,
+# after the listed ones in its section.
+#
 # Control D's commands are the vendored `dns-controld`; that widget does
 # nothing without them, so cloning the plugin alone only does half the job.
 set -e
@@ -43,8 +48,7 @@ entries='[
     "id": "robzolkos.github"
   },
   {
-    "id": "hass",
-    "section": "tray"
+    "id": "hass"
   },
   {
     "id": "crmne.omacal",
@@ -65,12 +69,30 @@ if ! command -v cdctl >/dev/null 2>&1; then
     entries=$(jq -c 'map(select(.id != "io.github.joaodrp.controld"))' <<<"$entries")
 fi
 
+layout='{
+  "left": ["omarchy.menu", "omarchy.workspaces"],
+  "centerBegin": ["omarchy.indicators"],
+  "center": ["crmne.omacal", "omarchy.elsewhen", "omarchy.weather"],
+  "centerEnd": ["omarchy.system-update"],
+  "right": [
+    "omarchy.tray",
+    "robzolkos.github", "hass", "omarchy.agents",
+    "superwhisper.panel", "omarchy.keyboard-layout",
+    "io.github.joaodrp.green-room", "io.github.joaodrp.portrait-camera",
+    "omarchy.dropbox", "omarchy.tailscale", "io.github.joaodrp.controld",
+    "omarchy.bluetooth", "omarchy.network", "omarchy.audio",
+    "io.github.joaodrp.auto-brightness", "omarchy.monitor", "omarchy.power"
+  ],
+  "tray": ["io.github.joaodrp.cleanup-mode", "harshith.system-monitor", "io.github.alvmarrod.stocks"]
+}'
+
 # Swap Nautilus's dock pin for Strata. The dock reads Omarchy's default pins
 # only while dock.pinned is absent, so seed it from them once; after that the
 # user's own order is kept.
 defaults="${OMARCHY_PATH:-/usr/share/omarchy}/config/omarchy/shell.json"
 
-merge_file "$config" '{}' jq --argjson entries "$entries" --slurpfile defaults "$defaults" '
+merge_file "$config" '{}' jq --argjson entries "$entries" --argjson layout "$layout" \
+    --slurpfile defaults "$defaults" '
   reduce $entries[] as $e (.;
     ($e.id) as $id
     | ($e | del(.section, .replaces)) as $entry
@@ -88,6 +110,14 @@ merge_file "$config" '{}' jq --argjson entries "$entries" --slurpfile defaults "
                end)
       end
   )
+  | def wid: if type == "object" then .id else . end;
+    ([$layout[][]]) as $listed
+    | (.bar.layout // {}) as $cur
+    | [$cur[] | arrays | .[]] as $all
+    | .bar.layout = (
+        ($cur | map_values(if type == "array" then map(select(wid as $w | $listed | index($w) | not)) else . end))
+        | reduce ($layout | keys_unsorted[]) as $k (.;
+            .[$k] = ([$layout[$k][] as $id | $all[] | select(wid == $id)] + (.[$k] // []))))
   | .dock.pinned = ((.dock.pinned // $defaults[0].dock.pinned // [])
     | map(if . == "org.gnome.Nautilus" then "io.github.lgse.Strata" else . end))
 '
