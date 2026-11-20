@@ -96,15 +96,19 @@ awk '/^\["\.config\/omarchy\/plugins\// { p = 1; next }
          split(substr($0, RSTART, RLENGTH), u, "/"); print u[2] "/" u[3], substr(u[5], 1, 40)
      }' "$src/.chezmoiexternal.toml.tmpl" 2>/dev/null |
     while read -r repo sha; do
-        ahead=$(gh api "repos/$repo/compare/$sha...HEAD" --jq .ahead_by 2>/dev/null)
-        if [ -z "$ahead" ]; then
+        if ! cmp=$(timeout 20 gh api "repos/$repo/compare/$sha...HEAD" \
+            --jq '"\(.status) \(.ahead_by)"' 2>/dev/null); then
             opt "$repo: could not check upstream" "gh auth status; check the network"
-        elif [ "$ahead" -eq 0 ]; then
-            ok "$repo pinned at its latest commit"
-        else
-            opt "$repo: $ahead upstream commit(s) since the pin" \
-                "review https://github.com/$repo/compare/${sha:0:12}...HEAD for security and compatibility, then bump the pin"
+            continue
         fi
+        read -r status ahead <<<"$cmp"
+        case $status in
+        identical) ok "$repo pinned at its latest commit" ;;
+        ahead) opt "$repo: $ahead upstream commit(s) since the pin" \
+            "review https://github.com/$repo/compare/${sha:0:12}...HEAD for security and compatibility, then bump the pin" ;;
+        *) opt "$repo: upstream history no longer contains the pin ($status)" \
+            "check https://github.com/$repo for a rewritten branch before bumping" ;;
+        esac
     done
 
 echo
