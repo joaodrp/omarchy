@@ -10,12 +10,22 @@ set -e
 
 {{ template "install-root-file.sh" }}
 
-OVERRIDE=/etc/systemd/system/ollama.service.d/igpu.conf
+OVERRIDE=/etc/systemd/system/ollama.service.d/chezmoi-igpu.conf
 reload() { sudo systemctl daemon-reload && sudo systemctl try-restart ollama.service; }
+# An Intel or AMD display controller: a software Vulkan driver alone would put
+# Ollama on an emulated device.
+hw_gpu() {
+    local dev
+    for dev in /sys/bus/pci/devices/*; do
+        [[ -r $dev/class && $(<"$dev/class") == 0x03* ]] || continue
+        case $(<"$dev/vendor") in 0x8086 | 0x1002) return 0 ;; esac
+    done
+    return 1
+}
 
 if omarchy-hw-nvidia; then
     pkg=ollama-cuda
-elif omarchy-hw-vulkan; then
+elif hw_gpu && omarchy-hw-vulkan; then
     pkg=ollama-vulkan
 else
     pkg=ollama
