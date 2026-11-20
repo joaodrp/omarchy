@@ -87,6 +87,26 @@ if [ -d "$HOME/.config/omarchy/plugins/joaodrp.polkit" ]; then
     fi
 fi
 
+echo "Pinned plugins (optional)"
+# Third-party shell plugins are pinned to a commit; flag the ones whose
+# upstream default branch has moved on, so they get reviewed and bumped.
+awk '/^\["\.config\/omarchy\/plugins\// { p = 1; next }
+     /^\[/ { p = 0 }
+     p && match($0, /github\.com\/[^\/]+\/[^\/]+\/archive\/[0-9a-f]{40}\.tar\.gz/) {
+         split(substr($0, RSTART, RLENGTH), u, "/"); print u[2] "/" u[3], substr(u[5], 1, 40)
+     }' "$src/.chezmoiexternal.toml.tmpl" 2>/dev/null |
+    while read -r repo sha; do
+        ahead=$(gh api "repos/$repo/compare/$sha...HEAD" --jq .ahead_by 2>/dev/null)
+        if [ -z "$ahead" ]; then
+            opt "$repo: could not check upstream" "gh auth status; check the network"
+        elif [ "$ahead" -eq 0 ]; then
+            ok "$repo pinned at its latest commit"
+        else
+            opt "$repo: $ahead upstream commit(s) since the pin" \
+                "review https://github.com/$repo/compare/${sha:0:12}...HEAD for security and compatibility, then bump the pin"
+        fi
+    done
+
 echo
 [ "$fails" -eq 0 ] && echo "All required checks pass." || echo "$fails required check(s) failing."
 exit "$fails"
