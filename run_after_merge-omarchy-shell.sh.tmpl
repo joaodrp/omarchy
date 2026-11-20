@@ -3,8 +3,9 @@
 # and rewrites it at runtime (disabled plugins, clone-source restores, bar
 # rearrangements), so only these entries are managed: each is merged over in
 # whichever section it already sits, so per-widget state and a bar section the
-# user moved it to both survive, and inserted only when absent everywhere: at
-# the end of its "section" (a placement hint, not written) or after the tray.
+# user moved it to both survive, and inserted only when absent everywhere: in
+# place of the widget it "replaces" (taking its center anchor too), else at the
+# end of its "section", else after the tray. Both hints are not written.
 #
 # Control D's commands are the vendored `dns-controld`; that widget does
 # nothing without them, so cloning the plugin alone only does half the job.
@@ -40,6 +41,13 @@ entries='[
     "section": "tray"
   },
   {
+    "id": "crmne.omacal",
+    "replaces": "omarchy.clock",
+    "section": "center",
+    "googleEnabled": true,
+    "heyEnabled": false
+  },
+  {
     "id": "io.github.alvmarrod.stocks",
     "section": "tray"
   }
@@ -59,9 +67,12 @@ defaults="${OMARCHY_PATH:-/usr/share/omarchy}/config/omarchy/shell.json"
 merge_file "$config" '{}' jq --argjson entries "$entries" --slurpfile defaults "$defaults" '
   reduce $entries[] as $e (.;
     ($e.id) as $id
-    | ($e | del(.section)) as $entry
+    | ($e | del(.section, .replaces)) as $entry
     | if any(.bar.layout // {} | .[]? | arrays | .[]? | objects; .id == $id)
       then (.bar.layout[] | arrays | .[] | objects | select(.id == $id)) |= . * $entry
+      elif $e.replaces and any(.bar.layout // {} | .[]? | arrays | .[]? | objects; .id == $e.replaces)
+      then (.bar.layout[] | arrays | .[] | objects | select(.id == $e.replaces)) |= $entry
+        | if (.bar.centerAnchor // "omarchy.clock") == $e.replaces then .bar.centerAnchor = $id else . end
       elif $e.section then .bar.layout[$e.section] = ((.bar.layout[$e.section] // []) + [$entry])
       else .bar.layout.right = (
              (.bar.layout.right // []) as $r
