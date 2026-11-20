@@ -60,6 +60,18 @@ if [ -e /sys/class/leds/chromeos:white:power ] && omarchy-hw-fingerprint 2>/dev/
         systemctl is-active --quiet fingerprint-led.service
 fi
 
+# The 1Password scale flag rides on its generated autostart unit; flag it when
+# 1Password renames that unit and the drop-in stops applying.
+if [ -e "$HOME/.config/autostart/com.onepassword.OnePassword.desktop" ]; then
+    if systemctl --user show -p ExecStart app-com.onepassword.OnePassword@autostart.service 2>/dev/null |
+        grep -q -- --force-device-scale-factor=1; then
+        ok "1Password autostarts at the right scale"
+    else
+        opt "1Password autostart lost its scale flag" \
+            "match the drop-in in ~/.config/systemd/user/ to 1Password's autostart unit"
+    fi
+fi
+
 check "web system fonts resolve to Inter / JetBrains Mono" "chezmoi apply" \
     bash -c '[ "$(fc-match -f "%{family[0]}" "system\-ui")" = Inter ] &&
         [ "$(fc-match -f "%{family[0]}" "\-apple\-system")" = Inter ] &&
