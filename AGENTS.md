@@ -37,6 +37,11 @@ is Quickshell — no waybar, walker, mako, hyprlock or hypridle.
   `run_after_*` scripts and any system or config change must be re-runnable
   without side effects, guard against partial or repeated application, and
   avoid destructive or hard-to-reverse operations.
+- Pin third-party shell plugins to a commit (an `archive` external), never a
+  branch or a moving tag: they run unsandboxed in the shell. Update them
+  periodically, each bump only after a security and compatibility review of
+  the upstream diff against the current Omarchy. My own plugins
+  (`joaodrp/*`) may track their default branch.
 - Keep comments brief and written for a skilled reader: state the what/why
   plus any idempotency note, and skip padding, cross-references to sibling
   scripts by name, and explanations of standard tool behavior (git, chezmoi,

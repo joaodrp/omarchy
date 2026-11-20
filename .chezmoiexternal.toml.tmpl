@@ -32,17 +32,15 @@
 
 {{ end -}}
 
-{{/* The Stocks bar widget, at its latest release: releases are what the plugin
-     marketplace verifies. */ -}}
+{{/* The Stocks bar widget, pinned to its v1.2.2 release commit. */ -}}
 [".config/omarchy/plugins/io.github.alvmarrod.stocks"]
     type = "archive"
-    url = "https://github.com/alvmarrod/omarchy-stocks/archive/refs/tags/{{ (gitHubLatestRelease "alvmarrod/omarchy-stocks").TagName }}.tar.gz"
+    url = "https://github.com/alvmarrod/omarchy-stocks/archive/38583bed8e05581dd698ff58453606a1cc13bdba.tar.gz"
     exact = true
     stripComponents = 1
 
-{{/* The System Monitor bar widget, pinned to a reviewed commit: it publishes no
-     releases and it runs unsandboxed in the shell, so bump the commit after
-     reading the upstream diff. */ -}}
+{{/* The System Monitor bar widget, pinned to a reviewed commit on main (it
+     publishes no releases). */ -}}
 [".config/omarchy/plugins/harshith.system-monitor"]
     type = "archive"
     url = "https://github.com/Harshith292002/omarchy-system-monitor/archive/2cbbbcc5e97096380a9935de08e4ba8a8adb840e.tar.gz"
