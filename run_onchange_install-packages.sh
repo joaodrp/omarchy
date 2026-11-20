@@ -17,6 +17,7 @@ repo=(
     git-filter-repo       # history rewrites (scrubbing secrets and identifiers)
     xorg-server-xvfb      # Xvfb; off-screen X display for agent browser tests
     glab                  # GitLab CLI
+    googleworkspace-cli   # gws; Google Workspace CLI (Calendar, Gmail, Drive, ...)
     herdr-core            # hc; Herdr core runtime
     python-huggingface-hub   # hf; Hugging Face model downloads
     go-yq                 # mikefarah/yq; the merge scripts edit TOML with it
