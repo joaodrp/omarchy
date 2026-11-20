@@ -42,6 +42,9 @@ is Quickshell — no waybar, walker, mako, hyprlock or hypridle.
   periodically, each bump only after a security and compatibility review of
   the upstream diff against the current Omarchy. My own plugins
   (`joaodrp/*`) may track their default branch.
+- Mark a temporary workaround for an upstream bug with a comment
+  `REVERT once <owner>/<repo>#<n> is fixed upstream.` `dotfiles-doctor`
+  tracks every such issue and says when the fix has reached this machine.
 - Keep comments brief and written for a skilled reader: state the what/why
   plus any idempotency note, and skip padding, cross-references to sibling
   scripts by name, and explanations of standard tool behavior (git, chezmoi,

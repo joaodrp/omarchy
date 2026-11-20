@@ -123,6 +123,45 @@ awk '/^\["\.config\/omarchy\/plugins\// { p = 1; next }
         esac
     done
 
+echo "Tracked upstream issues (optional)"
+# Workarounds carry a "REVERT once <owner>/<repo>#<n>" marker. Report each
+# issue's state; for Omarchy's own, also whether the merged fix is in the
+# installed release, which is when the workaround can go.
+omarchy_tag="v$(pacman -Q omarchy 2>/dev/null | awk '{ sub(/-[0-9]+$/, "", $2); print $2 }')"
+git -C "$src" grep -hoE 'REVERT once [A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#[0-9]+' 2>/dev/null |
+    awk '{ print $3 }' | sort -u |
+    while read -r ref; do
+        repo=${ref%#*} num=${ref#*#}
+        files=$(git -C "$src" grep -l "REVERT once $ref" | paste -sd ' ')
+        if ! info=$(timeout 20 gh issue view "$num" -R "$repo" \
+            --json state,closedByPullRequestsReferences \
+            --jq '"\(.state) \([.closedByPullRequestsReferences[].number] | join(","))"' 2>/dev/null); then
+            opt "$ref: could not check" "gh auth status; check the network"
+            continue
+        fi
+        read -r state prs <<<"$info"
+        if [ "$state" = OPEN ]; then
+            ok "$ref still open${prs:+ (fix in review: #$prs)}; keep the workaround"
+            continue
+        fi
+        released=""
+        if [ "$repo" = omacom/omarchy ] && [ "$omarchy_tag" != v ]; then
+            for pr in ${prs//,/ }; do
+                sha=$(timeout 20 gh pr view "$pr" -R "$repo" --json mergeCommit --jq '.mergeCommit.oid // empty' 2>/dev/null) || continue
+                [ -n "$sha" ] || continue
+                case $(timeout 20 gh api "repos/$repo/compare/$sha...$omarchy_tag" --jq .status 2>/dev/null) in
+                identical | ahead) released=yes ;;
+                *) released=no ;;
+                esac
+            done
+        fi
+        case $released in
+        yes) opt "$ref is fixed in your Omarchy ($omarchy_tag)" "revert the workaround in: $files" ;;
+        no) ok "$ref is fixed upstream but not yet in your Omarchy ($omarchy_tag); keep the workaround" ;;
+        *) opt "$ref is closed" "check that the fix reached you, then revert the workaround in: $files" ;;
+        esac
+    done
+
 echo
 [ "$fails" -eq 0 ] && echo "All required checks pass." || echo "$fails required check(s) failing."
 exit "$fails"
