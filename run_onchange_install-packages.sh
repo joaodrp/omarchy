@@ -13,7 +13,6 @@ repo=(
     dcraw                 # camera RAW decoder for image previews
     dmidecode             # hardware inventory from the DMI/SMBIOS tables
     git-delta             # syntax-highlighting pager for lazygit and git diff
-    gemini-cli            # Google's coding agent
     gitleaks              # the global pre-commit secret scan
     git-filter-repo       # history rewrites (scrubbing secrets and identifiers)
     xorg-server-xvfb      # Xvfb; off-screen X display for agent browser tests
