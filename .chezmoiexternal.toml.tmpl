@@ -19,6 +19,24 @@
 {{   end -}}
 {{ end -}}
 
+{{/* The Things bar widget, from my fork: upstream plus my trash fix and a
+     bar pill spaced like the icons beside it (fork-only). Upstream changes
+     reach it only through merges into the fork. Its `setup` is never run: it
+     would build a bundled CLI into /usr/local/bin, while the packaged things3
+     is already current. REVERT once reysu/omarchy-things#3 is fixed upstream,
+     keeping the spacing. */ -}}
+{{ $things := ".config/omarchy/plugins/reysu.things" -}}
+{{ $st := lstat (joinPath .chezmoi.homeDir $things) -}}
+{{ if not (and $st (eq $st.type "symlink")) -}}
+[{{ $things | quote }}]
+    type = "git-repo"
+    url = "https://github.com/joaodrp/omarchy-things.git"
+    refreshPeriod = "168h"
+    [{{ $things | quote }}.pull]
+        args = ["--ff-only"]
+
+{{ end -}}
+
 {{/* Agent skills; the list and why each is pinned are in
      .chezmoidata/agent-skills.toml. */ -}}
 
@@ -59,15 +77,6 @@
 [".config/omarchy/plugins/hass"]
     type = "archive"
     url = "https://github.com/konradk/hass/archive/eb3335246526d7adaa6479f227632959900bd15a.tar.gz"
-    exact = true
-    stripComponents = 1
-
-{{/* The Things bar widget, pinned to a reviewed commit on master (it
-     publishes no releases). Its `setup` is never run: it would build a bundled
-     CLI into /usr/local/bin, while the packaged things3 is already current. */ -}}
-[".config/omarchy/plugins/reysu.things"]
-    type = "archive"
-    url = "https://github.com/reysu/omarchy-things/archive/d7cbfc4108f2116796ae72717f813a739eeca392.tar.gz"
     exact = true
     stripComponents = 1
 
