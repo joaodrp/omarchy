@@ -135,6 +135,7 @@ awk '/^\["\.config\/omarchy\/plugins\// { p = 1; next }
         read -r status ahead <<<"$cmp"
         case $status in
         identical) ok "$repo pinned at its latest commit" ;;
+        behind) ok "$repo pinned ahead of its default branch (carries its own commits)" ;;
         ahead) opt "$repo: $ahead upstream commit(s) since the pin" \
             "review https://github.com/$repo/compare/${sha:0:12}...HEAD for security and compatibility, then bump the pin" ;;
         *) opt "$repo: upstream history no longer contains the pin ($status)" \
