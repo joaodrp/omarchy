@@ -62,6 +62,15 @@
     exact = true
     stripComponents = 1
 
+{{/* The Things bar widget, pinned to a reviewed commit on master (it
+     publishes no releases). Its `setup` is never run: it would build a bundled
+     CLI into /usr/local/bin, while the packaged things3 is already current. */ -}}
+[".config/omarchy/plugins/reysu.things"]
+    type = "archive"
+    url = "https://github.com/reysu/omarchy-things/archive/d7cbfc4108f2116796ae72717f813a739eeca392.tar.gz"
+    exact = true
+    stripComponents = 1
+
 {{/* The calendar bar widget, Omarchy's clock with Google Calendar events
      (through gws), pinned to its v1.3.0 release commit. */ -}}
 [".config/omarchy/plugins/crmne.omacal"]

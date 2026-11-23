@@ -45,6 +45,8 @@ if [ -z "$upstream" ]; then
     check "gh authenticated" "gh auth login" gh auth status
     check "cdctl logged in (Control D widget)" "chezmoi apply with 1Password unlocked" \
         cdctl auth status
+    check "things3 logged in (Things widget)" "things3 set-auth" \
+        things3 --no-sync --log-level off today
     if command -v tailscale >/dev/null; then
         check "tailscale logged in" "sudo tailscale up --accept-routes" tailscale status
     else

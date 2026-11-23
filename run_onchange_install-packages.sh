@@ -45,6 +45,8 @@ aur=(
     # Moves, clicks and scrolls through the compositor's virtual pointer: no
     # daemon or /dev/uinput, unlike ydotool, and confined to this session.
     wlrctl
+    # things3; Things 3 to-dos through Things Cloud, read by the Things widget.
+    things3-cloud
 )
 
 omarchy pkg add "${repo[@]}"
