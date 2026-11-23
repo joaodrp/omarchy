@@ -39,9 +39,6 @@ repo=(
     texlive-fontsrecommended texlive-fontsextra texlive-langenglish texlive-binextra
 )
 aur=(
-    # gcloud's own component manager is disabled; bq, gsutil and
-    # gke-gcloud-auth-plugin are separate AUR packages.
-    google-cloud-cli
     # Moves, clicks and scrolls through the compositor's virtual pointer: no
     # daemon or /dev/uinput, unlike ydotool, and confined to this session.
     wlrctl
@@ -51,3 +48,10 @@ aur=(
 
 omarchy pkg add "${repo[@]}"
 omarchy pkg aur add "${aur[@]}"
+
+# gcloud and bq, from [extra]; its own component manager is disabled. Omarchy's
+# pinned mirror may not carry it yet: an existing install (from the AUR, where
+# it used to live) then stays, and a system update moves it to [extra] later.
+if pacman -Si google-cloud-cli >/dev/null 2>&1; then
+    omarchy pkg add google-cloud-cli
+fi
