@@ -24,6 +24,7 @@ repo=(
     just                  # command runner for project justfiles
     libyaml               # Ruby's psych extension, for mise's precompiled Ruby
     mosh                  # roaming-resilient shells over Tailscale
+    qemu-base edk2-ovmf   # headless VMs with UEFI firmware
     radare2               # disassembler, Windows PE files included
     release-plz           # release automation for Rust crates
     ruff                  # Python linter and formatter
