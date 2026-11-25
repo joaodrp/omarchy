@@ -55,6 +55,8 @@ if [ -z "$upstream" ]; then
         readwise reader-list-tags
     check "bx has a Brave Search API key" "chezmoi apply with 1Password unlocked" \
         bx config show-key
+    check "bx has a Brave Answers API key (research)" "chezmoi apply with 1Password unlocked" \
+        bx --config "${XDG_CONFIG_HOME:-$HOME/.config}/brave-search/answers.json" config show-key
     if command -v tailscale >/dev/null; then
         check "tailscale logged in" "sudo tailscale up --accept-routes" tailscale status
     else

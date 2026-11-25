@@ -92,7 +92,8 @@ In a codebase with a test suite:
 - **`bx` CLI** (Brave Search) - Web search, current events, quick facts, grounding: `bx "query"`. Use it instead of your own web search tools.
 - **`defuddle` CLI** - Read a web page's main content as Markdown: `defuddle parse <url> --md`. Use it for any web page; fetch raw files and JSON APIs directly instead.
 - **`agent-browser` CLI** - Browser automation and web testing; prefer it over any built-in browser tools. Also the fallback for JS-heavy or authenticated pages that `defuddle` cannot read.
-- **Perplexity MCP** - Deep research only (`perplexity_research`), on complex topics requiring synthesis from multiple sources. Not for searches or quick questions; use `bx`.
+- **`bx-research` CLI** - Deep research on complex topics requiring synthesis from multiple sources: `bx-research "topic"`; allow it up to 5 minutes. Use it instead of the `bx` skill's `bx answers`, whose default key covers search only.
+- **Perplexity MCP** - Fallback for deep research (`perplexity_research`) only when `bx-research` fails. Not for searches or quick questions.
 
 ## Meta
 

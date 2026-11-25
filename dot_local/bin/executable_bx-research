@@ -1,0 +1,7 @@
+#!/bin/bash
+# Brave deep research: `bx answers` in research mode, with the Answers plan's
+# key (a Brave key covers one plan; bx's default config holds the Search one).
+# An exported key would override the config file, so drop it.
+unset BRAVE_SEARCH_API_KEY
+exec bx --config "${XDG_CONFIG_HOME:-$HOME/.config}/brave-search/answers.json" \
+    answers --enable-research "$@"
