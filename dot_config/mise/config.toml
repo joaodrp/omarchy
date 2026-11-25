@@ -6,6 +6,8 @@ go = "latest"
 java = "lts"
 node = "lts"
 "npm:@doist/todoist-cli" = "latest"
+# Under mise's download threshold; verified as Readwise's own, with build provenance.
+"npm:@readwise/cli" = { version = "latest", allow_low_downloads = true }
 "npm:agent-browser" = "latest"
 "npm:defuddle-cli" = "latest"
 "npm:pnpm" = "latest"

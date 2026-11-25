@@ -51,6 +51,8 @@ if [ -z "$upstream" ]; then
         cdctl auth status
     check "things3 logged in (Things widget)" "things3 set-auth" \
         things3 --no-sync --log-level off today
+    check "readwise logged in" "chezmoi apply with 1Password unlocked" \
+        readwise reader-list-tags
     if command -v tailscale >/dev/null; then
         check "tailscale logged in" "sudo tailscale up --accept-routes" tailscale status
     else

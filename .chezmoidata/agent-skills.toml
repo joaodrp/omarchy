@@ -7,3 +7,8 @@
 repo = "obra/the-elements-of-style"
 path = "skills/writing-clearly-and-concisely"
 commit = "6099c505c2a8eb066f3777f83a97d9d828f7954c"
+
+[agent_skills.readwise-cli]
+repo = "readwiseio/readwise-skills"
+path = "skills/readwise-cli"
+commit = "2d1ce9627c611d24f510dfc2e05a123fa509d2f6"
