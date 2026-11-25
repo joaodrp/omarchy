@@ -43,6 +43,10 @@ if [ -z "$upstream" ]; then
 
     section "Accounts"
     check "gh authenticated" "gh auth login" gh auth status
+    if systemctl --user is-enabled --quiet clone-my-repos.timer 2>/dev/null; then
+        check "clone-my-repos last run succeeded" "journalctl --user -u clone-my-repos" \
+            bash -c '[ "$(systemctl --user show -p Result --value clone-my-repos.service)" = success ]'
+    fi
     check "cdctl logged in (Control D widget)" "chezmoi apply with 1Password unlocked" \
         cdctl auth status
     check "things3 logged in (Things widget)" "things3 set-auth" \

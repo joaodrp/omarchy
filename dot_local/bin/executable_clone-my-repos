@@ -21,10 +21,16 @@ exec 9>"${XDG_RUNTIME_DIR:-/tmp}/clone-my-repos.lock"
 flock -n 9 || { echo "clone-my-repos: already running" >&2; exit 0; }
 
 command -v gh >/dev/null || { echo "clone-my-repos: gh not found" >&2; exit 1; }
-gh auth status >/dev/null 2>&1 || { echo "clone-my-repos: run gh auth login first" >&2; exit 1; }
+gh auth token >/dev/null 2>&1 || { echo "clone-my-repos: run gh auth login first" >&2; exit 1; }
 
-owners=$( { gh api user -q .login; gh org list --limit 1000; } ) ||
-    { echo "clone-my-repos: cannot list owners" >&2; exit 1; }
+# A run missed during sleep fires on resume, before Wi-Fi is back: retry for
+# up to two minutes.
+for _ in $(seq 24); do
+    owners=$( { gh api user -q .login && gh org list --limit 1000; } 2>/dev/null ) && break
+    owners=""
+    sleep 5
+done
+[ -n "$owners" ] || { echo "clone-my-repos: GitHub unreachable" >&2; exit 1; }
 
 # Prints why the default branch was left alone, or nothing if it is current
 # or was fast-forwarded; returns 1 on a git failure.
