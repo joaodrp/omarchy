@@ -56,3 +56,5 @@ is Quickshell — no waybar, walker, mako, hyprlock or hypridle.
 - Develop on a feature branch and validate (`chezmoi apply` / test) before
   merging. Self-merge to `main` once validated; no PR or external review
   needed (personal dotfiles repo).
+- After pulling upstream changes, run `chezmoi apply` and then
+  `dotfiles-doctor`, so the machine matches the repo.
