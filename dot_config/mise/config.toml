@@ -2,6 +2,7 @@
 [tools]
 "cargo:cfspeedtest" = "latest"
 "cargo:controld-cli" = "latest"
+"cargo:x-stitch" = "latest"
 go = "latest"
 java = "lts"
 node = "lts"
