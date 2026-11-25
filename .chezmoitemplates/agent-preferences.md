@@ -93,6 +93,7 @@ In a codebase with a test suite:
 - **`defuddle` CLI** - Read a web page's main content as Markdown: `defuddle parse <url> --md`. Use it for any web page; fetch raw files and JSON APIs directly instead.
 - **`agent-browser` CLI** - Browser automation and web testing; prefer it over any built-in browser tools. Also the fallback for JS-heavy or authenticated pages that `defuddle` cannot read.
 - **`bx-research` CLI** - Deep research on complex topics requiring synthesis from multiple sources: `bx-research "topic"`; allow it up to 5 minutes. Use it instead of the `bx` skill's `bx answers`, whose default key covers search only.
+- **Inspecting a repo** - Clone it into a temp directory (`git clone --depth 1 <url> "$(mktemp -d)"`) and read it locally, rather than fetching files one at a time from the web or API.
 - **Perplexity MCP** - Fallback for deep research (`perplexity_research`) only when `bx-research` fails. Not for searches or quick questions.
 
 ## Meta
