@@ -5,6 +5,8 @@
 go = "latest"
 java = "lts"
 node = "lts"
+# Under mise's download threshold; verified as Brave's own, with build provenance.
+"npm:@brave/brave-search-cli" = { version = "latest", allow_low_downloads = true }
 "npm:@doist/todoist-cli" = "latest"
 # Under mise's download threshold; verified as Readwise's own, with build provenance.
 "npm:@readwise/cli" = { version = "latest", allow_low_downloads = true }

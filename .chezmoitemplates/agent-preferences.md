@@ -89,10 +89,10 @@ In a codebase with a test suite:
 ### Research & Web
 
 - **Context7 MCP** (`resolve-library-id`, `get-library-docs`) - Current library/framework/SDK/API docs. Use for any library question, even ones you think you know: training data goes stale on API details. Prefer it over web search.
-- **Your own web search tools** - Find things on the web, current events, quick facts.
+- **`bx` CLI** (Brave Search) - Web search, current events, quick facts, grounding: `bx "query"`. Use it instead of your own web search tools.
 - **`defuddle` CLI** - Read a web page's main content as Markdown: `defuddle parse <url> --md`. Use it for any web page; fetch raw files and JSON APIs directly instead.
 - **`agent-browser` CLI** - Browser automation and web testing; prefer it over any built-in browser tools. Also the fallback for JS-heavy or authenticated pages that `defuddle` cannot read.
-- **Perplexity MCP** - Deep research on complex topics requiring synthesis from multiple sources.
+- **Perplexity MCP** - Deep research only (`perplexity_research`), on complex topics requiring synthesis from multiple sources. Not for searches or quick questions; use `bx`.
 
 ## Meta
 

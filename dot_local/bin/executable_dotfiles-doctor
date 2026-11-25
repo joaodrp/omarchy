@@ -53,6 +53,8 @@ if [ -z "$upstream" ]; then
         things3 --no-sync --log-level off today
     check "readwise logged in" "chezmoi apply with 1Password unlocked" \
         readwise reader-list-tags
+    check "bx has a Brave Search API key" "chezmoi apply with 1Password unlocked" \
+        bx config show-key
     if command -v tailscale >/dev/null; then
         check "tailscale logged in" "sudo tailscale up --accept-routes" tailscale status
     else

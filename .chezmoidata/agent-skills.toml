@@ -12,3 +12,8 @@ commit = "6099c505c2a8eb066f3777f83a97d9d828f7954c"
 repo = "readwiseio/readwise-skills"
 path = "skills/readwise-cli"
 commit = "2d1ce9627c611d24f510dfc2e05a123fa509d2f6"
+
+[agent_skills.bx]
+repo = "brave/brave-search-skills"
+path = "skills/bx"
+commit = "62793e0c49ed2fc7c8f0c99a8ab8898abdf32a1d"
