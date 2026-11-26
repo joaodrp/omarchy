@@ -14,7 +14,7 @@ node = "lts"
 # Under mise's download threshold; verified as Readwise's own, with build provenance.
 "npm:@readwise/cli" = { version = "latest", allow_low_downloads = true }
 # Pinned: third-party and privileged; bump after reviewing the release.
-"npm:agent-browser" = "0.43.0"
+"npm:agent-browser" = "0.45.0"
 "npm:defuddle-cli" = "latest"
 "npm:pnpm" = "latest"
 ruby = "latest"
