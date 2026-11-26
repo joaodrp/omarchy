@@ -2,7 +2,8 @@
 [tools]
 "cargo:cfspeedtest" = "latest"
 "cargo:controld-cli" = "latest"
-"cargo:unifly" = "latest"
+# Pinned: third-party and privileged; bump after reviewing the release.
+"cargo:unifly" = "0.15.0"
 "cargo:x-stitch" = "latest"
 go = "latest"
 java = "lts"
@@ -12,7 +13,8 @@ node = "lts"
 "npm:@doist/todoist-cli" = "latest"
 # Under mise's download threshold; verified as Readwise's own, with build provenance.
 "npm:@readwise/cli" = { version = "latest", allow_low_downloads = true }
-"npm:agent-browser" = "latest"
+# Pinned: third-party and privileged; bump after reviewing the release.
+"npm:agent-browser" = "0.43.0"
 "npm:defuddle-cli" = "latest"
 "npm:pnpm" = "latest"
 ruby = "latest"

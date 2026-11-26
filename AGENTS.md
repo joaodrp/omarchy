@@ -42,6 +42,9 @@ is Quickshell — no waybar, walker, mako, hyprlock or hypridle.
   periodically, each bump only after a security and compatibility review of
   the upstream diff against the current Omarchy. My own plugins
   (`joaodrp/*`) may track their default branch.
+- Pin third-party CLIs that hold credentials for, or control, something
+  important (a network, a logged-in browser) to an exact version in mise,
+  with the same review before each bump. Other tools may track `latest`.
 - Mark a temporary workaround for an upstream bug with a comment
   `REVERT once <owner>/<repo>#<n> is fixed upstream.` `dotfiles-doctor`
   tracks every such issue and says when the fix has reached this machine.

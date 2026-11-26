@@ -2,7 +2,7 @@
 # Report the machine state chezmoi cannot vendor: app toggles, logins and
 # per-machine answers. Read-only. Exit status is the number of failed checks,
 # so an agent walking BOOTSTRAP.md can loop until it is 0.
-#   --upstream  only the upstream checks (pinned plugins, tracked issues)
+#   --upstream  only the upstream checks (pinned plugins and tools, tracked issues)
 #   --quiet     print only what needs action, under its section heading
 
 fails=0 upstream="" quiet="" heading=""
@@ -151,6 +151,24 @@ awk '/^\["\.config\/omarchy\/plugins\// { p = 1; next }
         *) opt "$repo: upstream history no longer contains the pin ($status)" \
             "check https://github.com/$repo for a rewritten branch before bumping" ;;
         esac
+    done
+
+section "Pinned tools (optional)"
+# Privileged third-party CLIs are pinned to an exact version in mise; flag
+# the ones with a newer release, so they get reviewed and bumped.
+awk -F'"' '/^"(cargo|npm):[^"]+" = "[0-9][^"]*"$/ { print $2, $4 }' \
+    "$src/dot_config/mise/config.toml" 2>/dev/null |
+    while read -r tool pin; do
+        if ! latest=$(timeout 20 mise latest "$tool" 2>/dev/null) || [ -z "$latest" ]; then
+            unk "$tool: could not check the latest release" "check the network"
+            continue
+        fi
+        if [ "$latest" = "$pin" ]; then
+            ok "$tool pinned at its latest release ($pin)"
+        else
+            opt "$tool: $latest released, pinned at $pin" \
+                "review the release for security and compatibility, then bump the pin in dot_config/mise/config.toml"
+        fi
     done
 
 section "Tracked upstream issues (optional)"
