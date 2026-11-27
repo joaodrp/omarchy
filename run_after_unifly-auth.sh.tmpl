@@ -1,0 +1,25 @@
+#!/bin/bash
+{{- if and (hasKey . "unifi_controller_url") .unifi_controller_url }}
+# Point unifly's default `home` profile at this machine's controller
+# (`unifi_controller_url`), and put its API key in the keyring from 1Password,
+# once. `config init` needs a terminal, so set the profile value by value and
+# store the key the way unifly reads it: service `unifly`, user
+# `<profile>/api-key`. `insecure` accepts the CloudKey's self-signed cert. A
+# locked 1Password retries on the next apply.
+command -v unifly >/dev/null || exit 0
+url={{ .unifi_controller_url | quote }}
+conf=${XDG_CONFIG_HOME:-$HOME/.config}/unifly/config.toml
+if ! grep -qxF "controller = \"$url\"" "$conf" 2>/dev/null; then
+    unifly config set profiles.home.controller "$url" >/dev/null &&
+        unifly config set profiles.home.auth_mode integration >/dev/null &&
+        unifly config set profiles.home.insecure true >/dev/null &&
+        unifly config use home >/dev/null ||
+        echo "unifly: could not write the home profile" >&2
+fi
+secret-tool lookup service unifly username home/api-key >/dev/null 2>&1 && exit 0
+if key=$(op read op://Private/Unifi/unifly_local_api_key 2>/dev/null) && [ -n "$key" ]; then
+    printf '%s' "$key" | secret-tool store --label='unifly home API key' \
+        service unifly username home/api-key ||
+        echo "unifly: could not store the API key in the keyring" >&2
+else echo "unifly: no API key (1Password locked?); retrying next apply" >&2; fi
+{{- end }}

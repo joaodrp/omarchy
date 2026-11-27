@@ -1,6 +1,7 @@
 {{- $personal_email := promptStringOnce . "personal_email" "Personal email" -}}
 {{- $home_assistant_url := promptStringOnce . "home_assistant_url" "Home Assistant URL for its webapp (blank to skip)" -}}
-{{- $controld_resolver_id := promptStringOnce . "controld_resolver_id" "ControlD resolver ID for this machine (endpoint's Show Resolvers screen; blank to leave DNS alone)" -}}
+{{- $unifi_controller_url := promptStringOnce . "unifi_controller_url" "UniFi controller URL for the unifly CLI (blank to skip)" -}}
+{{- $controld_resolver_id :=promptStringOnce . "controld_resolver_id" "ControlD resolver ID for this machine (endpoint's Show Resolvers screen; blank to leave DNS alone)" -}}
 {{- $thunderbolt_keyboard_at_luks := promptChoiceOnce . "thunderbolt_keyboard_at_luks" "Authorize the Thunderbolt dock at the LUKS prompt (auto: only when the dock's keyboard needs it)" (list "auto" "on" "off") "auto" -}}
 
 # Persist the clone location: `init --source` only applies to that one run.
@@ -10,6 +11,7 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
     personal_email = {{ $personal_email | quote }}
     controld_resolver_id = {{ $controld_resolver_id | quote }}
     home_assistant_url = {{ $home_assistant_url | quote }}
+    unifi_controller_url = {{ $unifi_controller_url | quote }}
     thunderbolt_keyboard_at_luks = {{ $thunderbolt_keyboard_at_luks | quote }}
 
 # Cache the latest-release lookups in .chezmoiexternal, which every chezmoi

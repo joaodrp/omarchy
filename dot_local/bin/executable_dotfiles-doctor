@@ -57,6 +57,10 @@ if [ -z "$upstream" ]; then
         bx config show-key
     check "bx has a Brave Answers API key (research)" "chezmoi apply with 1Password unlocked" \
         bx --config "${XDG_CONFIG_HOME:-$HOME/.config}/brave-search/answers.json" config show-key
+    if [ -n "$(chezmoi execute-template '{{ .unifi_controller_url }}' 2>/dev/null)" ]; then
+        check "unifly API key in the keyring" "chezmoi apply with 1Password unlocked" \
+            bash -c 'secret-tool lookup service unifly username home/api-key >/dev/null'
+    fi
     if command -v tailscale >/dev/null; then
         check "tailscale logged in" "sudo tailscale up --accept-routes" tailscale status
     else
